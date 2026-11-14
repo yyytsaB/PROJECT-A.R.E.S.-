@@ -8,9 +8,9 @@
 ---
 
 ## Current Project State
-- **Current Phase:** Hackathon implementation — **M0, M1, and M2 complete**, verified November 14, 2026. Coding began after the 09:00 AM local start gate.
+- **Current Phase:** Hackathon implementation — **M0 through M4 complete**, verified November 14, 2026. Coding began after the 09:00 AM local start gate.
 - **HACKATHON FAIR-PLAY HARD GATE:** Do **NOT** run `npm init`, scaffold `package.json`, or create any files under `src/` or `tests/` until the official **Nov 14, 09:00 AM** start signal.
-- **Next Milestones:** `M3: Planetary Expedition & Telemetry Engine`, then `M4: Offline-First Store & Comms Sync` (Dev #2; shared types and M2 workout controller are available).
+- **Next Handoff:** Frontend styling and publication readiness. M3/M4 integration conventions and optional Supabase setup are documented in `docs/TELEMETRY_AND_SYNC.md`.
 - **Verification:** Milestone task checklists record completion; use `npm run test`, `npm run typecheck`, and `npm run build` to reproduce the checks.
 - **Team Topology (6 Members):**
   - **Developers (2):** Developer #1 (Vision & Kinematics Lead) on `M0`, `M1`, `M2`; Dev #2 on `M3`, `M4`.
@@ -63,13 +63,13 @@ All 5 Fog items reconciling the 3 project PDFs have been confirmed by the team a
   - Built-in **Simulated Pose Trajectory Generator** (`Simulate Good Rep`, `Simulate Shallow/Bad Spine Rep`) so live pitches and Playwright E2E tests work deterministically even without a webcam.
   - 2D `<canvas>` **Kinematic Snapshot Replay** viewer for inspecting flagged improper reps in Workout Logs, plus headless `useWorkoutArena()` hook for the Frontend team.
 
-### [ ] M3: Planetary Expedition Engine, Strength Retention & Flight Surgeon Telemetry *(Owner: Developer #2 (Telemetry & Offline Sync Lead))*
+### [x] M3: Planetary Expedition Engine, Strength Retention & Flight Surgeon Telemetry *(Owner: Developer #2 (Telemetry & Offline Sync Lead))*
 - **Spec Path:** `specs/003-progression-and-telemetry/spec.md` | **Tasks:** `specs/003-progression-and-telemetry/tasks.md`
 - **Blocked by:** `M0`, `F4` *(Can run in parallel with `M1`/`M2`!)*
 - **Scope:**
   - `Seam 4` (`ProgressionAndTelemetryEngine`): Pure functions calculating session tonnage & effective load, converting cardio km + ARED tonnage into **Valles Marineris / Olympus Mons** route progress and milestone badges, computing 30-day **Earth-Baseline Strength Retention %** and symmetry scores, and generating the exportable **Flight Surgeon Telemetry Report** (JSON/CSV).
 
-### [ ] M4: Offline-First Store, 24-Min Comms Blackout Sync Queue & 30-Day Demo Seeder *(Owner: Developer #2 (Telemetry & Offline Sync Lead))*
+### [x] M4: Offline-First Store, 24-Min Comms Blackout Sync Queue & 30-Day Demo Seeder *(Owner: Developer #2 (Telemetry & Offline Sync Lead))*
 - **Spec Path:** `specs/004-offline-sync-store/spec.md` | **Tasks:** `specs/004-offline-sync-store/tasks.md`
 - **Blocked by:** `M3`, `F2`
 - **Scope:**
