@@ -27,6 +27,7 @@ export function validateMissionCatalogSchema(raw: unknown): ValidationResult {
       if (!record(entry)) { errors.push(`${path} must be an object`); continue; }
       if (!text(entry.name)) errors.push(`${path}.name must be nonempty`);
       if (key === 'exercises') {
+        if (typeof entry.scheduledTime !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(entry.scheduledTime)) errors.push(`${path}.scheduledTime requires HH:MM`);
         const definition = rawCatalog.exercises.find(e => e.id === entry.id);
         if (!definition || entry.kind !== definition.kind) errors.push(`${path}.kind does not match exercise id`);
         if (!number(entry.earthLoadMultiplier, Number.EPSILON)) errors.push(`${path}.earthLoadMultiplier must be positive`);
@@ -48,6 +49,7 @@ export function validateMissionCatalogSchema(raw: unknown): ValidationResult {
       } else if (key === 'gravityProfiles') {
         const profile = rawCatalog.gravityProfiles.find(p => p.id === entry.id);
         if (!profile || entry.gravityG !== profile.gravityG) errors.push(`${path}.gravityG must match the approved profile`);
+        if (!number(entry.prototypeGoalPct, 0, 100)) errors.push(`${path}.prototypeGoalPct must be in 0..100`);
       } else {
         const route = rawCatalog.routes.find(r => r.id === entry.id);
         if (!route || entry.totalDistanceKm !== route.totalDistanceKm) errors.push(`${path}.totalDistanceKm must match the approved route`);
@@ -55,7 +57,7 @@ export function validateMissionCatalogSchema(raw: unknown): ValidationResult {
         const milestoneIds = new Set();
         if (!Array.isArray(entry.milestones) || entry.milestones.length === 0) errors.push(`${path}.milestones must be nonempty`);
         else for (const milestone of entry.milestones) {
-          if (!record(milestone) || !text(milestone.id) || !text(milestone.name) || milestoneIds.has(milestone.id) || !number(milestone.distanceKm, 0, Number(entry.totalDistanceKm)) || milestone.distanceKm <= previous) {
+          if (!record(milestone) || !text(milestone.id) || !text(milestone.name) || !text(milestone.description) || milestoneIds.has(milestone.id) || !number(milestone.distanceKm, 0, Number(entry.totalDistanceKm)) || milestone.distanceKm <= previous) {
             errors.push(`${path}.milestones require unique ids and increasing distances within the route`);
           } else { previous = milestone.distanceKm; milestoneIds.add(milestone.id); }
         }

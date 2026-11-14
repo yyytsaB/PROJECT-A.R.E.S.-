@@ -1,4 +1,18 @@
-import type { ExerciseDefinition, FormFaultFlag, KinematicFrameAnalysis, NormalizedPose33, Point3D, PoseLandmark33, RawPoseFrame } from '../types';
+import type { ExerciseDefinition, FormFaultFlag, KinematicFrameAnalysis, KinematicSnapshot, NormalizedPose33, Point3D, PoseLandmark33, RawPoseFrame, ResistanceExerciseDefinition } from '../types';
+
+export const faultAlerts: Readonly<Record<FormFaultFlag, string>> = {
+  DEPTH_INSUFFICIENT: 'Depth insufficient', SPINE_MISALIGNED: 'Spine not aligned',
+  BILATERAL_ASYMMETRY: 'Left/Right imbalance', LOW_VISIBILITY: 'Pose visibility too low',
+};
+
+export function describeSnapshotDiagnostic(snapshot: KinematicSnapshot, exercise: ResistanceExerciseDefinition): string {
+  const direction = Math.sign(exercise.targetAngleDeg - exercise.startAngleDeg);
+  const deficit = direction * (exercise.targetAngleDeg - snapshot.primaryAngleDeg);
+  const angle = (value: number) => Number(value.toFixed(1));
+  const target = deficit <= exercise.hysteresisDeg + 1e-8 ? 'Target reached' : `${angle(deficit)}° short of target`;
+  const faults = snapshot.faultFlags.map(flag => faultAlerts[flag]).join(', ') || 'None';
+  return `Estimated angle: ${angle(snapshot.primaryAngleDeg)}° · Configured target: ${angle(exercise.targetAngleDeg)}° · ${target} · Faults: ${faults}`;
+}
 
 const midpoint = (a: Point3D, b: Point3D): Point3D => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2 });
 const length = (p: Point3D) => Math.hypot(p.x, p.y, p.z);

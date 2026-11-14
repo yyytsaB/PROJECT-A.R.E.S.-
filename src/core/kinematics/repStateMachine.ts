@@ -1,10 +1,5 @@
 import type { ExerciseDefinition, ExerciseId, FormFaultFlag, KinematicFrameAnalysis, KinematicSnapshot, RawPoseFrame, RepMachineState, RepMachineStepResult } from '../types';
-import { analyzeExerciseFrame, normalizePose33 } from './kinematicMath';
-
-const faultAlerts: Record<FormFaultFlag, string> = {
-  DEPTH_INSUFFICIENT: 'Depth insufficient', SPINE_MISALIGNED: 'Spine not aligned',
-  BILATERAL_ASYMMETRY: 'Left/Right imbalance', LOW_VISIBILITY: 'Pose visibility too low',
-};
+import { analyzeExerciseFrame, faultAlerts, normalizePose33 } from './kinematicMath';
 
 function buildSnapshot(frame: RawPoseFrame, analysis: KinematicFrameAnalysis, repNumber: number, exerciseId: ExerciseId, faultFlags: readonly FormFaultFlag[]): KinematicSnapshot {
   const round = (n: number) => Number(n.toFixed(3));

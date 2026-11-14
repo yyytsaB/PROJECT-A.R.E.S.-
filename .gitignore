@@ -5,6 +5,8 @@ dist/
 coverage/
 playwright-report/
 test-results/
+.vitest-attachments/
+src/**/__screenshots__/
 .env.local
 /public/mediapipe/wasm/
 

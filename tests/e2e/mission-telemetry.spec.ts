@@ -5,7 +5,8 @@ test('mission screens share saved workouts, settings, queue acknowledgements, hi
   await page.goto('/');
   for (const name of ['Command Center', 'Expedition Journey', 'Medical Telemetry', 'Workout Logs & History', 'Profile & Mission Settings']) await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
   await expect(page.getByLabel('Saved session count', { exact: true })).toHaveText('60');
-  await page.getByRole('button', { name: 'Clear local cache', exact: true }).click();
+  await page.getByRole('button', { name: 'Clear Local Data', exact: true }).click();
+  await page.getByRole('button', { name: 'Confirm clear', exact: true }).click();
   await page.reload();
   await expect(page.getByLabel('Saved session count', { exact: true })).toHaveText('0');
   await page.getByLabel('Astronaut name', { exact: true }).fill('Commander Ares');

@@ -39,9 +39,10 @@ The production browser suite starts `vite preview` against the existing `dist/` 
 
 After publishing, verify the real HTTPS URL in a clean browser, repeat all three demo modes, check the sources section, and check camera tracking on permitted hardware. Local production tests establish bundle readiness; they do not verify a provider account or a public deployment.
 
-## Repository target
+## Repository & Live Production URL
 
-The configured GitHub `origin` remote is `https://github.com/yyytsaB/PROJECT-A.R.E.S.-Nasa-Space-Apps-.git`. Connect this repository to Vercel or Netlify to publish the `main` branch automatically.
+- **GitHub Repository (`origin`):** `https://github.com/yyytsaB/PROJECT-A.R.E.S.-Nasa-Space-Apps-.git`
+- **Live Production Deployment (Vercel):** `https://project-ares-nasa.vercel.app/`
 
 ## Web-filter request
 

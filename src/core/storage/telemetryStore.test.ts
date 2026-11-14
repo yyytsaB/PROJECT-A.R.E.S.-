@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
 import type { StorageLike } from '../types';
 import { createSafeStorage } from '../../adapters/telemetryStorageAdapter';
-import { clearMissionStore, loadMissionStore, recordCompletedWorkout, flushCommsSyncQueue, seedDemoMissionState } from './telemetryStore';
+import { clearMissionStore, loadMissionStore, recordCompletedWorkout, flushCommsSyncQueue, seedDemoMissionState, MISSION_STORAGE_KEY } from './telemetryStore';
 import { computeSessionRecord } from '../telemetry/telemetryEngine';
 import { createSupabaseSyncAdapter } from '../../adapters/supabaseSyncAdapter';
 
@@ -10,6 +10,53 @@ function memoryStorage(): StorageLike {
   const data = new Map<string, string>();
   return { getItem: key => data.get(key) ?? null, setItem: (key, value) => { data.set(key, value); }, removeItem: key => { data.delete(key); } };
 }
+
+test('preserves legacy sessions while defaulting missing duration and seeds realistic durations', () => {
+  const storage = memoryStorage();
+  const seeded = seedDemoMissionState(now);
+  expect(seeded.sessions.every(session => session.durationSec >= 45 && session.durationSec <= 900)).toBe(true);
+  const legacy = JSON.parse(JSON.stringify(seeded));
+  for (const session of legacy.sessions) delete session.durationSec;
+  storage.setItem(MISSION_STORAGE_KEY, JSON.stringify(legacy));
+  const loaded = loadMissionStore(storage, now);
+  expect(loaded.sessions).toHaveLength(60);
+  expect(loaded.syncQueue).toEqual(seeded.syncQueue);
+  expect(loaded.sessions.every(session => session.durationSec === 0)).toBe(true);
+  expect(loadMissionStore(storage, now)).toEqual(loaded);
+  for (const durationSec of [-1, '45', null]) {
+    storage.setItem(MISSION_STORAGE_KEY, JSON.stringify({ ...seeded, sessions: [{ ...seeded.sessions[0], durationSec }] }));
+    expect(loadMissionStore(storage, now).sessions).toEqual([]);
+  }
+});
+
+test('defaults legacy body weight to 78kg while retaining history and rejects explicit invalid weights', () => {
+  const storage = memoryStorage();
+  const state = seedDemoMissionState(now);
+  expect(state.profile.bodyWeightKg).toBe(78);
+  const legacy = JSON.parse(JSON.stringify(state)); delete legacy.profile.bodyWeightKg;
+  storage.setItem(MISSION_STORAGE_KEY, JSON.stringify(legacy));
+  expect(loadMissionStore(storage, now)).toEqual(state);
+  for (const bodyWeightKg of [0, -1, null, '78']) {
+    storage.setItem(MISSION_STORAGE_KEY, JSON.stringify({ ...state, profile: { ...state.profile, bodyWeightKg } }));
+    expect(loadMissionStore(storage, now).sessions).toEqual([]);
+  }
+});
+
+test('persists daily schedule completion from workouts and reconstructs it for legacy missions', () => {
+  const fresh = clearMissionStore();
+  expect(fresh.scheduleCompletion).toEqual({});
+  const session = computeSessionRecord({ id: 'scheduled-lift', exerciseId: 'SQUAT', completedAtIso: '2026-11-13T23:30:00-02:00', durationSec: 60,
+    sets: 1, reps: 10, loadKg: 80, cardioDistanceKm: 0, formAccuracyPct: 100, symmetryScorePct: 100, snapshots: [] }, fresh.profile);
+  const saved = recordCompletedWorkout(fresh, session);
+  expect(saved.scheduleCompletion).toEqual({ '2026-11-14': { SQUAT: true } });
+  const legacy = JSON.parse(JSON.stringify(saved)); delete legacy.scheduleCompletion;
+  const storage = memoryStorage(); storage.setItem(MISSION_STORAGE_KEY, JSON.stringify(legacy));
+  expect(loadMissionStore(storage, now)).toEqual(saved);
+  for (const scheduleCompletion of [{ badDate: { SQUAT: true } }, { '2026-11-14': { UNKNOWN: true } }, { '2026-11-14': { SQUAT: 'yes' } }]) {
+    storage.setItem(MISSION_STORAGE_KEY, JSON.stringify({ ...saved, scheduleCompletion }));
+    expect(loadMissionStore(storage, now).sessions).toEqual([]);
+  }
+});
 
 test('initializes a clean mission, recovers corrupt storage and retains data in the injected memory fallback', () => {
   const storage = memoryStorage();

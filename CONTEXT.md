@@ -16,9 +16,12 @@
 | **`FormFaultFlag`** | `'DEPTH_INSUFFICIENT' \| 'SPINE_MISALIGNED' \| 'BILATERAL_ASYMMETRY' \| 'LOW_VISIBILITY'`. Mapped to human-readable crew alerts (e.g., `"Depth insufficient"`, `"Spine not aligned"`, `"Left/Right imbalance"`). |
 | **`RepPhase`** | `'IDLE' \| 'ECCENTRIC' \| 'INFLECTION' \| 'CONCENTRIC' \| 'COMPLETED'`. Deterministic hysteresis state machine preventing false rep triggers from single-frame webcam noise. |
 | **`KinematicSnapshot`** | Lightweight JSON record (`~1.5 KB`) captured automatically at the inflection point of any rep flagged with a `FormFaultFlag`: `{ repNumber, timestampMs, exerciseId, faultFlags, primaryAngleDeg, symmetryScorePct, landmarks: readonly PoseLandmark33[] }`. Replaces heavy `.mp4` blobs for instant 2D `<canvas>` wireframe replay in Workout Logs. |
-| **`GravityProfileId`** | `'MICROGRAVITY_0G'` (`0.0g`), `'MOON_016G'` (`0.16g`), `'MARS_038G'` (`0.38g`). Determines daily ARED volume targets and gravity-transition readiness thresholds. |
+| **`GravityProfileId`** | `'MICROGRAVITY_0G'` (`0.0g`), `'MOON_016G'` (`0.16g`), `'MARS_038G'` (`0.38g`). Selects a team-defined prototype scenario goal (`75%`, `82%`, `88%`), not a NASA standard or clinical threshold. Switching profiles leaves historical ARED scores unchanged. |
 | **`PlanetaryRouteId`** | `'VALLES_MARINERIS'` (`4,000 km` game expedition based on approximate canyon length) or `'OLYMPUS_MONS'` (`600 km` game expedition based on approximate volcano diameter). These are not terrain-derived traverses. Converts cardio distance and form-qualified ARED volume (`250 kg = 1.0 km Expedition Equivalent Distance`, per locked F4) into route progress. |
 | **`StrengthRetentionScore`** | Percentage (`0..100+`) comparing the astronaut's rolling 30-day effective resistance load & form-qualified volume against pre-launch `AstronautProfile.earthBaseline1RM` benchmarks. |
+| **`durationSec`** | Finite nonnegative workout duration in seconds; missing legacy values normalize to zero. Arena duration excludes paused time, and MM:SS formatting floors fractional seconds. |
+| **`AstronautProfile.bodyWeightKg`** | Finite positive profile weight, defaulting to 78 kg for older missions. Metadata only; it does not rescale the locked ARED resistance formula. |
+| **`MissionStoreState.scheduleCompletion`** | Persisted completion flags by UTC date and exercise ID. Saved workouts mark their exercise complete; manually checking a schedule row does not create telemetry. Catalog schedule times are demo settings. |
 | **`CommsLinkStatus`** | `'BLACKOUT_24MIN_DELAY' \| 'WINDOW_OPEN'`. When in blackout (default deep-space mode), completed sessions append to `SyncQueueEnvelope[]` locally; when `WINDOW_OPEN` is triggered, queued telemetry flushes to Supabase (if configured) or the local Mission Control ack log. |
 
 ---
@@ -46,6 +49,7 @@ Under the project testing standards, **all unit, integration, and E2E tests must
   - `normalizePose33(raw: RawPoseFrame): NormalizedPose33`
   - `computeJointAngleDeg(a: Point3D, b: Point3D, c: Point3D): number`
   - `analyzeExerciseFrame(pose: NormalizedPose33, exercise: ExerciseDefinition): KinematicFrameAnalysis`
+  - `describeSnapshotDiagnostic(snapshot: KinematicSnapshot, exercise: ResistanceExerciseDefinition): string` — estimated angle, configured target, direction-aware shortfall/target band, and readable faults.
 - **What Tests Verify:** Pelvis-translation & torso-scale invariance across 33 landmarks, exact `0..180°` vector angle math (`90°` right angle, `180°` full extension), ROM percentage clamping (`0..100%`), bilateral left/right symmetry scoring, spine alignment angle check, and low-visibility landmark rejection.
 
 ### Seam 2: `RepAndFormStateMachine` (`src/core/kinematics/repStateMachine.ts`) — *Owner: Developer #1 (Vision & Kinematics Lead)*
@@ -68,6 +72,10 @@ Under the project testing standards, **all unit, integration, and E2E tests must
   - `computeExpeditionProgress(sessions: readonly WorkoutSessionRecord[], route: PlanetaryRoute): ExpeditionProgressReport`
   - `computeMedicalTelemetry(sessions: readonly WorkoutSessionRecord[], profile: AstronautProfile, nowIso: string): MedicalTelemetryReport`
   - `buildFlightSurgeonReport(telemetry: MedicalTelemetryReport, profile: AstronautProfile, syncSummary: SyncQueueSummary, exportedAtIso: string): FlightSurgeonReport`
+  - `measureMissionPayloads(state: MissionStoreState): { queuedPayloadBytes: number; retainedSnapshotBytes: number; localCacheBytes: number }` — serialized UTF-8 queue JSON, flattened retained snapshots and mission cache, not measured wire traffic or disk quota.
+  - `formatDurationMmSs(durationSec: number): string` — finite nonnegative seconds, floored to padded MM:SS.
+  - `getSessionFormStatus(session: WorkoutSessionRecord): 'GREEN' | 'YELLOW' | 'RED'` — prototype form label; GREEN needs >=90% and no captured faults, YELLOW >=75%, RED otherwise.
+  - `describeGravityScenario(score: number, gravity: GravityProfile): string` — team-defined goal comparison; no medical clearance or load prescription.
 - **What Tests Verify:** Tonnage lifted (`sets × reps × loadKg`) + cardio distance conversion into planetary route kilometers (`Valles Marineris` / `Olympus Mons`), milestone badge unlocking, 30-day **Earth-Baseline Strength Retention %** calculation across gravity profiles (`0g / 0.16g / 0.38g`), symmetry consistency aggregation, and deterministic Flight Surgeon JSON report generation.
 
 ### Seam 5: `OfflineTelemetryAndSyncStore` (`src/core/storage/telemetryStore.ts`) — *Owner: Developer #2 (Telemetry & Offline Sync Lead)*
@@ -78,7 +86,7 @@ Under the project testing standards, **all unit, integration, and E2E tests must
   - `seedDemoMissionState(nowIso: string, storage?: StorageLike): MissionStoreState`
 - **What Tests Verify:** Corrupted storage recovery, in-memory fallback when `localStorage` throws, automatic enqueueing of compressed summary telemetry during `BLACKOUT_24MIN_DELAY`, batch sync to Supabase/Mission Control when `WINDOW_OPEN` is active, and deterministic 30-day Mars mission demo seeding.
 
-### Seam 6: `PoseCameraAndE2EHarness` (`src/adapters/poseCameraAdapter.ts` & `tests/e2e/*.spec.ts`) — *Shared M2/M4*
+### Seam 6: `PoseCameraAndE2EHarness` (`src/adapters/poseCameraAdapter.ts` & `tests/e2e/*.spec.ts`) — *Shared M2/M4/M5*
 - **Public Interface:** Browser DOM (`getByRole`, `getByLabel`), `<canvas>` wireframe renderer, and `window.__ARES_TEST_POSE_FRAMES__` / Demo Simulator trigger.
 - **What Tests Verify:** Launching a live or simulated workout from Command Center, completing good and shallow reps across the 4 ARED exercises, inspecting the flagged rep's **Kinematic Snapshot wireframe replay** in Workout Logs, viewing updated Valles Marineris progress, and exporting the Flight Surgeon report while offline.
 

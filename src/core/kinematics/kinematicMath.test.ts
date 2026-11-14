@@ -1,8 +1,27 @@
 import { expect, test } from 'vitest';
-import { computeJointAngleDeg, normalizePose33 } from './kinematicMath';
+import { computeJointAngleDeg, describeSnapshotDiagnostic, normalizePose33 } from './kinematicMath';
 import { getExerciseById } from '../catalog/missionCatalog';
 import { buildPoseFrame } from './poseFixtures';
-import type { RawPoseFrame } from '../types';
+import type { FormFaultFlag, RawPoseFrame, ResistanceExerciseId } from '../types';
+
+test('describes estimated replay angles in the configured movement direction and target band', () => {
+  const cases: [ResistanceExerciseId, number, FormFaultFlag[], string][] = [
+    ['SQUAT', 125, ['DEPTH_INSUFFICIENT'], '30° short of target · Faults: Depth insufficient'],
+    ['DEADLIFT', 130, ['DEPTH_INSUFFICIENT'], '30° short of target · Faults: Depth insufficient'],
+    ['BICEP_CURL', 80, ['DEPTH_INSUFFICIENT'], '30° short of target · Faults: Depth insufficient'],
+    ['OVERHEAD_PRESS', 135, ['DEPTH_INSUFFICIENT'], '30° short of target · Faults: Depth insufficient'],
+    ['SQUAT', 105, ['SPINE_MISALIGNED'], 'Target reached · Faults: Spine not aligned'],
+    ['OVERHEAD_PRESS', 155, ['BILATERAL_ASYMMETRY'], 'Target reached · Faults: Left/Right imbalance'],
+    ['OVERHEAD_PRESS', 175, [], 'Target reached · Faults: None'],
+    ['SQUAT', 85, ['SPINE_MISALIGNED', 'BILATERAL_ASYMMETRY'], 'Target reached · Faults: Spine not aligned, Left/Right imbalance'],
+  ];
+  for (const [id, angle, faultFlags, description] of cases) {
+    const exercise = getExerciseById(id);
+    const snapshot = { repNumber: 1, timestampMs: 33, exerciseId: id, primaryAngleDeg: angle,
+      symmetryScorePct: 90, faultFlags, landmarks: buildPoseFrame(exercise, { angleDeg: angle }).landmarks };
+    expect(describeSnapshotDiagnostic(snapshot, exercise)).toBe(`Estimated angle: ${angle}° · Configured target: ${exercise.targetAngleDeg}° · ${description}`);
+  }
+});
 
 test('computes known 3D angles and normalizes all 33 landmarks independent of framing', () => {
   const origin = { x: 0, y: 0, z: 0 };

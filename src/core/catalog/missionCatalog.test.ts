@@ -2,6 +2,22 @@ import { expect, test } from 'vitest';
 import type catalogJson from '../../content/missionCatalog.json';
 import { loadMissionCatalog, validateMissionCatalogSchema } from './missionCatalog';
 
+test('provides descriptive virtual-route milestones and rejects empty descriptions', () => {
+  const catalog = loadMissionCatalog();
+  expect(catalog.routes.every(route => route.milestones.every(milestone => typeof milestone.description === 'string' && milestone.description.trim().length > 0))).toBe(true);
+  const raw = structuredClone(catalog);
+  Object.assign(raw.routes[0].milestones[0], { description: '' });
+  expect(validateMissionCatalogSchema(raw).errors.join(' ')).toContain('milestones');
+});
+
+test('provides sample schedule times in validated HH:MM format', () => {
+  const catalog = loadMissionCatalog();
+  expect(catalog.exercises.map(exercise => exercise.scheduledTime)).toEqual(['08:00', '08:15', '08:30', '08:45', '09:00', '09:30', '10:00']);
+  const raw = structuredClone(catalog);
+  Object.assign(raw.exercises[0], { scheduledTime: '25:00' });
+  expect(validateMissionCatalogSchema(raw).errors.join(' ')).toContain('scheduledTime');
+});
+
 test('loads the approved version 1 mission catalog', () => {
   const catalog = loadMissionCatalog();
   expect(catalog.schemaVersion).toBe(1);

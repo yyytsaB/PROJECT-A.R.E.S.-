@@ -16,7 +16,7 @@ test('auto-sync preserves concurrent saves/settings and cannot resurrect cleared
   const client = { sendBatch: async (batch: readonly { sessionId: string }[]) => { batches.push(batch.map(e => e.sessionId)); if (batches.length === 1) await blocked; } };
   let mission!: ReturnType<typeof useMissionTelemetry>;
   function Harness() { mission = useMissionTelemetry(); return null; }
-  const input: CompletedWorkoutInput = { id: 'first', exerciseId: 'SQUAT', completedAtIso: '2026-11-14T12:00:00.000Z', sets: 1, reps: 10, loadKg: 80, cardioDistanceKm: 0, formAccuracyPct: 100, symmetryScorePct: 100, snapshots: [] };
+  const input: CompletedWorkoutInput = { durationSec: 0, id: 'first', exerciseId: 'SQUAT', completedAtIso: '2026-11-14T12:00:00.000Z', sets: 1, reps: 10, loadKg: 80, cardioDistanceKm: 0, formAccuracyPct: 100, symmetryScorePct: 100, snapshots: [] };
   try {
     await act(() => root.render(<MissionTelemetryProvider storage={createSafeStorage()} syncClient={client} now={() => input.completedAtIso}><Harness /></MissionTelemetryProvider>));
     await act(() => { mission.clearLocalCache(); mission.saveWorkout(input); mission.setCommsStatus('WINDOW_OPEN'); });

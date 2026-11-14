@@ -6,6 +6,7 @@ import { drawPoseWireframe } from '../adapters/poseCanvasRenderer';
 import { getExerciseById } from '../core/catalog/missionCatalog';
 import { advanceRepState, createInitialRepState } from '../core/kinematics/repStateMachine';
 import type { KinematicFrameAnalysis, RepMachineState, ResistanceExerciseId, SimulatedRepKind, UseWorkoutArenaOptions, WorkoutArenaController as CoreController } from '../core/types';
+import { useVoiceCoach } from './useVoiceCoach';
 
 type SessionStatus = 'IDLE' | 'STARTING' | 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'ERROR';
 interface ArenaView {
@@ -14,12 +15,40 @@ interface ArenaView {
   readonly mode: 'LIVE' | 'SIMULATED' | null;
 }
 export interface WorkoutArenaController extends CoreController, ArenaView {
+  readonly elapsedSeconds: number; readonly formFeedback: string;
+  readonly voiceEnabled: boolean; readonly visualOverlayEnabled: boolean;
+  setVoiceEnabled(enabled: boolean): void; setVisualOverlayEnabled(enabled: boolean): void;
+  readonly voiceCoachEnabled: boolean; readonly voiceCoachStatus: string;
+  setVoiceCoachEnabled(enabled: boolean): void;
   readonly canvasRef: RefObject<HTMLCanvasElement | null>; readonly videoRef: RefObject<HTMLVideoElement | null>;
   selectExercise(id: ResistanceExerciseId): void;
   stop(): RepMachineState;
 }
 
 export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutArenaController {
+  const voiceCoach = useVoiceCoach();
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [visualOverlayEnabled, setVisualOverlay] = useState(true);
+  const overlay = useRef(true);
+  const elapsedMs = useRef(0);
+  const runningSince = useRef<number | null>(null);
+  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  function stopTimer() {
+    if (timer.current !== null) clearInterval(timer.current);
+    timer.current = null;
+    if (runningSince.current !== null) elapsedMs.current += Math.max(0, Date.now() - runningSince.current);
+    runningSince.current = null;
+    setElapsedSeconds(Math.floor(elapsedMs.current / 1000));
+  }
+  function startTimer() {
+    runningSince.current = Date.now();
+    timer.current = setInterval(() => setElapsedSeconds(Math.floor((elapsedMs.current + Math.max(0, Date.now() - runningSince.current!)) / 1000)), 1000);
+  }
+  function resetTimer() { elapsedMs.current = 0; setElapsedSeconds(0); }
+  function setVisualOverlayEnabled(enabled: boolean) {
+    overlay.current = enabled; setVisualOverlay(enabled);
+    if (!enabled) { const canvas = canvasRef.current; canvas?.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height); }
+  }
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const callbacks = useRef(options); callbacks.current = options;
@@ -34,6 +63,8 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
   const publish = () => setView({ ...current.current });
   const cancelAnimation = () => { if (animation.current !== null) cancelAnimationFrame(animation.current); animation.current = null; };
   const dispose = () => {
+    stopTimer();
+    voiceCoach.cancelSpeech();
     generation.current++;
     cancelAnimation(); abort.current?.abort(); abort.current = null;
     source.current?.close(); source.current = null;
@@ -49,11 +80,18 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
           const before = current.current;
           const exercise = getExerciseById(before.state.exerciseId);
           const step = advanceRepState(before.state, frame, exercise);
+          const messages = step.activeFaultAlerts.filter(alert => !before.activeFaultAlerts.includes(alert)).map(alert => `Warning: ${alert}`);
+          const hasNewFault = messages.length > 0;
+          if (step.state.repCount > before.state.repCount) {
+            const symmetry = step.state.peakAnalysis?.symmetryScorePct;
+            messages.push(`Rep ${step.state.repCount} complete${symmetry === undefined ? '' : ` — ${Math.round(symmetry)} percent symmetry`}`);
+          }
+          if (messages.length) voiceCoach.speak(messages.join('. '), hasNewFault);
           const ctx = canvasRef.current?.getContext('2d');
-          if (ctx && step.analysis && exercise.kind === 'RESISTANCE') drawPoseWireframe(ctx, frame, step.analysis, exercise.id);
+          if (overlay.current && ctx && step.analysis && exercise.kind === 'RESISTANCE') drawPoseWireframe(ctx, frame, step.analysis, exercise.id);
           current.current = { ...before, state: step.state, analysis: step.analysis,
             activeFaultAlerts: step.activeFaultAlerts, maxRomPct: Math.max(before.maxRomPct, step.analysis?.romPct ?? 0) };
-          if (before.state.phase !== step.state.phase || before.state.repCount !== step.state.repCount ||
+          if (before.analysis?.isVisible !== step.analysis?.isVisible || before.state.phase !== step.state.phase || before.state.repCount !== step.state.repCount ||
             before.state.faultFlags.join() !== step.state.faultFlags.join() || before.activeFaultAlerts.join() !== step.activeFaultAlerts.join()) publish();
         }
       }
@@ -64,6 +102,7 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
   }
   async function start(mode: 'LIVE' | 'SIMULATED'): Promise<void> {
     dispose();
+    resetTimer();
     const version = generation.current;
     abort.current = new AbortController();
     current.current = { state: createInitialRepState(current.current.state.exerciseId), analysis: null,
@@ -74,7 +113,7 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
       if (version !== generation.current) { opened.close(); return; }
       source.current = opened;
       current.current = { ...current.current, sessionStatus: 'RUNNING' }; lastTick.current = -Infinity;
-      publish(); animation.current = requestAnimationFrame(tick);
+      startTimer(); publish(); animation.current = requestAnimationFrame(tick);
     } catch {
       if (version !== generation.current) return;
       dispose(); current.current = { ...current.current, sessionStatus: 'ERROR', errorMessage: 'Camera unavailable. Use a simulated rep to continue.' }; publish();
@@ -82,22 +121,25 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
   }
   function pause() {
     if (current.current.sessionStatus !== 'RUNNING') return;
+    stopTimer();
+    voiceCoach.cancelSpeech();
     cancelAnimation(); current.current = { ...current.current, sessionStatus: 'PAUSED' }; publish();
   }
   function resume() {
     if (current.current.sessionStatus !== 'PAUSED' || !source.current) return;
     current.current = { ...current.current, sessionStatus: 'RUNNING' }; lastTick.current = -Infinity;
+    startTimer();
     publish(); animation.current = requestAnimationFrame(tick);
   }
   function stop(): RepMachineState {
     const active = ['RUNNING', 'PAUSED', 'STARTING'].includes(current.current.sessionStatus);
     dispose(); current.current = { ...current.current, sessionStatus: 'COMPLETED' }; publish();
-    if (active) callbacks.current.onCompleted?.(current.current.state);
+    if (active) callbacks.current.onCompleted?.(current.current.state, Math.floor(elapsedMs.current / 1000));
     return current.current.state;
   }
   function selectExercise(id: ResistanceExerciseId) {
     if (getExerciseById(id).kind !== 'RESISTANCE') throw new RangeError('Workout arena requires a resistance exercise');
-    dispose(); current.current = { state: createInitialRepState(id), analysis: null,
+    dispose(); resetTimer(); current.current = { state: createInitialRepState(id), analysis: null,
       activeFaultAlerts: [], sessionStatus: 'IDLE', errorMessage: null, maxRomPct: 0, mode: null }; publish();
   }
   async function triggerSimulatedRep(kind: SimulatedRepKind): Promise<void> {
@@ -109,6 +151,9 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
   useEffect(() => {
     if (options.exerciseId && options.exerciseId !== current.current.state.exerciseId) selectExercise(options.exerciseId);
   }, [options.exerciseId]);
-  return { ...view, isRunning: view.sessionStatus === 'RUNNING', canvasRef, videoRef,
+  return { ...view, elapsedSeconds, formFeedback: view.analysis?.isVisible && view.activeFaultAlerts.length === 0 ? 'Spine aligned' : '',
+    voiceEnabled: voiceCoach.voiceCoachEnabled, setVoiceEnabled: voiceCoach.setVoiceCoachEnabled, visualOverlayEnabled, setVisualOverlayEnabled,
+    voiceCoachEnabled: voiceCoach.voiceCoachEnabled, voiceCoachStatus: voiceCoach.voiceCoachStatus,
+    setVoiceCoachEnabled: voiceCoach.setVoiceCoachEnabled, isRunning: view.sessionStatus === 'RUNNING', canvasRef, videoRef,
     start, pause, resume, stop, selectExercise, triggerSimulatedRep };
 }

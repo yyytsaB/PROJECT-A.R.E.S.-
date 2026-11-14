@@ -2,20 +2,20 @@
 
 **Astronaut Resistance & Exercise System** is a browser-based NASA Space Apps prototype for exercise coaching during long-duration spaceflight. It addresses the Human Research Program problem of maintaining muscle, bone, and exercise performance when real-time support from Earth is unavailable.
 
-The current implementation includes the exercise/mission catalog, pure kinematic analysis and rep counting, live MediaPipe pose tracking, simulated reps, and skeletal fault replay. All presentation remains plain semantic HTML for the frontend team's integration. No webcam video is recorded.
+The implementation includes the exercise/mission catalog, pure kinematic analysis and rep counting, live MediaPipe pose tracking, simulated reps, timed workouts, local voice cues, skeletal fault replay, offline history, planetary progress and telemetry exports. All presentation remains plain semantic HTML for the frontend team's integration. No webcam video is recorded.
 
 ## Six-module architecture
 
 | Module | Responsibility | Current status |
 | --- | --- | --- |
-| Command Center | Exercise and mission overview; later daily telemetry | Catalog overview available |
-| Workout Arena | Live or simulated pose, reps, form alerts, session summary | Available |
-| Expedition Journey | Cardio/resistance progress along Mars expeditions | Catalog available; progression engine planned |
-| Medical Telemetry | Rolling retention, symmetry, Flight Surgeon export | Shared contracts available; engine planned |
-| Workout Logs & History | Flagged-rep skeletal replay; later saved session history | Current-session replay available; persistence planned |
-| Profile & Mission Settings | Gravity profiles; later baseline settings and comms sync | Profiles available; settings/store planned |
+| Command Center | Sample daily schedule, completion, launch, prototype gravity goals and measured JSON sizes | Available |
+| Workout Arena | Live/simulated pose, timed reps, form feedback, optional local voice and visual overlay | Available |
+| Expedition Journey | Cardio/resistance progress, milestone descriptions and locked/unlocked badges | Available |
+| Medical Telemetry | Rolling retention, selectable chart window, Flight Surgeon JSON/CSV and browser print | Available |
+| Workout Logs & History | Persistent history, date/search filters, pagination, details and skeletal fault replay | Available |
+| Profile & Mission Settings | Body weight, baselines, field validation, save confirmation and protected local-data clearing | Available |
 
-`src/core/` contains pure domain functions, `src/adapters/` handles the camera and canvas, `src/hooks/` exposes the workout controller, and `src/content/` holds the catalogs and source citations. The two developers own these interfaces; two frontend members own presentation, and two documentation members own the pitch and submission.
+`src/core/` contains pure domain functions, `src/adapters/` handles the camera, canvas, storage and optional sync, `src/hooks/` exposes the six screen controllers, and `src/content/` holds catalogs and source citations. Hook contracts and persistence conventions are documented in [the integration guide](docs/TELEMETRY_AND_SYNC.md). The two developers own these interfaces; two frontend members own presentation, and two documentation members own the pitch and submission.
 
 ## Local setup
 

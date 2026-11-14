@@ -14,7 +14,7 @@ export type ResistanceExerciseId = 'SQUAT' | 'DEADLIFT' | 'OVERHEAD_PRESS' | 'BI
 export type CardioExerciseId = 'TREADMILL' | 'CYCLE_ERGOMETER' | 'ROWING';
 export type ExerciseId = ResistanceExerciseId | CardioExerciseId;
 export type JointTriplet = readonly [number, number, number];
-interface ExerciseBase { readonly id: ExerciseId; readonly name: string; readonly earthLoadMultiplier: number }
+interface ExerciseBase { readonly id: ExerciseId; readonly name: string; readonly scheduledTime: string; readonly earthLoadMultiplier: number }
 export interface ResistanceExerciseDefinition extends ExerciseBase {
   readonly id: ResistanceExerciseId;
   readonly kind: 'RESISTANCE';
@@ -36,9 +36,11 @@ export type ExerciseDefinition = ResistanceExerciseDefinition | CardioExerciseDe
 export type GravityProfileId = 'MICROGRAVITY_0G' | 'MOON_016G' | 'MARS_038G';
 export interface GravityProfile {
   readonly id: GravityProfileId; readonly name: string; readonly gravityG: number;
+  /** Team-defined demo goal; not a NASA standard or clinical threshold. */
+  readonly prototypeGoalPct: number;
 }
 export type PlanetaryRouteId = 'VALLES_MARINERIS' | 'OLYMPUS_MONS';
-export interface RouteMilestone { readonly id: string; readonly name: string; readonly distanceKm: number }
+export interface RouteMilestone { readonly id: string; readonly name: string; readonly description: string; readonly distanceKm: number }
 export interface PlanetaryRoute {
   readonly id: PlanetaryRouteId; readonly name: string;
   readonly totalDistanceKm: number; readonly milestones: readonly RouteMilestone[];
@@ -78,11 +80,21 @@ export interface RepMachineStepResult {
   readonly state: RepMachineState; readonly analysis: KinematicFrameAnalysis | null;
   readonly activeFaultAlerts: readonly string[]; readonly capturedSnapshots: readonly KinematicSnapshot[];
 }
-export interface AstronautProfile {
+export type InjuryLimitation = 'NONE' | 'KNEE_SENSITIVITY' | 'LOWER_BACK_SENSITIVITY' | 'SHOULDER_MOBILITY';
+export type MissionType = 'MARS_TRANSIT_360D' | 'LUNAR_ARTEMIS_30D' | 'ISS_ORBITAL_180D';
+export interface PreSpaceProfileFields {
+  readonly heightCm: number; readonly restingHeartRateBpm: number;
+  readonly systolicBpMmHg: number; readonly diastolicBpMmHg: number;
+  readonly injuryLimitations: InjuryLimitation; readonly injuryNotes: string;
+  readonly missionType: MissionType; readonly missionDurationDays: number; readonly autoAdjustRoutine: boolean;
+}
+export interface AstronautProfile extends Partial<PreSpaceProfileFields> {
+  readonly bodyWeightKg: number;
   readonly id: string; readonly name: string; readonly gravityProfileId: GravityProfileId;
   readonly routeId: PlanetaryRouteId; readonly earthBaseline1RM: Readonly<Record<ResistanceExerciseId, number>>;
 }
 export interface CompletedWorkoutInput {
+  readonly durationSec: number;
   readonly id: string; readonly exerciseId: ExerciseId; readonly completedAtIso: string;
   readonly sets: number; readonly reps: number; readonly loadKg: number; readonly cardioDistanceKm: number;
   readonly formAccuracyPct: number; readonly symmetryScorePct: number;
@@ -97,6 +109,7 @@ export interface ExpeditionProgressReport {
   readonly unlockedMilestones: readonly RouteMilestone[];
 }
 export type StrengthRetentionScore = number;
+export type WorkoutDateRange = 'LAST_7_DAYS' | 'LAST_14_DAYS' | 'LAST_30_DAYS' | 'ALL';
 export interface DailyRetentionPoint { readonly dateIso: string; readonly strengthRetentionPct: StrengthRetentionScore }
 export interface MedicalTelemetryReport {
   readonly strengthRetentionPct: StrengthRetentionScore; readonly dailyRetentionSeries: readonly DailyRetentionPoint[];
@@ -112,9 +125,21 @@ export interface SyncQueueEnvelope {
 export interface SyncQueueSummary { readonly pendingCount: number; readonly lastSyncedAtIso: string | null }
 export interface MissionControlAck { readonly sessionId: string; readonly acknowledgedAtIso: string }
 export interface MissionStoreState {
+  readonly personalizedRoutine?: PersonalizedRoutinePlan;
+  readonly routineNotification?: string;
+  readonly scheduleCompletion: Readonly<Record<string, Readonly<Partial<Record<ExerciseId, boolean>>>>>;
   readonly schemaVersion: 1; readonly profile: AstronautProfile; readonly sessions: readonly WorkoutSessionRecord[];
   readonly syncQueue: readonly SyncQueueEnvelope[]; readonly commsStatus: CommsLinkStatus;
   readonly acknowledgements: readonly MissionControlAck[]; readonly lastSyncedAtIso: string | null;
+}
+export interface PersonalizedRoutineItem {
+  readonly exerciseId: ExerciseId; readonly name: string; readonly kind: 'RESISTANCE' | 'CARDIO'; readonly scheduledTime: string;
+  readonly targetSets: number; readonly targetReps: number; readonly recommendedLoadKg: number; readonly targetCardioKm: number; readonly rationale: string;
+}
+export interface PersonalizedRoutinePlan {
+  readonly routineId: string; readonly generatedAtIso: string;
+  readonly summaryLabel: 'Personalized for you — Adapted to your progress';
+  readonly disclaimer: string; readonly items: readonly PersonalizedRoutineItem[];
 }
 export interface StorageLike { getItem(key: string): string | null; setItem(key: string, value: string): void; removeItem(key: string): void }
 export interface TelemetrySyncClient { sendBatch(envelopes: readonly SyncQueueEnvelope[]): Promise<void> }
@@ -123,7 +148,7 @@ export interface FlightSurgeonReport {
   readonly csv: string;
 }
 export type SimulatedRepKind = 'GOOD' | 'SHALLOW' | 'SPINE_FAULT' | 'ASYMMETRIC';
-export interface UseWorkoutArenaOptions { readonly exerciseId?: ResistanceExerciseId; readonly onCompleted?: (state: RepMachineState) => void }
+export interface UseWorkoutArenaOptions { readonly exerciseId?: ResistanceExerciseId; readonly onCompleted?: (state: RepMachineState, durationSec: number) => void }
 export interface WorkoutArenaController {
   readonly state: RepMachineState; readonly analysis: KinematicFrameAnalysis | null;
   readonly activeFaultAlerts: readonly string[]; readonly isRunning: boolean;

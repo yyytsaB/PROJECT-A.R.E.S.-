@@ -8,10 +8,10 @@
 ---
 
 ## Current Project State
-- **Current Phase:** Hackathon implementation — **M0 through M4 complete**, verified November 14, 2026. Coding began after the 09:00 AM local start gate.
+- **Current Phase:** Hackathon implementation — **M0 through M6 and the approved demo enhancements complete**, verified November 14, 2026. Coding began after the 09:00 AM local start gate.
 - **HACKATHON FAIR-PLAY HARD GATE:** Do **NOT** run `npm init`, scaffold `package.json`, or create any files under `src/` or `tests/` until the official **Nov 14, 09:00 AM** start signal.
-- **Next Handoff:** Frontend styling and publication readiness. M3/M4 integration conventions and optional Supabase setup are documented in `docs/TELEMETRY_AND_SYNC.md`.
-- **Verification:** Milestone task checklists record completion; use `npm run test`, `npm run typecheck`, and `npm run build` to reproduce the checks.
+- **Next Step:** Frontend styling and publication readiness. Integration conventions, demo enhancements, and optional Supabase setup are documented in `docs/TELEMETRY_AND_SYNC.md`.
+- **Verification:** Milestone task checklists record completion; use `npm run test`, `npm run typecheck`, `npm run lint`, and `npm run build` to reproduce the checks.
 - **Team Topology (6 Members):**
   - **Developers (2):** Developer #1 (Vision & Kinematics Lead) on `M0`, `M1`, `M2`; Dev #2 on `M3`, `M4`.
   - **Frontend / Wireframes (2):** Owns Vite/React dark-mode UI, progression rings, planetary map visuals, and charts consuming `src/hooks/`.
@@ -77,6 +77,26 @@ All 5 Fog items reconciling the 3 project PDFs have been confirmed by the team a
   - Headless hooks (`useDashboardTelemetry`, `useExpeditionJourney`, `useMedicalAnalytics`, `useWorkoutHistory`, `useMissionProfile`) ready for the 2 Frontend teammates.
 
 ---
+
+### [x] Post-M4: Honest Demo Enhancements
+
+Approved post-M4 demo enhancement work is tracked separately in [the demo spec](specs/005-demo-enhancements/spec.md) and [ordered tasks](specs/005-demo-enhancements/tasks.md): replay diagnostics and measured JSON sizes, optional local Voice Coach, then team-defined gravity scenario goals. Historical strength scores and the semantic UI boundary remain unchanged.
+
+Verified November 14: 39 unit/integration tests across 11 files, typecheck and production build passed; 7 E2E journeys passed. Spec and standards reviews have no remaining actionable findings.
+
+### [x] M5: Alignment & Demo Polish
+
+- **Spec:** `specs/006-m5-alignment-demo-polish/spec.md` | **Tasks/evidence:** `specs/006-m5-alignment-demo-polish/tasks.md`
+- **Depends on:** M0–M4 and the completed demo enhancements.
+- **Delivered:** Persisted duration/running-only timer and cue controls; searchable/date-filtered paginated logs with form status, details and replay; analytics windows and export/print confirmations; profile weight/validation/save and clear warning; milestone descriptions/all-badge view; measured cache bytes; persistent sample schedule and primary launch; accessible section navigation/titles/skip link.
+- **Verified:** 56 tests in 12 files, typecheck, production build and 8 E2E journeys passed. Spec and standards audits have no remaining actionable findings. Existing scientific-honesty and unstyled semantic HTML boundaries remain intact.
+
+### [x] M6: Pre-Space Onboarding & Personalized Routine Engine
+
+- **Spec:** `specs/007-onboarding-personalized-routine/spec.md` | **Tasks/evidence:** `specs/007-onboarding-personalized-routine/tasks.md`
+- **Depends on:** M0–M5.
+- **Delivered:** `calculateBmi` and deterministic `generatePersonalizedRoutine` with 15% injury-limitation moderation and per-exercise retention rationale; 3-step `useMissionOnboarding` wizard (`Mission Onboarding — Set Up Your Profile`) with live BMI calculation, 150ms processing state, and preview/confirm flow; Dashboard `"Personalized for you — Adapted to your progress"` schedule rationales and automatic/manual update notification; Settings `"Update Health Metrics"`, `"Recalibrate Routine"` button, and `"Auto-adjust routine based on progress"` toggle; dependency-free architecture linter (`npm run lint`).
+- **Verified:** 66 unit/Chromium browser tests across 13 files, `npm run typecheck`, `npm run lint`, `npm run build`, and offline Playwright E2E journey (`tests/e2e/m6-onboarding.spec.ts`) passed.
 
 ## 3. DEFERRED (Strictly Out of Scope for the 48-Hour Hackathon Sprint)
 

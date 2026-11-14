@@ -1,0 +1,15 @@
+{
+  "focus": { "SQUAT": "lower-body retention", "DEADLIFT": "posterior-chain retention", "OVERHEAD_PRESS": "upper-body retention", "BICEP_CURL": "arm strength retention", "TREADMILL": "walking endurance", "CYCLE_ERGOMETER": "cycling endurance", "ROWING": "rowing endurance" },
+  "cardioKm": { "TREADMILL": 3, "CYCLE_ERGOMETER": 5, "ROWING": 2 },
+  "limitations": {
+    "NONE": { "label": "none", "exercises": [] },
+    "KNEE_SENSITIVITY": { "label": "knee sensitivity", "exercises": ["SQUAT", "TREADMILL"] },
+    "LOWER_BACK_SENSITIVITY": { "label": "lower-back sensitivity", "exercises": ["SQUAT", "DEADLIFT", "ROWING"] },
+    "SHOULDER_MOBILITY": { "label": "shoulder mobility", "exercises": ["OVERHEAD_PRESS", "BICEP_CURL", "ROWING"] }
+  },
+  "missions": {
+    "MARS_TRANSIT_360D": { "label": "Mars transit", "durationDays": 360 },
+    "LUNAR_ARTEMIS_30D": { "label": "Lunar Artemis", "durationDays": 30 },
+    "ISS_ORBITAL_180D": { "label": "ISS orbital", "durationDays": 180 }
+  }
+}
