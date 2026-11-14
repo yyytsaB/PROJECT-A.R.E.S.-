@@ -1,0 +1,62 @@
+# PROJECT A.R.E.S.
+
+**Astronaut Resistance & Exercise System** is a browser-based NASA Space Apps prototype for exercise coaching during long-duration spaceflight. It addresses the Human Research Program problem of maintaining muscle, bone, and exercise performance when real-time support from Earth is unavailable.
+
+The current implementation includes the exercise/mission catalog, pure kinematic analysis and rep counting, live MediaPipe pose tracking, simulated reps, and skeletal fault replay. All presentation remains plain semantic HTML for the frontend team's integration. No webcam video is recorded.
+
+## Six-module architecture
+
+| Module | Responsibility | Current status |
+| --- | --- | --- |
+| Command Center | Exercise and mission overview; later daily telemetry | Catalog overview available |
+| Workout Arena | Live or simulated pose, reps, form alerts, session summary | Available |
+| Expedition Journey | Cardio/resistance progress along Mars expeditions | Catalog available; progression engine planned |
+| Medical Telemetry | Rolling retention, symmetry, Flight Surgeon export | Shared contracts available; engine planned |
+| Workout Logs & History | Flagged-rep skeletal replay; later saved session history | Current-session replay available; persistence planned |
+| Profile & Mission Settings | Gravity profiles; later baseline settings and comms sync | Profiles available; settings/store planned |
+
+`src/core/` contains pure domain functions, `src/adapters/` handles the camera and canvas, `src/hooks/` exposes the workout controller, and `src/content/` holds the catalogs and source citations. The two developers own these interfaces; two frontend members own presentation, and two documentation members own the pitch and submission.
+
+## Local setup
+
+Use Node.js 22.12 or newer (Node 24 is also supported).
+
+```sh
+npm install
+npm run dev
+```
+
+The development and build commands copy the matching MediaPipe WASM runtime from the installed package. The official Pose Landmarker Lite model is included locally; neither camera inference nor simulated workouts requires a runtime CDN or backend. Camera access requires permission and HTTPS or localhost. Use **Simulate Good Rep**, **Simulate Shallow Rep**, or **Simulate Spine Fault** if the camera or runtime is blocked.
+
+## Checks and production build
+
+```sh
+npm run test
+npm run typecheck
+npm run build
+npm run test:e2e
+npm run test:production
+```
+
+Browser tests use Chromium. Before the first browser test, install it into the project's local browser directory:
+
+```powershell
+$env:PLAYWRIGHT_BROWSERS_PATH = "$PWD/.playwright-browsers"
+npx playwright install chromium
+```
+
+`npm run build` produces `dist/`, including the local model and SIMD/non-SIMD runtimes. Deploy the entire directory. Vercel and Netlify settings are included; both use `npm run build` and publish `dist/`. See [deployment notes](docs/DEPLOYMENT.md) for production verification and the web-filter submission fields.
+
+## Official NASA and partner sources
+
+The app exposes the same references in an accessible **NASA Data & Space Agency Partner Sources** section. Full usage notes are in [the NASA data and submission guide](docs/NASA_DATA_AND_SUBMISSION_GUIDE.md).
+
+- [NASA Human Research Roadmap](https://humanresearchroadmap.nasa.gov/) and [NASA astronaut health/exercise guidance](https://www.nasa.gov/missions/station/faq-the-real-story-about-astronaut-health-care-in-space/) provide the countermeasure context and 2.5-hour scheduled daily exercise reference.
+- [NASA OSDR](https://science.nasa.gov/biological-physical/data/osdr/) and [NASA Life Sciences Portal / LSDA](https://nlsp.nasa.gov/) are research references for planned telemetry. The custom retention formula and schema are team-defined; no participant records have been imported.
+- [NASA PDS MGS MOLA](https://pds-geosciences.wustl.edu/missions/mgs/mola.html) provides the topography archive reference. [NASA/JPL Mars dimensions](https://www.jpl.nasa.gov/news/press_kits/insight/landing/facts/mars-at-a-glance/) support the catalog's approximate 4,000 km canyon length and 600 km volcano diameter. Game distances are not terrain-derived traverses.
+- [CSA TBone](https://www.asc-csa.gc.ca/eng/sciences/tbone.asp) and [MARROW](https://www.csa-asc.gc.ca/eng/sciences/marrow.asp) provide bone and marrow research context.
+- [ESA Mars500](https://www.esa.int/pt/articles/mars500-study-overview) and [EchoFinder-2](https://www.esa.int/ESA_Multimedia/Images/2026/01/Finding_the_echo) provide delayed-communication and autonomous-healthcare context. The 24-minute scenario is a project setting.
+- [JAXA Kibo Zebrafish Muscle 2](https://humans-in-space.jaxa.jp/en/biz-lab/experiment/theme/detail/000854.html) provides anti-atrophy research context.
+- The [official 2026 Space Apps announcement](https://www.spaceappschallenge.org/blog/explore-the-next-frontier-at-the-2026-nasa-space-apps-challenge/) identifies CSA, ESA, and JAXA as partners.
+
+Scientific citations document actual resource use and research context. They do not establish agency endorsement or Global Award eligibility; the submitted project must identify its selected challenge, implementation, and sources accurately.

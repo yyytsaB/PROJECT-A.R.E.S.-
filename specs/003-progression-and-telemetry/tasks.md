@@ -1,7 +1,7 @@
 # Implementation Tasks (Vertical TDD Slices): M3 — Planetary Expedition & Medical Telemetry Engine
 
 - **Spec Reference:** `./spec.md`
-- **Owner:** Developer #2 (Parallel Track — or ChatGPT)
+- **Owner:** Developer #2 (Telemetry & Offline Sync Lead)
 
 ---
 

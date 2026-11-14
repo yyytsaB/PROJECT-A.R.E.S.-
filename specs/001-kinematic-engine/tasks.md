@@ -1,7 +1,7 @@
 # Implementation Tasks (Vertical TDD Slices): M1 — Kinematic Analysis Engine & Rep State Machine
 
 - **Spec Reference:** `./spec.md`
-- **Owner:** Developer #1 + ChatGPT Heavy Coder
+- **Owner:** Developer #1 (Vision & Kinematics Lead)
 
 ---
 
@@ -39,4 +39,4 @@
 - [x] `npm run typecheck` passes with zero errors.
 - [x] `ROADMAP.md` updated to mark `M1` complete (`[x]`).
 
-Verification evidence: `docs/M0-M1-VERIFICATION.md` (November 14, 2026).
+Verification: run the tests and typecheck commands recorded above.

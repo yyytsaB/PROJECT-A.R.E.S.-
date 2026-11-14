@@ -1,6 +1,6 @@
 # CODING_STANDARDS.md — Project A.R.E.S. Engineering, Offline-First & Headless UI Standards
 
-> **Used by:** Both developers (Dev #1 + Dev #2), ChatGPT / AI coding agents, and the `Standards` sub-agent in `.agents/skills/code-review/SKILL.md`.
+> **Used by:** Developer #1 (Vision & Kinematics Lead), Developer #2 (Telemetry & Offline Sync Lead), and the Architecture & Verification Lead.
 
 ---
 

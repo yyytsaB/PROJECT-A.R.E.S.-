@@ -1,7 +1,7 @@
 # Implementation Tasks (Vertical TDD Slices): M4 — Offline-First Store, Comms Sync Queue & Demo Seeder
 
 - **Spec Reference:** `./spec.md`
-- **Owner:** Developer #2 (Parallel Track — or ChatGPT)
+- **Owner:** Developer #2 (Telemetry & Offline Sync Lead)
 
 ---
 

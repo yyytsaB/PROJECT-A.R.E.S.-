@@ -4,6 +4,17 @@ import { buildPoseFrame, buildRepTrajectory } from './poseFixtures';
 import { advanceRepState, createInitialRepState } from './repStateMachine';
 import type { RawPoseFrame, RepPhase } from '../types';
 
+test('retains source frame dimensions for aspect-correct snapshot replay', () => {
+  const exercise = getExerciseById('SQUAT');
+  let state = createInitialRepState('SQUAT');
+  for (const frame of buildRepTrajectory(exercise, 'SHALLOW')) {
+    const wide = { ...frame, width: 1280, height: 720, landmarks: frame.landmarks.map(p => ({ ...p, x: p.x * 0.75, z: p.z * 0.75 })) };
+    state = advanceRepState(state, wide, exercise).state;
+  }
+  expect(state.snapshots[0]).toMatchObject({ frameWidth: 1280, frameHeight: 720 });
+  expect(new TextEncoder().encode(JSON.stringify(state.snapshots[0])).length).toBeLessThanOrEqual(2048);
+});
+
 test('counts balanced flexion and extension reps with hysteresis, pause, and timestamp protection', () => {
   for (const id of ['SQUAT', 'DEADLIFT', 'OVERHEAD_PRESS', 'BICEP_CURL'] as const) {
     const exercise = getExerciseById(id);

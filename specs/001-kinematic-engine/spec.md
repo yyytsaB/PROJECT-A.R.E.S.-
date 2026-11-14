@@ -2,7 +2,7 @@
 
 - **Status:** `APPROVED` (Nov 14, 2026)
 - **Milestone Reference:** `ROADMAP.md` -> `M1`
-- **Owner:** Developer #1 (You + ChatGPT Heavy Coder)
+- **Owner:** Developer #1 (Vision & Kinematics Lead)
 - **Resolved Fog Items:** `F1`, `F3`
 
 ---
