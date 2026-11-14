@@ -15,6 +15,8 @@ interface ArenaView {
   readonly mode: 'LIVE' | 'SIMULATED' | null;
 }
 export interface WorkoutArenaController extends CoreController, ArenaView {
+  readonly canConfigureLoad: boolean;
+  readonly canEndSession: boolean;
   readonly elapsedSeconds: number; readonly formFeedback: string;
   readonly voiceEnabled: boolean; readonly visualOverlayEnabled: boolean;
   setVoiceEnabled(enabled: boolean): void; setVisualOverlayEnabled(enabled: boolean): void;
@@ -88,7 +90,10 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
           }
           if (messages.length) voiceCoach.speak(messages.join('. '), hasNewFault);
           const ctx = canvasRef.current?.getContext('2d');
-          if (overlay.current && ctx && step.analysis && exercise.kind === 'RESISTANCE') drawPoseWireframe(ctx, frame, step.analysis, exercise.id);
+          if (overlay.current && ctx) {
+            if (step.analysis && exercise.kind === 'RESISTANCE') drawPoseWireframe(ctx, frame, step.analysis, exercise.id);
+            else ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+          }
           current.current = { ...before, state: step.state, analysis: step.analysis,
             activeFaultAlerts: step.activeFaultAlerts, maxRomPct: Math.max(before.maxRomPct, step.analysis?.romPct ?? 0) };
           if (before.analysis?.isVisible !== step.analysis?.isVisible || before.state.phase !== step.state.phase || before.state.repCount !== step.state.repCount ||
@@ -101,6 +106,7 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
     }
   }
   async function start(mode: 'LIVE' | 'SIMULATED'): Promise<void> {
+    finishPendingReps();
     dispose();
     resetTimer();
     const version = generation.current;
@@ -132,13 +138,18 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
     publish(); animation.current = requestAnimationFrame(tick);
   }
   function stop(): RepMachineState {
-    const active = ['RUNNING', 'PAUSED', 'STARTING'].includes(current.current.sessionStatus);
+    const active = ['RUNNING', 'PAUSED', 'STARTING'].includes(current.current.sessionStatus) ||
+      (current.current.sessionStatus === 'ERROR' && current.current.state.repCount > 0);
     dispose(); current.current = { ...current.current, sessionStatus: 'COMPLETED' }; publish();
     if (active) callbacks.current.onCompleted?.(current.current.state, Math.floor(elapsedMs.current / 1000));
     return current.current.state;
   }
+  function finishPendingReps() {
+    if (current.current.state.repCount > 0 && current.current.sessionStatus !== 'COMPLETED') stop();
+  }
   function selectExercise(id: ResistanceExerciseId) {
     if (getExerciseById(id).kind !== 'RESISTANCE') throw new RangeError('Workout arena requires a resistance exercise');
+    finishPendingReps();
     dispose(); resetTimer(); current.current = { state: createInitialRepState(id), analysis: null,
       activeFaultAlerts: [], sessionStatus: 'IDLE', errorMessage: null, maxRomPct: 0, mode: null }; publish();
   }
@@ -152,6 +163,8 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
     if (options.exerciseId && options.exerciseId !== current.current.state.exerciseId) selectExercise(options.exerciseId);
   }, [options.exerciseId]);
   return { ...view, elapsedSeconds, formFeedback: view.analysis?.isVisible && view.activeFaultAlerts.length === 0 ? 'Spine aligned' : '',
+    canConfigureLoad: ['IDLE', 'COMPLETED'].includes(view.sessionStatus) || (view.sessionStatus === 'ERROR' && view.state.repCount === 0),
+    canEndSession: ['RUNNING', 'PAUSED', 'STARTING'].includes(view.sessionStatus) || (view.sessionStatus === 'ERROR' && view.state.repCount > 0),
     voiceEnabled: voiceCoach.voiceCoachEnabled, setVoiceEnabled: voiceCoach.setVoiceCoachEnabled, visualOverlayEnabled, setVisualOverlayEnabled,
     voiceCoachEnabled: voiceCoach.voiceCoachEnabled, voiceCoachStatus: voiceCoach.voiceCoachStatus,
     setVoiceCoachEnabled: voiceCoach.setVoiceCoachEnabled, isRunning: view.sessionStatus === 'RUNNING', canvasRef, videoRef,

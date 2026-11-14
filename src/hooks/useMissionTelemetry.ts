@@ -18,6 +18,21 @@ export const ROUTINE_UPDATE_MESSAGE = 'Your routine has been updated based on yo
 function useMissionController(options: ProviderOptions) {
   const storage = useRef(options.storage ?? createBrowserStorage()).current;
   const now = options.now ?? (() => new Date().toISOString());
+  const clock = useRef(now); clock.current = now;
+  const [, refreshClock] = useState(0);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      clearTimeout(timer);
+      const untilMidnight = 86400000 - Date.parse(clock.current()) % 86400000;
+      timer = setTimeout(() => { refreshClock(value => value + 1); schedule(); }, untilMidnight + 1);
+    };
+    const refresh = () => { refreshClock(value => value + 1); schedule(); };
+    schedule();
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => { clearTimeout(timer); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refresh); };
+  }, []);
   const client = useRef(options.syncClient ?? createSupabaseSyncAdapter()).current;
   const initializeRoutine = (state: MissionStoreState) => persistMissionStore({ ...state,
     personalizedRoutine: state.personalizedRoutine ?? generatePersonalizedRoutine(state.profile, state.sessions, now()) }, storage);
@@ -31,14 +46,21 @@ function useMissionController(options: ProviderOptions) {
   const inFlight = useRef<Promise<void> | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [workoutError, setWorkoutError] = useState<string | null>(null);
   function publish(next: MissionStoreState) {
     current.current = persistMissionStore(next, storage); setState(current.current);
   }
   function saveWorkout(input: CompletedWorkoutInput) {
-    const next = recordCompletedWorkout(current.current, computeSessionRecord(input, current.current.profile));
-    if (next === current.current) return;
-    publish(next.profile.autoAdjustRoutine !== false ? { ...next,
-      personalizedRoutine: generatePersonalizedRoutine(next.profile, next.sessions, now()), routineNotification: ROUTINE_UPDATE_MESSAGE } : { ...next, routineNotification: '' });
+    try {
+      const next = recordCompletedWorkout(current.current, computeSessionRecord(input, current.current.profile));
+      if (next === current.current) return;
+      publish(next.profile.autoAdjustRoutine !== false ? { ...next,
+        personalizedRoutine: generatePersonalizedRoutine(next.profile, next.sessions, now()), routineNotification: ROUTINE_UPDATE_MESSAGE } : { ...next, routineNotification: '' });
+      setWorkoutError(null);
+    } catch (error) {
+      if (!(error instanceof RangeError)) throw error;
+      setWorkoutError('Workout not saved: check the entered metrics and totals. Existing history is unchanged.');
+    }
   }
   function recalibrateRoutine() {
     const latest = current.current;
@@ -77,7 +99,7 @@ function useMissionController(options: ProviderOptions) {
     try { await operation; } finally { inFlight.current = null; setSyncing(false); }
   }
   function replaceMission(seed: boolean) {
-    generation.current++; setSyncError(null);
+    generation.current++; setSyncError(null); setWorkoutError(null);
     publish(initializeRoutine(seed ? seedDemoMissionState(now()) : clearMissionStore()));
   }
   function setScheduleCompletion(exerciseId: ExerciseId, completed: boolean) {
@@ -85,7 +107,7 @@ function useMissionController(options: ProviderOptions) {
     publish({ ...current.current, scheduleCompletion: { ...current.current.scheduleCompletion, [day]: { ...current.current.scheduleCompletion[day], [exerciseId]: completed } } });
   }
   useEffect(() => { if (!syncing && !syncError) void flushSyncQueueNow(); }, [state.commsStatus, state.syncQueue.length, syncing, syncError]);
-  return { state, ...measureMissionPayloads(state), nowIso: now(), missionRevision: generation.current, profileRevision: profileRevision.current, syncing, syncError, saveWorkout, updateProfile, recalibrateRoutine, applyPersonalizedRoutine, setCommsStatus, flushSyncQueueNow, setScheduleCompletion,
+  return { state, ...measureMissionPayloads(state), nowIso: now(), missionRevision: generation.current, profileRevision: profileRevision.current, syncing, syncError, workoutError, saveWorkout, updateProfile, recalibrateRoutine, applyPersonalizedRoutine, setCommsStatus, flushSyncQueueNow, setScheduleCompletion,
     toggleCommsWindow: () => setCommsStatus(current.current.commsStatus === 'WINDOW_OPEN' ? 'BLACKOUT_24MIN_DELAY' : 'WINDOW_OPEN'),
     seed30DayDemoData: () => replaceMission(true), clearLocalCache: () => replaceMission(false) };
 }

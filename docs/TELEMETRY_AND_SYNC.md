@@ -1,18 +1,21 @@
 # M3–M6 telemetry, sync and frontend integration
 
-`MissionTelemetryProvider` wraps the semantic testbench in `src/App.tsx`. Frontend screens under that provider share `useDashboardSummary` (alias `useDashboardTelemetry`), `useExpeditionJourney`, `useMedicalTelemetry` (alias `useMedicalAnalytics`), `useWorkoutHistory`, and `useMissionProfile`. `useMissionTelemetry` exposes the shared state and workout-saving action.
+`MissionTelemetryProvider` wraps the semantic frontend in `src/App.tsx`. Frontend screens under that provider share `useDashboardSummary` (alias `useDashboardTelemetry`), `useExpeditionJourney`, `useMedicalTelemetry` (alias `useMedicalAnalytics`), `useWorkoutHistory`, and `useMissionProfile`. `useMissionTelemetry` exposes the shared state and workout-saving action.
 
 ## Formula conventions
 
 - Raw resistance tonnage is `sets × reps × loadKg`. Form-qualified expedition volume is raw tonnage multiplied by `formAccuracyPct / 100`; each 250 qualified kg advances 1 km. Cardio uses the catalog distance multiplier. Route percentage caps at 100 while cumulative distance remains available beyond completion.
 - Effective ARED load is `loadKg × exercise.earthLoadMultiplier`. ARED simulates resistance independently of environmental gravity, so the same configured resistance stays effective in microgravity, Moon and Mars profiles. Gravity is preserved on each session; there is no additional undocumented gravity multiplier.
 - Retention uses the mean of resistance-session effective-load/that-exercise-Earth-1RM ratios, capped at 1, weighted 70%, plus mean resistance-session form accuracy weighted 30%. Cardio cannot inflate strength retention. No resistance sessions yields 0, meaning no observations.
+- The score is a team-defined heuristic, not measured muscle retention, bone density or clinical strength testing. JSON exports include an additive `prototypeNotice` object and CSV includes corresponding notice rows. The shared `src/content/prototypeNotice.json` also supplies visible metric, synthetic-data and comms explanations; existing report fields and metric calculations are unchanged.
 - The medical window is the current UTC date and preceding 29 UTC dates, ending at the injected `nowIso`. Future records are excluded. Each daily point uses its own rolling 30-day window and therefore may include history preceding the visible chart. Tonnage, symmetry averages and fault counts in the current report use the current window. A snapshot contributes once to each distinct fault it contains.
 - Session input snapshots are detached and rounded to three decimal places, preserving frame dimensions for aspect-correct replay. The existing camera seam rejects observations exceeding its 2 KB snapshot budget.
 
 ## Persistence and comms
 
 Browser persistence uses `ares.mission.v1` in local storage. `createSafeStorage` keeps a per-instance memory mirror and stops reading stale persistent data after a quota/security failure. Memory-only data lasts for the current page lifetime. The core receives storage and timestamps as arguments and never accesses browser globals or a singleton store.
+
+An already loaded app can continue local workflows while disconnected. There is no service worker or guaranteed uncached offline start/reload. Blackout mode is manually selected rather than timed; it does not simulate physical latency. Local Mission Control acknowledgements are simulated local records, with no NASA endpoint involved.
 
 Fresh browsers get the deterministic 30-day Mars demo (60 ARED/cardio sessions). Clearing the cache writes an empty mission, so reload does not reseed it. Explicit seeding replaces the current mission with the same deterministic demo for the supplied timestamp.
 
@@ -32,7 +35,7 @@ Gravity profiles have team-defined `prototypeGoalPct` values of 75 (microgravity
 
 ## M5 frontend contracts
 
-The implementation follows the detailed M5 checklist in `specs/006-m5-alignment-demo-polish/`. A separate four-page teammate document was not supplied with that checklist. The testbench remains unstyled semantic HTML with all six sections available; frontend pages can bind directly to the same hooks.
+The implementation follows the detailed M5 checklist in `specs/006-m5-alignment-demo-polish/`. A separate four-page teammate document was not supplied with that checklist. Frontend styling now wraps the existing semantic HTML with all six sections available; screens continue to bind directly to the same hooks.
 
 | Hook / helper | Added contract |
 | --- | --- |

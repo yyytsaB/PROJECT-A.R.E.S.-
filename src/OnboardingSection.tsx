@@ -10,14 +10,18 @@ export function RoutinePrescription({ item }: { item: PersonalizedRoutineItem })
 
 export function OnboardingSection() {
   const onboarding = useMissionOnboarding(), catalog = loadMissionCatalog();
-  return <section aria-labelledby="onboarding-heading">
+  return <section className="mission-section onboarding-section" aria-labelledby="onboarding-heading">
+    <p className="eyebrow">PRE-FLIGHT / PERSONALIZE YOUR MISSION</p>
     <h2 id="onboarding-heading">Mission Onboarding — Set Up Your Profile</h2>
     <p>Rule-based prototype suggestions for review. Biometrics are recorded context; this flow provides no diagnosis or medical clearance.</p>
-    <p><output aria-label="Onboarding progress">Step {onboarding.step} of 3</output></p>
+    <p className="onboarding-progress"><output aria-label="Onboarding progress">Step {onboarding.step} of 3</output></p>
+    <div className="step-track" aria-hidden="true">{[1, 2, 3].map(step => <span key={step} data-active={step <= onboarding.step} />)}</div>
     {!onboarding.preview && <>
       {onboarding.step === 1 && <fieldset><legend>Pre-Flight Biometrics &amp; Health Metrics</legend>
+        <div className="onboarding-identity">
         <label htmlFor="onboarding-name">Onboarding astronaut name</label>{' '}<input id="onboarding-name" value={onboarding.fieldValue('name')} onChange={event => onboarding.setField('name', event.target.value)} aria-invalid={Boolean(onboarding.errors.name)} aria-describedby="onboarding-name-error" />
         <p id="onboarding-name-error" role={onboarding.errors.name ? 'alert' : undefined}>{onboarding.errors.name}</p>
+        </div>
         <HealthMetricFields prefix="onboarding" fieldValue={onboarding.fieldValue} setField={onboarding.setField} errors={onboarding.errors} bmi={onboarding.bmi} />
       </fieldset>}
       {onboarding.step === 2 && <fieldset><legend>Earth 1RM Baselines &amp; Physical Limitations</legend>

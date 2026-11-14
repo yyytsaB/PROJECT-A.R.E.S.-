@@ -18,13 +18,13 @@ The sources are visible in the app and recorded in `src/content/scienceSources.j
 
 The [official 2026 Space Apps announcement](https://www.spaceappschallenge.org/blog/explore-the-next-frontier-at-the-2026-nasa-space-apps-challenge/) lists CSA, ESA, and JAXA as partners. Our citations identify scientific context rather than an agency-provided exercise algorithm.
 
-- **CSA:** [TBone](https://www.asc-csa.gc.ca/eng/sciences/tbone.asp) concerns bone changes and recovery; [MARROW](https://www.csa-asc.gc.ca/eng/sciences/marrow.asp) concerns marrow and blood-cell changes. These inform the motivation for monitoring, without imported participant measurements.
+- **CSA:** [TBone](https://www.asc-csa.gc.ca/eng/sciences/tbone.asp) concerns bone changes and recovery; [MARROW](https://www.asc-csa.gc.ca/eng/sciences/marrow.asp) concerns marrow and blood-cell changes. These inform the motivation for monitoring, without imported participant measurements.
 - **ESA:** [Mars500](https://www.esa.int/pt/articles/mars500-study-overview) used a 20-minute communication delay; [EchoFinder-2](https://www.esa.int/ESA_Multimedia/Images/2026/01/Finding_the_echo) illustrates autonomous health assessment. A.R.E.S.'s 24-minute blackout is its own resilience scenario, not an ESA-mandated protocol.
 - **JAXA:** [Kibo Zebrafish Muscle 2](https://humans-in-space.jaxa.jp/en/biz-lab/experiment/theme/detail/000854.html) investigates microgravity muscle atrophy and potential countermeasures. Its animal-study parameters are not used as human exercise thresholds.
 
 ## Global Judging eligibility review
 
-The [official 2026 event page](https://www.spaceappschallenge.org/2026/) requires registration and a submitted project for Global Judging. NASA's [resource-use clarification](https://github.com/nasa/spaceapps/discussions/1827) says Global Award projects must use at least one NASA resource and cite their sources. Partner-resource use and specific challenge requirements must be checked against the selected challenge and current official submission guide.
+Confirm registration, submission and Global Judging requirements using the [official 2026 event page](https://www.spaceappschallenge.org/2026/) and the selected challenge's current guide. The GO Team's [resource-use clarification](https://github.com/nasa/spaceapps/discussions/1827) specifies at least one NASA data source from the challenge's Resources and citation of all materials used. Partner-resource use and other requirements must be checked against the selected challenge; this repository does not record a verified official challenge selection.
 
 For the NASA-data and partner-reference submission fields, describe exactly the implemented resource use above. Registration, the chosen challenge, submission completion, team eligibility, and the organizers' review are not established by adding citations to a website. No award eligibility decision has been made for this project.
 
@@ -35,3 +35,11 @@ See [deployment notes](DEPLOYMENT.md). Build and verify the complete static `dis
 For the [FortiGuard web-filter rating request](https://www.fortiguard.com/webfilter), use the permanent deployed HTTPS URL. Requested submission fields are **Category: Web-based Applications** and **Company Name: N/A**, subject to the live form's available options. Aim for the team's requested 24-hour lead time; classification turnaround is not guaranteed. The FortiGuard page could not be inspected from this environment (HTTP 403), so its current fields and processing time were not independently confirmed.
 
 This preparation has not deployed a public URL or submitted a web-filter request.
+
+## Scientific-context audit — November 14, 2026
+
+The implemented score and exported reports must not be described as measured muscle retention, bone density or clinically validated strength. The app now keeps the same prototype context in its UI, JSON and CSV outputs. Scenario goals and personalized targets remain team-defined; initial history is synthetic.
+
+NASA's [communications analysis](https://ntrs.nasa.gov/citations/20220013418) distinguishes light-time delay from disruption/blackout. The app's 24-minute blackout is a manually selected demo state without a countdown or physical latency simulation. It is not a NASA protocol or a real Mission Control connection.
+
+Source retrieval limits and repository checks are recorded in [the scientific and repository audit](SCIENTIFIC_AND_REPOSITORY_AUDIT.md). In particular, the interactive NLSP contents and the current official event/submission pages were not fully inspectable during this pass. Verify the selected challenge and live submission requirements before making eligibility claims.

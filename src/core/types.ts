@@ -143,8 +143,12 @@ export interface PersonalizedRoutinePlan {
 }
 export interface StorageLike { getItem(key: string): string | null; setItem(key: string, value: string): void; removeItem(key: string): void }
 export interface TelemetrySyncClient { sendBatch(envelopes: readonly SyncQueueEnvelope[]): Promise<void> }
+export interface PrototypeNotice {
+  readonly disclaimer: string; readonly metricInterpretation: string; readonly gravityGoals: string;
+  readonly commsScenario: string; readonly dataNotice: string;
+}
 export interface FlightSurgeonReport {
-  readonly json: { readonly profile: AstronautProfile; readonly telemetry: MedicalTelemetryReport; readonly syncSummary: SyncQueueSummary; readonly exportedAtIso: string };
+  readonly json: { readonly profile: AstronautProfile; readonly telemetry: MedicalTelemetryReport; readonly syncSummary: SyncQueueSummary; readonly exportedAtIso: string; readonly prototypeNotice: PrototypeNotice };
   readonly csv: string;
 }
 export type SimulatedRepKind = 'GOOD' | 'SHALLOW' | 'SPINE_FAULT' | 'ASYMMETRIC';

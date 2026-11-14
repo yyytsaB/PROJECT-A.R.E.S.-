@@ -8,6 +8,9 @@ test-results/
 .vitest-attachments/
 src/**/__screenshots__/
 .env.local
+.env
+.env.*
+!.env.example
 /public/mediapipe/wasm/
 
 # Local assistant tooling and handoff prompts stay off GitHub.

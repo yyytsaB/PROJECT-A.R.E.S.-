@@ -10,7 +10,7 @@
   },
   {
     "title": "NASA OSDR and LSDA — life-sciences research references",
-    "description": "OSDR and the Life Sciences Data Archive (LSDA) are research references for planned 30-day Earth-Baseline Strength Retention and Flight Surgeon telemetry. The retention equation and telemetry schema are team-defined; NASA participant records are not imported or used to validate them. LSDA is accessed through the NASA Life Sciences Portal.",
+    "description": "OSDR and the Life Sciences Data Archive (LSDA) provide research context for the implemented 30-day Earth-Baseline Strength Retention and Flight Surgeon telemetry. The retention equation and telemetry schema are team-defined; NASA participant records are not imported or used to validate them. LSDA is accessed through the NASA Life Sciences Portal.",
     "links": [
       { "label": "NASA Open Science Data Repository (OSDR)", "url": "https://science.nasa.gov/biological-physical/data/osdr/" },
       { "label": "NASA Life Sciences Portal — LSDA", "url": "https://nlsp.nasa.gov/" }
@@ -29,7 +29,7 @@
     "description": "TBone studies bone loss and recovery; MARROW studies bone marrow and blood-cell changes. These Canadian Space Agency studies provide scientific context for musculoskeletal monitoring. Their participant data are not imported into the exercise engine.",
     "links": [
       { "label": "CSA TBone studies", "url": "https://www.asc-csa.gc.ca/eng/sciences/tbone.asp" },
-      { "label": "CSA MARROW study", "url": "https://www.csa-asc.gc.ca/eng/sciences/marrow.asp" }
+      { "label": "CSA MARROW study", "url": "https://www.asc-csa.gc.ca/eng/sciences/marrow.asp" }
     ]
   },
   {

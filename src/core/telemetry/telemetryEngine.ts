@@ -1,16 +1,12 @@
 import { getExerciseById, getGravityProfileById, getPlanetaryRouteById, loadMissionCatalog } from '../catalog/missionCatalog';
 import { serializeMissionStore } from '../storage/missionSerialization';
 import { withProfileDefaults } from './profileDefaults';
-import { validateProfileFields } from './profileFields';
+import { calculateBmi, validateProfileFields } from './profileFields';
 import rules from '../../content/routineRules.json';
+import prototypeNotice from '../../content/prototypeNotice.json';
 import type { AstronautProfile, CompletedWorkoutInput, ExpeditionProgressReport, FlightSurgeonReport, GravityProfile, MedicalTelemetryReport, MissionStoreState, PersonalizedRoutinePlan, PlanetaryRoute, ResistanceExerciseId, SyncQueueSummary, WorkoutSessionRecord } from '../types';
 
-export function calculateBmi(bodyWeightKg: number, heightCm: number): number {
-  if (![bodyWeightKg, heightCm].every(value => Number.isFinite(value) && value > 0)) throw new RangeError('Weight and height must be positive and finite');
-  const bmi = Number((bodyWeightKg / ((heightCm / 100) ** 2)).toFixed(1));
-  if (!Number.isFinite(bmi)) throw new RangeError('BMI must be finite');
-  return bmi;
-}
+export { calculateBmi } from './profileFields';
 
 export function generatePersonalizedRoutine(profile: AstronautProfile, sessions: readonly WorkoutSessionRecord[], nowIso: string): PersonalizedRoutinePlan {
   const crew = withProfileDefaults(profile), now = Date.parse(nowIso);
@@ -23,7 +19,7 @@ export function generatePersonalizedRoutine(profile: AstronautProfile, sessions:
   if (typeof nowIso !== 'string' || !Number.isFinite(now) || !limitation || !mission || Object.keys(validateProfileFields(crew, {})).length || typeof crew.injuryNotes !== 'string') throw new RangeError('Invalid routine profile or timestamp');
   const gravity = getGravityProfileById(crew.gravityProfileId);
   const recent = windowSessions(sessions, now).reverse().sort((a, b) => Date.parse(b.completedAtIso) - Date.parse(a.completedAtIso));
-  const round = (value: number) => Math.round(value * 10) / 10;
+  const round = (value: number) => value > Number.MAX_VALUE / 10 ? value : Math.round(value * 10) / 10;
   const items = loadMissionCatalog().exercises.map(exercise => {
     const history = recent.filter(session => session.exerciseId === exercise.id);
     const moderated = (limitation.exercises as readonly string[]).includes(exercise.id);
@@ -83,12 +79,14 @@ export function computeSessionRecord(input: Omit<CompletedWorkoutInput, 'duratio
     !Number.isInteger(input.sets) || !Number.isInteger(input.reps) || input.formAccuracyPct > 100 || input.symmetryScorePct > 100) throw new RangeError('Invalid completed workout metrics');
   const exercise = getExerciseById(input.exerciseId);
   const resistanceVolumeKg = exercise.kind === 'RESISTANCE' ? input.sets * input.reps * input.loadKg : 0;
+  const effectiveLoadKg = exercise.kind === 'RESISTANCE' ? input.loadKg * exercise.earthLoadMultiplier : 0;
+  const expeditionDistanceKm = exercise.kind === 'CARDIO' ? input.cardioDistanceKm * exercise.distanceMultiplier : resistanceVolumeKg * (input.formAccuracyPct / 100) / 250;
+  if (![input.sets * input.reps, resistanceVolumeKg, effectiveLoadKg, expeditionDistanceKm].every(Number.isFinite)) throw new RangeError('Completed workout totals must be finite');
   const round = (value: number) => +value.toFixed(3);
   const snapshots = input.snapshots.map(s => ({ ...s, primaryAngleDeg: round(s.primaryAngleDeg), symmetryScorePct: round(s.symmetryScorePct),
     faultFlags: [...s.faultFlags], landmarks: s.landmarks.map(p => ({ x: round(p.x), y: round(p.y), z: round(p.z), visibility: round(p.visibility) })) }));
   return { ...input, durationSec, snapshots, astronautId: profile.id, gravityProfileId: profile.gravityProfileId, resistanceVolumeKg,
-    effectiveLoadKg: exercise.kind === 'RESISTANCE' ? input.loadKg * exercise.earthLoadMultiplier : 0,
-    expeditionDistanceKm: exercise.kind === 'CARDIO' ? input.cardioDistanceKm * exercise.distanceMultiplier : resistanceVolumeKg * input.formAccuracyPct / 100 / 250 };
+    effectiveLoadKg, expeditionDistanceKm };
 }
 
 const DAY_MS = 86400000;
@@ -129,6 +127,8 @@ export function computeExpeditionProgress(sessions: readonly WorkoutSessionRecor
 export function buildFlightSurgeonReport(telemetry: MedicalTelemetryReport, profile: AstronautProfile, syncSummary: SyncQueueSummary, exportedAtIso: string): FlightSurgeonReport {
   const rows: (string | number | null)[][] = [
     ['metric', 'value'], ['astronaut_id', profile.id], ['astronaut_name', profile.name], ['gravity_profile', profile.gravityProfileId],
+    ['prototype_disclaimer', prototypeNotice.disclaimer], ['metric_interpretation', prototypeNotice.metricInterpretation],
+    ['gravity_goals_notice', prototypeNotice.gravityGoals], ['comms_scenario_notice', prototypeNotice.commsScenario], ['data_notice', prototypeNotice.dataNotice],
     ['body_weight_kg', profile.bodyWeightKg],
     ['exported_at', exportedAtIso], ['strength_retention_pct', telemetry.strengthRetentionPct], ['cumulative_volume_kg', telemetry.cumulativeVolumeKg],
     ['symmetry_consistency_pct', telemetry.symmetryConsistencyPct], ['pending_sync_count', syncSummary.pendingCount], ['last_synced_at', syncSummary.lastSyncedAtIso],
@@ -138,8 +138,9 @@ export function buildFlightSurgeonReport(telemetry: MedicalTelemetryReport, prof
     ...telemetry.sessions.map(s => [s.id, s.exerciseId, s.completedAtIso, s.sets, s.reps, s.loadKg, s.resistanceVolumeKg, s.formAccuracyPct, s.symmetryScorePct, s.snapshots.length, s.durationSec]),
   ];
   const escape = (value: string | number | null) => {
-    const text = String(value ?? '');
+    const raw = String(value ?? '');
+    const text = typeof value === 'string' && (/^\s*[=+@-]/.test(raw) || /^[\t\r\n]/.test(raw)) ? `'${raw}` : raw;
     return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
   };
-  return { json: structuredClone({ profile, telemetry, syncSummary, exportedAtIso }), csv: rows.map(row => row.map(escape).join(',')).join('\r\n') + '\r\n' };
+  return { json: structuredClone({ profile, telemetry, syncSummary, exportedAtIso, prototypeNotice }), csv: rows.map(row => row.map(escape).join(',')).join('\r\n') + '\r\n' };
 }

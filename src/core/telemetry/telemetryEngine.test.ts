@@ -3,11 +3,35 @@ import { getPlanetaryRouteById } from '../catalog/missionCatalog';
 import type { AstronautProfile, CompletedWorkoutInput } from '../types';
 import { buildPoseFrame } from '../kinematics/poseFixtures';
 import { getExerciseById } from '../catalog/missionCatalog';
-import { computeSessionRecord, computeExpeditionProgress, computeMedicalTelemetry, buildFlightSurgeonReport, measureMissionPayloads, formatDurationMmSs, getSessionFormStatus } from './telemetryEngine';
+import { computeSessionRecord, computeExpeditionProgress, computeMedicalTelemetry, buildFlightSurgeonReport, measureMissionPayloads, formatDurationMmSs, getSessionFormStatus, generatePersonalizedRoutine } from './telemetryEngine';
 import { clearMissionStore, flushCommsSyncQueue, recordCompletedWorkout } from '../storage/telemetryStore';
 
 export const profile: AstronautProfile = { bodyWeightKg: 78, id: 'crew-1', name: 'Crew, "Ares"', gravityProfileId: 'MARS_038G', routeId: 'VALLES_MARINERIS', earthBaseline1RM: { SQUAT: 100, DEADLIFT: 120, OVERHEAD_PRESS: 60, BICEP_CURL: 30 } };
 export const workout: CompletedWorkoutInput = { durationSec: 0, id: 'workout-1', exerciseId: 'SQUAT', completedAtIso: '2026-11-14T12:00:00.000Z', sets: 4, reps: 25, loadKg: 100, cardioDistanceKm: 0, formAccuracyPct: 100, symmetryScorePct: 90, snapshots: [] };
+
+test('finite Earth baselines produce finite routine targets that survive JSON persistence', () => {
+  const crew = { ...profile, earthBaseline1RM: { ...profile.earthBaseline1RM, SQUAT: 1e308 } };
+  const plan = generatePersonalizedRoutine(crew, [], workout.completedAtIso);
+  expect(Number.isFinite(plan.items[0].recommendedLoadKg)).toBe(true);
+  expect(JSON.parse(JSON.stringify(plan)).items[0].recommendedLoadKg).toBeGreaterThan(0);
+});
+
+test('CSV exports preserve formula-like crew names as literal text while JSON retains the original name', () => {
+  for (const name of ['=1+1', '+1+1', '-1+1', '@SUM(1)', '\t=1+1', ' =1+1']) {
+    const crew = { ...profile, name };
+    const report = buildFlightSurgeonReport(computeMedicalTelemetry([], crew, workout.completedAtIso), crew,
+      { pendingCount: 0, lastSyncedAtIso: null }, workout.completedAtIso);
+    expect(report.json.profile.name).toBe(name);
+    expect(report.csv).toContain(`astronaut_name,'${name}\r\n`);
+  }
+});
+
+test('rejects overflowing workout totals before they can serialize as null and invalidate saved history', () => {
+  expect(() => computeSessionRecord({ ...workout, loadKg: Number.MAX_VALUE }, profile)).toThrow(RangeError);
+  const finite = computeSessionRecord({ ...workout, sets: 1, reps: 1, loadKg: 1e307 }, profile);
+  expect(Number.isFinite(finite.expeditionDistanceKm)).toBe(true);
+  expect(finite.expeditionDistanceKm).toBeCloseTo(1e307 / 250, -290);
+});
 
 test('normalizes, validates and formats workout duration without changing resistance metrics', () => {
   expect(formatDurationMmSs(45)).toBe('00:45');
@@ -85,7 +109,7 @@ test('Flight Surgeon export preserves baselines, fault counts, session metrics a
   const telemetry = computeMedicalTelemetry([session], profile, workout.completedAtIso);
   const syncSummary = { pendingCount: 1, lastSyncedAtIso: null };
   const report = buildFlightSurgeonReport(telemetry, profile, syncSummary, workout.completedAtIso);
-  expect(report.json).toEqual({ profile, telemetry, syncSummary, exportedAtIso: workout.completedAtIso });
+  expect(report.json).toEqual({ profile, telemetry, syncSummary, exportedAtIso: workout.completedAtIso, prototypeNotice: expect.objectContaining({ disclaimer: expect.stringContaining('not clinically validated') }) });
   expect(report.json.telemetry.faultCounts.SPINE_MISALIGNED).toBe(1);
   expect(report.csv).toContain('"Crew, ""Ares"""');
   expect(report.csv).toContain('strength_retention_pct,100');
@@ -93,6 +117,18 @@ test('Flight Surgeon export preserves baselines, fault counts, session metrics a
   expect(report.csv).toContain('SPINE_MISALIGNED,1');
   expect(report.csv).toContain('workout-1,SQUAT,2026-11-14T12:00:00.000Z,4,25,100,10000,100,90,1');
   expect(buildFlightSurgeonReport(telemetry, profile, syncSummary, workout.completedAtIso)).toEqual(report);
+});
+
+test('exported JSON and CSV retain prototype limitations when separated from the application', () => {
+  const telemetry = computeMedicalTelemetry([computeSessionRecord(workout, profile)], profile, workout.completedAtIso);
+  const report = buildFlightSurgeonReport(telemetry, profile, { pendingCount: 1, lastSyncedAtIso: null }, workout.completedAtIso);
+  expect(report.json).toHaveProperty('prototypeNotice');
+  for (const text of ['not clinically validated', 'not a measurement of muscle mass', 'not NASA clinical standards', 'manually toggled demo setting', 'synthetic demo sessions']) {
+    expect(JSON.stringify(report.json)).toContain(text);
+    expect(report.csv).toContain(text);
+  }
+  expect(report.csv).toContain('prototype_disclaimer,');
+  expect(report.json.telemetry.strengthRetentionPct).toBe(100);
 });
 
 test('rolling medical telemetry uses Earth-equivalent ARED loads in every gravity profile and excludes old/future/cardio sessions', () => {

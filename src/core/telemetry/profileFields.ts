@@ -10,6 +10,12 @@ export const HEALTH_FIELDS = [
 ] as const;
 export type ProfileField = 'name' | 'injuryNotes' | 'missionDurationDays' | (typeof HEALTH_FIELDS)[number]['key'] | ResistanceExerciseId;
 export type ProfileEdits = Partial<Record<ProfileField, string>>;
+export function calculateBmi(bodyWeightKg: number, heightCm: number): number {
+  if (![bodyWeightKg, heightCm].every(value => Number.isFinite(value) && value > 0)) throw new RangeError('Weight and height must be positive and finite');
+  const bmi = Number((bodyWeightKg / ((heightCm / 100) ** 2)).toFixed(1));
+  if (!Number.isFinite(bmi)) throw new RangeError('BMI must be finite');
+  return bmi;
+}
 export function readProfileField(profile: AstronautProfile, field: ProfileField): string {
   return String({ ...withProfileDefaults(profile), ...profile.earthBaseline1RM }[field]);
 }
@@ -25,6 +31,10 @@ export function validateProfileFields(profile: AstronautProfile, edits: ProfileE
   const candidate = profileWithFields(profile, edits), errors: ProfileEdits = {};
   if (!candidate.name.trim()) errors.name = 'Enter an astronaut name.';
   for (const metric of HEALTH_FIELDS) if (!Number.isFinite(candidate[metric.key]) || candidate[metric.key] <= 0) errors[metric.key] = `${metric.name} must be greater than 0 ${metric.unit}.`;
+  if (!errors.heightCm && !errors.bodyWeightKg) {
+    try { calculateBmi(candidate.bodyWeightKg, candidate.heightCm); }
+    catch { errors.heightCm = errors.bodyWeightKg = 'Height and body weight must produce a finite BMI.'; }
+  }
   for (const [id, value] of Object.entries(candidate.earthBaseline1RM)) if (!Number.isFinite(value) || value <= 0) errors[id as ResistanceExerciseId] = `${id} Earth baseline must be greater than 0 kg.`;
   if (!Number.isInteger(candidate.missionDurationDays) || candidate.missionDurationDays <= 0) errors.missionDurationDays = 'Mission duration must be a positive whole number of days.';
   if (!errors.systolicBpMmHg && !errors.diastolicBpMmHg && candidate.systolicBpMmHg <= candidate.diastolicBpMmHg) {

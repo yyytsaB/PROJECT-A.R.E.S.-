@@ -4,6 +4,18 @@ import { analyzeExerciseFrame, normalizePose33 } from '../core/kinematics/kinema
 import { buildPoseFrame } from '../core/kinematics/poseFixtures';
 import { drawPoseWireframe, renderKinematicSnapshot } from './poseCanvasRenderer';
 
+test('clears stale drawings and explains unreplayable legacy geometry without crashing', () => {
+  const ctx = { canvas: { width: 640, height: 480 }, save: vi.fn(), restore: vi.fn(), clearRect: vi.fn(), fillText: vi.fn(),
+  } as unknown as CanvasRenderingContext2D;
+  const snapshot = { exerciseId: 'SQUAT' as const, repNumber: 1, timestampMs: 165, primaryAngleDeg: 125, symmetryScorePct: 90,
+    faultFlags: ['DEPTH_INSUFFICIENT' as const], landmarks: Array.from({ length: 33 }, () => ({ x: 0, y: 0, z: 0, visibility: 1 })) };
+  expect(() => renderKinematicSnapshot(ctx, snapshot)).not.toThrow();
+  expect(ctx.clearRect).toHaveBeenCalledWith(0, 0, 640, 480);
+  expect(ctx.fillText).toHaveBeenCalledWith('Pose unavailable: saved geometry cannot be replayed.', 8, 20);
+  expect(ctx.save).toHaveBeenCalledOnce();
+  expect(ctx.restore).toHaveBeenCalledOnce();
+});
+
 test('draws the 33-point skeleton, angle/ROM HUD, and red fault joints in live and replay canvases', () => {
   const marks: { x: number; y: number; color: unknown }[] = [];
   const strokes: unknown[] = [];

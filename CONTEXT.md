@@ -18,11 +18,11 @@
 | **`KinematicSnapshot`** | Lightweight JSON record (`~1.5 KB`) captured automatically at the inflection point of any rep flagged with a `FormFaultFlag`: `{ repNumber, timestampMs, exerciseId, faultFlags, primaryAngleDeg, symmetryScorePct, landmarks: readonly PoseLandmark33[] }`. Replaces heavy `.mp4` blobs for instant 2D `<canvas>` wireframe replay in Workout Logs. |
 | **`GravityProfileId`** | `'MICROGRAVITY_0G'` (`0.0g`), `'MOON_016G'` (`0.16g`), `'MARS_038G'` (`0.38g`). Selects a team-defined prototype scenario goal (`75%`, `82%`, `88%`), not a NASA standard or clinical threshold. Switching profiles leaves historical ARED scores unchanged. |
 | **`PlanetaryRouteId`** | `'VALLES_MARINERIS'` (`4,000 km` game expedition based on approximate canyon length) or `'OLYMPUS_MONS'` (`600 km` game expedition based on approximate volcano diameter). These are not terrain-derived traverses. Converts cardio distance and form-qualified ARED volume (`250 kg = 1.0 km Expedition Equivalent Distance`, per locked F4) into route progress. |
-| **`StrengthRetentionScore`** | Percentage (`0..100+`) comparing the astronaut's rolling 30-day effective resistance load & form-qualified volume against pre-launch `AstronautProfile.earthBaseline1RM` benchmarks. |
+| **`StrengthRetentionScore`** | Team-defined workout-derived score (`0..100%`) combining rolling effective-load/Earth-1RM ratios and recorded form accuracy. It is not a measurement of muscle mass, bone density, or clinically validated strength retention. |
 | **`durationSec`** | Finite nonnegative workout duration in seconds; missing legacy values normalize to zero. Arena duration excludes paused time, and MM:SS formatting floors fractional seconds. |
 | **`AstronautProfile.bodyWeightKg`** | Finite positive profile weight, defaulting to 78 kg for older missions. Metadata only; it does not rescale the locked ARED resistance formula. |
 | **`MissionStoreState.scheduleCompletion`** | Persisted completion flags by UTC date and exercise ID. Saved workouts mark their exercise complete; manually checking a schedule row does not create telemetry. Catalog schedule times are demo settings. |
-| **`CommsLinkStatus`** | `'BLACKOUT_24MIN_DELAY' \| 'WINDOW_OPEN'`. When in blackout (default deep-space mode), completed sessions append to `SyncQueueEnvelope[]` locally; when `WINDOW_OPEN` is triggered, queued telemetry flushes to Supabase (if configured) or the local Mission Control ack log. |
+| **`CommsLinkStatus`** | `'BLACKOUT_24MIN_DELAY' \| 'WINDOW_OPEN'`: manually selected demo communication states, with no automatic 24-minute timer or physical signal-latency simulation. The Mission Control acknowledgement log is local simulation, not a NASA connection. |
 
 ---
 
