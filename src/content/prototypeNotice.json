@@ -1,0 +1,7 @@
+{
+  "disclaimer": "Team-defined prototype telemetry for demonstration and review; not clinically validated, NASA-approved, or medical clearance.",
+  "metricInterpretation": "Strength retention is a heuristic derived from logged loads and form scores, not a measurement of muscle mass, bone density, or actual strength retention.",
+  "gravityGoals": "Gravity scenario goals are team-defined prototype settings, not NASA clinical standards or landing/EVA clearance.",
+  "commsScenario": "The 24-minute blackout is a manually toggled demo setting. It does not simulate signal latency, enforce a 24-minute timer, or establish contact with NASA Mission Control.",
+  "dataNotice": "History may include synthetic demo sessions and simulated-pose workouts; no clinical or NASA participant records are imported."
+}

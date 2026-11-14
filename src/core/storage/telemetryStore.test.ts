@@ -4,8 +4,40 @@ import { createSafeStorage } from '../../adapters/telemetryStorageAdapter';
 import { clearMissionStore, loadMissionStore, recordCompletedWorkout, flushCommsSyncQueue, seedDemoMissionState, MISSION_STORAGE_KEY } from './telemetryStore';
 import { computeSessionRecord } from '../telemetry/telemetryEngine';
 import { createSupabaseSyncAdapter } from '../../adapters/supabaseSyncAdapter';
+import { getExerciseById } from '../catalog/missionCatalog';
+import { analyzeExerciseFrame, normalizePose33 } from '../kinematics/kinematicMath';
 
 const now = '2026-11-14T12:00:00.000Z';
+test('existing caches with overflowing aggregates follow corrupt-store recovery', () => {
+  const storage = memoryStorage(), state = clearMissionStore();
+  const large = computeSessionRecord({ id: 'large', exerciseId: 'SQUAT', completedAtIso: now, durationSec: 1,
+    sets: 1, reps: 1, loadKg: 1e308, cardioDistanceKm: 0, formAccuracyPct: 100, symmetryScorePct: 100, snapshots: [] }, state.profile);
+  for (const metric of ['resistanceVolumeKg', 'expeditionDistanceKm'] as const) {
+    const session = { ...large, [metric]: 1e308 };
+    storage.setItem(MISSION_STORAGE_KEY, JSON.stringify({ ...state, sessions: [session, { ...session, id: 'second' }] }));
+    expect(loadMissionStore(storage, now).sessions).toEqual([]);
+  }
+});
+test('rejects cumulative overflow before adding a session or changing the persistent cache', () => {
+  const storage = memoryStorage(), empty = clearMissionStore(storage);
+  const large = computeSessionRecord({ id: 'large', exerciseId: 'SQUAT', completedAtIso: now, durationSec: 1,
+    sets: 1, reps: 1, loadKg: 1e308, cardioDistanceKm: 0, formAccuracyPct: 100, symmetryScorePct: 100, snapshots: [] }, empty.profile);
+  const first = recordCompletedWorkout(empty, large, storage), persisted = storage.getItem(MISSION_STORAGE_KEY);
+  expect(() => recordCompletedWorkout(first, { ...large, id: 'overflow' }, storage)).toThrow(RangeError);
+  expect(storage.getItem(MISSION_STORAGE_KEY)).toBe(persisted);
+  expect(loadMissionStore(storage, now).sessions.map(session => session.id)).toEqual(['large']);
+  const cardio = computeSessionRecord({ ...large, id: 'cardio', exerciseId: 'TREADMILL', cardioDistanceKm: 1e308 }, empty.profile);
+  const oneTrip = recordCompletedWorkout(empty, cardio);
+  expect(() => recordCompletedWorkout(oneTrip, { ...cardio, id: 'distance-overflow' })).toThrow(RangeError);
+});
+test('seeded shallow-rep snapshots agree with their replay geometry and recorded angle', () => {
+  for (const snapshot of seedDemoMissionState(now).sessions.flatMap(session => session.snapshots)) {
+    const analysis = analyzeExerciseFrame(normalizePose33({ ...snapshot, width: snapshot.frameWidth ?? 640, height: snapshot.frameHeight ?? 480 }), getExerciseById(snapshot.exerciseId));
+    expect(analysis.isVisible).toBe(true);
+    expect(analysis.faultFlags).toContain('DEPTH_INSUFFICIENT');
+    expect(analysis.primaryAngleDeg).toBeCloseTo(snapshot.primaryAngleDeg, 0);
+  }
+});
 function memoryStorage(): StorageLike {
   const data = new Map<string, string>();
   return { getItem: key => data.get(key) ?? null, setItem: (key, value) => { data.set(key, value); }, removeItem: key => { data.delete(key); } };
@@ -88,6 +120,28 @@ test('rejects structurally valid JSON containing unusable profiles, sessions, qu
     { ...fresh, lastSyncedAtIso: 'invalid' },
   ];
   for (const value of damagedValues) expect(loadMissionStore({ ...memoryStorage(), getItem: () => JSON.stringify(value) }, now)).toEqual(fresh);
+});
+
+test('rejects cached snapshots that would crash replay and noninteger rep counts', () => {
+  const state = seedDemoMissionState(now);
+  const session = state.sessions.find(session => session.snapshots.length)!;
+  const snapshot = session.snapshots[0];
+  const storage = memoryStorage();
+  const invalidSnapshots = [
+    { ...snapshot, exerciseId: 'ROWING' }, { ...snapshot, frameWidth: 0 },
+    { ...snapshot, frameHeight: -1 }, { ...snapshot, frameWidth: '640' },
+    { ...snapshot, repNumber: 1.5 }, { ...snapshot, faultFlags: [['DEPTH_INSUFFICIENT']] },
+  ];
+  for (const invalid of invalidSnapshots) {
+    storage.setItem(MISSION_STORAGE_KEY, JSON.stringify({ ...state, sessions: [{ ...session, snapshots: [invalid] }] }));
+    expect(loadMissionStore(storage, now).sessions).toEqual([]);
+  }
+  for (const patch of [{ reps: 1.5 }, { sets: 1.5 }]) {
+    storage.setItem(MISSION_STORAGE_KEY, JSON.stringify({ ...state, sessions: [{ ...session, ...patch }] }));
+    expect(loadMissionStore(storage, now).sessions).toEqual([]);
+  }
+  storage.setItem(MISSION_STORAGE_KEY, JSON.stringify({ ...state, sessions: [{ ...session, snapshots: [{ ...snapshot, frameWidth: 1280, frameHeight: 720 }] }] }));
+  expect(loadMissionStore(storage, now).sessions[0].snapshots[0]).toMatchObject({ frameWidth: 1280, frameHeight: 720 });
 });
 
 test('seeds exactly 30 deterministic Mars days with all exercise modalities and compact replayable fault snapshots', () => {

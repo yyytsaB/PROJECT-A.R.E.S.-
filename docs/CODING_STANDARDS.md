@@ -42,6 +42,9 @@ Before adding any file, class, hook, or npm dependency, verify you have stopped 
 1. **Strict Separation of Logic and UI:**
    - The 2 developers own `src/core/**`, `src/adapters/**`, and `src/hooks/**`.
    - The 2 Frontend teammates own the visual presentation, CSS/dark-mode styling, charts, and layout components.
-2. **Developer Testbench (`src/App.tsx`):**
-   - Until the Frontend teammates merge their UI screens, `src/App.tsx` must remain a **plain semantic HTML wireframe testbench** (`<section>`, `<button>`, `<select>`, `<canvas>`, `<output>`, `<table>`) with `data-testid` / accessible `aria-label` attributes verifying all 6 screens from PDF 2.
-   - Do not add decorative CSS frameworks or layout bloat in developer branches.
+2. **Frontend Integration (`src/App.tsx`):**
+   - The semantic HTML wireframe is now the frontend integration surface. Styling may add classes, presentation wrappers, charts and local SVG artwork while preserving existing `aria-label`, `role`, `id`, button/heading text, `<output>`, `<canvas>`, `<video>` and `<dialog>` contracts.
+   - Business logic stays in the existing headless hooks and pure core. Screen components may import display formatters and form-field metadata.
+   - Keep local assets in `public/assets/` or `src/assets/`, with descriptive alternative text. Route artwork must identify schematic game illustrations rather than terrain-derived navigation.
+   - Use responsive high-contrast dark styling with visible keyboard focus, reduced-motion support and readable print output. No new UI dependencies are required.
+   - Run `npm run test`, `npm run typecheck`, `npm run lint`, `npm run build` and `npm run test:e2e` after each visual change batch and before commits.

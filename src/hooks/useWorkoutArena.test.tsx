@@ -9,6 +9,38 @@ document.body.append(host);
 let root = createRoot(host);
 afterEach(async () => { await act(() => root.unmount()); host.replaceChildren(); root = createRoot(host); vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); delete window.__ARES_TEST_POSE_FRAMES__; });
 
+test('finalizes completed reps once before restarting or changing exercises', async () => {
+  vi.useFakeTimers();
+  let frame: FrameRequestCallback | null = null, timestamp = 0;
+  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => { frame = callback; return 1; });
+  vi.stubGlobal('cancelAnimationFrame', () => { frame = null; });
+  const onCompleted = vi.fn();
+  let arena!: ReturnType<typeof useWorkoutArena>;
+  function Harness() { arena = useWorkoutArena({ onCompleted }); return null; }
+  const completeRep = async () => {
+    await act(() => arena.triggerSimulatedRep('GOOD'));
+    for (let i = 0; i < 12; i++) await act(() => { const next = frame; frame = null; timestamp += 34; next?.(timestamp); });
+    await act(() => vi.advanceTimersByTime(2500));
+    expect(arena.state.repCount).toBe(1);
+  };
+  await act(() => root.render(<Harness />));
+  await completeRep();
+  await act(() => arena.pause());
+  await act(() => arena.start('SIMULATED'));
+  expect(onCompleted).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ exerciseId: 'SQUAT', repCount: 1 }), 2);
+  expect(arena.state.repCount).toBe(0);
+  await completeRep();
+  await act(() => arena.selectExercise('DEADLIFT'));
+  expect(onCompleted).toHaveBeenCalledTimes(2);
+  expect(onCompleted).toHaveBeenLastCalledWith(expect.objectContaining({ exerciseId: 'SQUAT', repCount: 1 }), 2);
+  expect(arena.state.exerciseId).toBe('DEADLIFT');
+  await completeRep();
+  await act(() => arena.stop());
+  await act(() => arena.start('SIMULATED'));
+  await act(() => arena.selectExercise('SQUAT'));
+  expect(onCompleted.mock.calls.filter(([state]) => state.repCount > 0)).toHaveLength(3);
+});
+
 test('times only running intervals, saves elapsed duration and exposes positive form and cue controls', async () => {
   vi.useFakeTimers();
   let frame: FrameRequestCallback | null = null;

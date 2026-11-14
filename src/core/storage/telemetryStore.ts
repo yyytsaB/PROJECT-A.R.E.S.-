@@ -1,7 +1,7 @@
 import { loadMissionCatalog } from '../catalog/missionCatalog';
 import { buildPoseFrame } from '../kinematics/poseFixtures';
 import { computeSessionRecord } from '../telemetry/telemetryEngine';
-import { isMissionStoreState } from './validateMissionStore';
+import { hasFiniteWorkoutTotals, isMissionStoreState } from './validateMissionStore';
 import { PROFILE_DEFAULTS } from '../telemetry/profileDefaults';
 import { serializeMissionStore } from './missionSerialization';
 import type { CommsLinkStatus, MissionStoreState, StorageLike, TelemetrySyncClient, WorkoutSessionRecord } from '../types';
@@ -58,7 +58,9 @@ export function clearMissionStore(storage?: StorageLike, _nowIso = DEFAULT_NOW):
 
 export function recordCompletedWorkout(state: MissionStoreState, session: WorkoutSessionRecord, storage?: StorageLike): MissionStoreState {
   if (state.sessions.some(s => s.id === session.id)) return state;
-  return persistMissionStore(completeScheduledExercise({ ...state, sessions: [...state.sessions, structuredClone(session)], syncQueue: [...state.syncQueue, {
+  const sessions = [...state.sessions, structuredClone(session)];
+  if (!hasFiniteWorkoutTotals(sessions)) throw new RangeError('Cumulative workout totals must be finite');
+  return persistMissionStore(completeScheduledExercise({ ...state, sessions, syncQueue: [...state.syncQueue, {
     sessionId: session.id, astronautId: session.astronautId, exerciseId: session.exerciseId, reps: session.sets * session.reps,
     formAccuracyPct: session.formAccuracyPct, volumeKg: session.resistanceVolumeKg, completedAtIso: session.completedAtIso, status: 'QUEUED_BLACKOUT',
   }] }, session), storage);
@@ -81,9 +83,10 @@ export function seedDemoMissionState(nowIso: string, storage?: StorageLike): Mis
     const completedAtIso = new Date(Date.parse(nowIso) - (29 - day) * 86400000).toISOString();
     const exercise = lifts[day % lifts.length];
     const faulty = day % 7 === 0;
-    const frame = buildPoseFrame(exercise, { angleDeg: exercise.targetAngleDeg, timestampMs: 165 });
+    const angleDeg = exercise.startAngleDeg + (exercise.targetAngleDeg - exercise.startAngleDeg) * 0.6;
+    const frame = buildPoseFrame(exercise, { angleDeg, timestampMs: 165 });
     const snapshots: WorkoutSessionRecord['snapshots'] = faulty ? [{ repNumber: 1, timestampMs: 165, exerciseId: exercise.id,
-      faultFlags: ['DEPTH_INSUFFICIENT'], primaryAngleDeg: exercise.targetAngleDeg, symmetryScorePct: 90,
+      faultFlags: ['DEPTH_INSUFFICIENT'], primaryAngleDeg: angleDeg, symmetryScorePct: 100,
       landmarks: frame.landmarks.map(p => ({ x: +p.x.toFixed(3), y: +p.y.toFixed(3), z: +p.z.toFixed(3), visibility: 1 })) }] : [];
     state = recordCompletedWorkout(state, computeSessionRecord({ id: `demo-${completedAtIso}-ared`, exerciseId: exercise.id, completedAtIso,
       durationSec: 45 + day % 10 * 15, sets: 4, reps: 12, loadKg: exercise.defaultLoadKg * (0.8 + day % 5 * 0.04), cardioDistanceKm: 0,

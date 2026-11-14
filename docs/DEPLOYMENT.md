@@ -1,6 +1,6 @@
 # Static Production Deployment
 
-## Verified locally — November 14, 2026
+## Historical M0–M2 baseline — November 14, 2026
 
 | Check | Terminal result |
 | --- | --- |
@@ -10,7 +10,9 @@
 | `npm run test:production` | 5 passed (16.9s) |
 | `npm run test:e2e` | 5 passed (20.4s) |
 
-The build emits a separate 136.11 kB MediaPipe chunk and a 250.74 kB application chunk, plus the local model and both WASM variants. The production tests verified asset sizes, WASM MIME types, successful real model initialization with a fake camera, and all three demo modes after camera/model/WASM failures. A pending camera prompt can be cancelled by a single demo click. No public URL, provider deployment, web-filter approval, or award eligibility has been established by these local checks.
+These are historical baseline results, not the current test totals. The build emits separate application/CSS and MediaPipe assets, plus the local model and both WASM variants; sizes change with the checkout. The production tests verified asset sizes, WASM MIME types, successful real model initialization with a fake camera, and all three demo modes after camera/model/WASM failures. A pending camera prompt can be cancelled by a single demo click. Local checks alone do not establish the state of a hosted deployment, web-filter approval, or award eligibility.
+
+For the current frontend/scientific-context pass, run all five required checks: unit/browser tests, strict typecheck, architecture lint, production build and the full E2E suite. See `SCIENTIFIC_AND_REPOSITORY_AUDIT.md` for current results, scope and limits.
 
 ## Build and verify
 
@@ -18,7 +20,9 @@ The build emits a separate 136.11 kB MediaPipe chunk and a 250.74 kB application
 npm install
 npm run test
 npm run typecheck
+npm run lint
 npm run build
+npm run test:e2e
 npm run test:production
 ```
 
@@ -39,10 +43,12 @@ The production browser suite starts `vite preview` against the existing `dist/` 
 
 After publishing, verify the real HTTPS URL in a clean browser, repeat all three demo modes, check the sources section, and check camera tracking on permitted hardware. Local production tests establish bundle readiness; they do not verify a provider account or a public deployment.
 
-## Repository & Live Production URL
+## Repository & recorded hosting target
 
 - **GitHub Repository (`origin`):** `https://github.com/yyytsaB/PROJECT-A.R.E.S.-Nasa-Space-Apps-.git`
-- **Live Production Deployment (Vercel):** `https://project-ares-nasa.vercel.app/`
+- **Recorded Vercel target:** `https://project-ares-nasa.vercel.app/`. Its current content could not be inspected during this audit. Verify the deployed commit and actual browser behavior before submission.
+
+Offline-first means a loaded app can continue local workflows after disconnecting. Local model/WASM assets remove CDN dependencies, but there is no service worker or guaranteed uncached offline start/reload. Voice Coach needs an installed local-service voice. The comms toggle is manual; it does not implement a 24-minute delay or NASA connectivity.
 
 ## Web-filter request
 

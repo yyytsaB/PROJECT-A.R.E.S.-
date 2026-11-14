@@ -35,15 +35,15 @@ export function drawPoseWireframe(ctx: CanvasRenderingContext2D, frame: RawPoseF
     for (const [from, to] of bones) {
       const a = frame.landmarks[from], b = frame.landmarks[to];
       if (!visible(a) || !visible(b)) continue;
-      ctx.strokeStyle = highlighted.has(from) || highlighted.has(to) ? '#c00' : '#222';
+      ctx.strokeStyle = highlighted.has(from) || highlighted.has(to) ? '#c00' : '#bdebf2';
       ctx.beginPath(); ctx.moveTo(x(a), y(a)); ctx.lineTo(x(b), y(b)); ctx.stroke();
     }
     frame.landmarks.forEach((p, i) => {
       if (!visible(p)) return;
-      ctx.fillStyle = highlighted.has(i) ? '#c00' : '#222';
+      ctx.fillStyle = highlighted.has(i) ? '#c00' : '#bdebf2';
       ctx.beginPath(); ctx.arc(x(p), y(p), 3, 0, Math.PI * 2); ctx.fill();
     });
-    ctx.fillStyle = '#222'; ctx.font = '16px sans-serif';
+    ctx.fillStyle = '#e4f3ff'; ctx.font = '16px sans-serif';
     for (const index of [exercise.leftJoint[1], exercise.rightJoint[1]]) {
       const p = frame.landmarks[index];
       if (visible(p)) ctx.fillText(`${Math.round(analysis.primaryAngleDeg)}°`, x(p) + 8, y(p));
@@ -56,6 +56,16 @@ export function renderKinematicSnapshot(ctx: CanvasRenderingContext2D, snapshot:
   const exercise = getExerciseById(snapshot.exerciseId);
   if (exercise.kind !== 'RESISTANCE') throw new RangeError('Snapshot replay requires a resistance exercise');
   const frame = { landmarks: snapshot.landmarks, width: snapshot.frameWidth ?? ctx.canvas.width, height: snapshot.frameHeight ?? ctx.canvas.height, timestampMs: snapshot.timestampMs };
-  const analysis = analyzeExerciseFrame(normalizePose33(frame), exercise);
+  let analysis: KinematicFrameAnalysis;
+  try { analysis = analyzeExerciseFrame(normalizePose33(frame), exercise); }
+  catch {
+    ctx.save();
+    try {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.fillStyle = '#e4f3ff'; ctx.font = '16px sans-serif';
+      ctx.fillText('Pose unavailable: saved geometry cannot be replayed.', 8, 20);
+    } finally { ctx.restore(); }
+    return;
+  }
   drawPoseWireframe(ctx, frame, { ...analysis, primaryAngleDeg: snapshot.primaryAngleDeg, symmetryScorePct: snapshot.symmetryScorePct, faultFlags: snapshot.faultFlags }, exercise.id);
 }
