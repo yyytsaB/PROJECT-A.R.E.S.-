@@ -2,7 +2,7 @@
 
 - **Status:** `APPROVED` (Nov 14, 2026)
 - **Milestone Reference:** `ROADMAP.md` -> `M4`
-- **Owner:** Developer #2 (Parallel Track — or ChatGPT)
+- **Owner:** Developer #2 (Telemetry & Offline Sync Lead)
 - **Resolved Fog Items:** `F2`, `F3`, `F5`
 
 ---

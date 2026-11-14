@@ -17,7 +17,7 @@
 | **`RepPhase`** | `'IDLE' \| 'ECCENTRIC' \| 'INFLECTION' \| 'CONCENTRIC' \| 'COMPLETED'`. Deterministic hysteresis state machine preventing false rep triggers from single-frame webcam noise. |
 | **`KinematicSnapshot`** | Lightweight JSON record (`~1.5 KB`) captured automatically at the inflection point of any rep flagged with a `FormFaultFlag`: `{ repNumber, timestampMs, exerciseId, faultFlags, primaryAngleDeg, symmetryScorePct, landmarks: readonly PoseLandmark33[] }`. Replaces heavy `.mp4` blobs for instant 2D `<canvas>` wireframe replay in Workout Logs. |
 | **`GravityProfileId`** | `'MICROGRAVITY_0G'` (`0.0g`), `'MOON_016G'` (`0.16g`), `'MARS_038G'` (`0.38g`). Determines daily ARED volume targets and gravity-transition readiness thresholds. |
-| **`PlanetaryRouteId`** | `'VALLES_MARINERIS'` (`4,000 km` canyon traverse) or `'OLYMPUS_MONS'` (`600 km` base-to-caldera ascent). Converts both stationary cardio distance (`km`) and ARED resistance tonnage (`1,000 kg lifted = 1.0 km Expedition Equivalent Distance`) into route progress and crew milestone badges. |
+| **`PlanetaryRouteId`** | `'VALLES_MARINERIS'` (`4,000 km` game expedition based on approximate canyon length) or `'OLYMPUS_MONS'` (`600 km` game expedition based on approximate volcano diameter). These are not terrain-derived traverses. Converts cardio distance and form-qualified ARED volume (`250 kg = 1.0 km Expedition Equivalent Distance`, per locked F4) into route progress. |
 | **`StrengthRetentionScore`** | Percentage (`0..100+`) comparing the astronaut's rolling 30-day effective resistance load & form-qualified volume against pre-launch `AstronautProfile.earthBaseline1RM` benchmarks. |
 | **`CommsLinkStatus`** | `'BLACKOUT_24MIN_DELAY' \| 'WINDOW_OPEN'`. When in blackout (default deep-space mode), completed sessions append to `SyncQueueEnvelope[]` locally; when `WINDOW_OPEN` is triggered, queued telemetry flushes to Supabase (if configured) or the local Mission Control ack log. |
 
@@ -39,22 +39,22 @@ Following the **Ponytail Ladder of Laziness**:
 
 ## 3. Confirmed Public Test Seams (Where Tests Live)
 
-Per `.agents/skills/tdd/SKILL.md`, **all unit, integration, and E2E tests must target only these 6 pre-agreed seams**:
+Under the project testing standards, **all unit, integration, and E2E tests must target only these 6 pre-agreed seams**:
 
-### Seam 1: `KinematicMath` (`src/core/kinematics/kinematicMath.ts`) — *Owner: Dev #1*
+### Seam 1: `KinematicMath` (`src/core/kinematics/kinematicMath.ts`) — *Owner: Developer #1 (Vision & Kinematics Lead)*
 - **Public Interface:**
   - `normalizePose33(raw: RawPoseFrame): NormalizedPose33`
   - `computeJointAngleDeg(a: Point3D, b: Point3D, c: Point3D): number`
   - `analyzeExerciseFrame(pose: NormalizedPose33, exercise: ExerciseDefinition): KinematicFrameAnalysis`
 - **What Tests Verify:** Pelvis-translation & torso-scale invariance across 33 landmarks, exact `0..180°` vector angle math (`90°` right angle, `180°` full extension), ROM percentage clamping (`0..100%`), bilateral left/right symmetry scoring, spine alignment angle check, and low-visibility landmark rejection.
 
-### Seam 2: `RepAndFormStateMachine` (`src/core/kinematics/repStateMachine.ts`) — *Owner: Dev #1*
+### Seam 2: `RepAndFormStateMachine` (`src/core/kinematics/repStateMachine.ts`) — *Owner: Developer #1 (Vision & Kinematics Lead)*
 - **Public Interface:**
   - `createInitialRepState(exerciseId: ExerciseId): RepMachineState`
   - `advanceRepState(state: RepMachineState, frame: RawPoseFrame | null, exercise: ExerciseDefinition): RepMachineStepResult`
 - **What Tests Verify:** Full rep cycle (`IDLE -> ECCENTRIC -> INFLECTION -> CONCENTRIC -> COMPLETED`), jitter hysteresis (ignoring 1-frame noise), shallow-rep rejection (`"Depth insufficient"` alert + flagged rep + captured `KinematicSnapshot`), spine-lean fault flagging (`"Spine not aligned"`), and session pause/resume state preservation.
 
-### Seam 3: `ExerciseAndMissionCatalog` (`src/core/catalog/missionCatalog.ts`) — *Owner: Dev #1 (M0)*
+### Seam 3: `ExerciseAndMissionCatalog` (`src/core/catalog/missionCatalog.ts`) — *Owner: Developer #1 (Vision & Kinematics Lead), M0*
 - **Public Interface:**
   - `loadMissionCatalog(): MissionCatalog`
   - `getExerciseById(id: ExerciseId): ExerciseDefinition`
@@ -62,7 +62,7 @@ Per `.agents/skills/tdd/SKILL.md`, **all unit, integration, and E2E tests must t
   - `validateMissionCatalogSchema(rawJson: unknown): ValidationResult`
 - **What Tests Verify:** Structural schema integrity of `src/content/missionCatalog.json`: valid 0..32 MediaPipe Pose landmark indices, non-degenerate start/target angle bounds for all 4 ARED exercises (`SQUAT`, `DEADLIFT`, `OVERHEAD_PRESS`, `BICEP_CURL`), valid cardio equivalents, and ordered milestone waypoints along Valles Marineris and Olympus Mons.
 
-### Seam 4: `ProgressionAndTelemetryEngine` (`src/core/telemetry/telemetryEngine.ts`) — *Owner: Dev #2*
+### Seam 4: `ProgressionAndTelemetryEngine` (`src/core/telemetry/telemetryEngine.ts`) — *Owner: Developer #2 (Telemetry & Offline Sync Lead)*
 - **Public Interface:**
   - `computeSessionRecord(input: CompletedWorkoutInput, profile: AstronautProfile): WorkoutSessionRecord`
   - `computeExpeditionProgress(sessions: readonly WorkoutSessionRecord[], route: PlanetaryRoute): ExpeditionProgressReport`
@@ -70,7 +70,7 @@ Per `.agents/skills/tdd/SKILL.md`, **all unit, integration, and E2E tests must t
   - `buildFlightSurgeonReport(telemetry: MedicalTelemetryReport, profile: AstronautProfile, syncSummary: SyncQueueSummary, exportedAtIso: string): FlightSurgeonReport`
 - **What Tests Verify:** Tonnage lifted (`sets × reps × loadKg`) + cardio distance conversion into planetary route kilometers (`Valles Marineris` / `Olympus Mons`), milestone badge unlocking, 30-day **Earth-Baseline Strength Retention %** calculation across gravity profiles (`0g / 0.16g / 0.38g`), symmetry consistency aggregation, and deterministic Flight Surgeon JSON report generation.
 
-### Seam 5: `OfflineTelemetryAndSyncStore` (`src/core/storage/telemetryStore.ts`) — *Owner: Dev #2*
+### Seam 5: `OfflineTelemetryAndSyncStore` (`src/core/storage/telemetryStore.ts`) — *Owner: Developer #2 (Telemetry & Offline Sync Lead)*
 - **Public Interface:**
   - `loadMissionStore(storage?: StorageLike, nowIso?: string): MissionStoreState`
   - `recordCompletedWorkout(state: MissionStoreState, session: WorkoutSessionRecord, storage?: StorageLike): MissionStoreState`
@@ -103,4 +103,4 @@ Across the 3 provided PDFs, the following inconsistencies were identified, confi
      - **Expedition Distance (`km`):** `cardioDistanceKm + (resistanceVolumeKg / 250)` (every `250 kg` of form-qualified ARED volume equals `1.0 km` of rover/eva traverse equivalent, so a typical `5,000 kg` ARED session advances the crew `20 km` across Valles Marineris).
      - **Strength Retention Score (`0..100%`):** Weighted rolling 30-day score: `0.70 * min(1, rollingEffectiveLoad / earthBaselineLoad) + 0.30 * (meanFormAccuracyPct / 100)`, scaled by `100`.
 5. **`F5` — 6-Person Team & UI Ownership Boundary:**
-   - *Rule:* The 2 developers (User + Dev #2, assisted by ChatGPT) build **zero decorative UI**. We deliver `src/core/`, `src/adapters/`, `src/hooks/`, automated tests, and a bare semantic HTML harness so the 2 Frontend teammates own all Vite/React styling and layouts without merge conflicts.
+   - *Rule:* The 2 developers (Developer #1 (Vision & Kinematics Lead) and Developer #2 (Telemetry & Offline Sync Lead)) build **zero decorative UI**. We deliver `src/core/`, `src/adapters/`, `src/hooks/`, automated tests, and a bare semantic HTML harness so the 2 Frontend teammates own all Vite/React styling and layouts without merge conflicts.

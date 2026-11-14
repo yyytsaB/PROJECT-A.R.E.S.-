@@ -1,23 +1,23 @@
 # ROADMAP.md — Project A.R.E.S. Wayfinder Map & 48-Hour Hackathon Milestone Tracker
 
-> **Instructions for Agents (`wayfinder` & `superpowers-sdd`):**
+> **Milestone planning and verification:**
 > 1. Check **Section 1 (Fog / PDF Inconsistencies)** first. Confirm `F1–F5` with the user before writing production code.
-> 2. Work through **Section 2 (Vertical Milestones `M0 -> M4`)** designed for parallel execution by **Developer 1 (You + ChatGPT)** and **Developer 2** during the **Nov 14–15 NASA Space Apps Sprint**.
+> 2. Work through **Section 2 (Vertical Milestones `M0 -> M4`)** designed for parallel execution by **Developer #1 (Vision & Kinematics Lead)** and **Developer 2** during the **Nov 14–15 NASA Space Apps Sprint**.
 > 3. Keep **Section 3 (Deferred)** strictly out of scope, and leave all visual styling to the **2 Frontend Teammates**.
 
 ---
 
 ## Current Project State
-- **Current Phase:** Hackathon implementation — **M0 and M1 complete**, verified November 14, 2026. Coding began after the 09:00 AM local start gate.
+- **Current Phase:** Hackathon implementation — **M0, M1, and M2 complete**, verified November 14, 2026. Coding began after the 09:00 AM local start gate.
 - **HACKATHON FAIR-PLAY HARD GATE:** Do **NOT** run `npm init`, scaffold `package.json`, or create any files under `src/` or `tests/` until the official **Nov 14, 09:00 AM** start signal.
-- **Next Milestones:** `M2: Live MediaPipe Pose Adapter, Skeletal Canvas & Snapshot Replay` (Dev #1) & `M3: Planetary Expedition & Telemetry Engine` (Dev #2; shared M0 types are available).
-- **Verification:** `docs/M0-M1-VERIFICATION.md` records test output, core coverage, browser verification, and independent Standards/Spec audit results.
+- **Next Milestones:** `M3: Planetary Expedition & Telemetry Engine`, then `M4: Offline-First Store & Comms Sync` (Dev #2; shared types and M2 workout controller are available).
+- **Verification:** Milestone task checklists record completion; use `npm run test`, `npm run typecheck`, and `npm run build` to reproduce the checks.
 - **Team Topology (6 Members):**
-  - **Developers (2):** Dev #1 (You + ChatGPT Heavy Coder) on `M0`, `M1`, `M2`; Dev #2 on `M3`, `M4`.
+  - **Developers (2):** Developer #1 (Vision & Kinematics Lead) on `M0`, `M1`, `M2`; Dev #2 on `M3`, `M4`.
   - **Frontend / Wireframes (2):** Owns Vite/React dark-mode UI, progression rings, planetary map visuals, and charts consuming `src/hooks/`.
   - **Documentation (2):** Owns NASA Space Apps challenge write-up, pitch deck, and demo script (`docs/PROPOSAL.md`).
-- **Lead Heavy Coder:** ChatGPT
-- **Architect / Two-Axis Auditor:** Antigravity / Claude Opus 5.5
+- **Vision & Kinematics Lead:** Developer #1 (Vision & Kinematics Lead)
+- **Architecture & Verification:** Architecture & Verification Lead
 
 ---
 
@@ -34,13 +34,13 @@ All 5 Fog items reconciling the 3 project PDFs have been confirmed by the team a
 - [x] **`F4 [DECISION]` Planetary Distance & Earth-Baseline Strength Retention Math:**
   Confirmed the deterministic formulas in `CONTEXT.md` (`1.0 km` Expedition Progress per `1.0 km` cardio or per `250 kg` ARED volume lifted across `Valles Marineris 4,000 km` / `Olympus Mons 600 km`; rolling 30-day `StrengthRetentionScore` combining `70%` effective load retention vs. Earth 1RM baselines + `30%` mean form accuracy across `0g / 0.16g / 0.38g`).
 - [x] **`F5 [DECISION]` 2-Developer Parallel Split & Headless Hook Contract for the 2 Frontend Teammates:**
-  Confirmed the zero-conflict split where **Dev #1 (You + ChatGPT)** owns `M0 + M1 + M2` (`src/core/catalog/`, `src/core/kinematics/`, `src/adapters/poseCameraAdapter.ts`), **Dev #2** owns `M3 + M4` (`src/core/telemetry/`, `src/core/storage/`), and both expose clean headless hooks in `src/hooks/` with a plain semantic HTML testbench (`src/App.tsx`) until the **2 Frontend teammates** plug in their UI.
+  Confirmed the zero-conflict split where **Developer #1 (Vision & Kinematics Lead)** owns `M0 + M1 + M2` (`src/core/catalog/`, `src/core/kinematics/`, `src/adapters/poseCameraAdapter.ts`), **Dev #2** owns `M3 + M4` (`src/core/telemetry/`, `src/core/storage/`), and both expose clean headless hooks in `src/hooks/` with a plain semantic HTML testbench (`src/App.tsx`) until the **2 Frontend teammates** plug in their UI.
 
 ---
 
 ## 2. CLEAR / IN-SCOPE VERTICAL MILESTONES (Nov 14–15 Sprint)
 
-### [x] M0: Project Skeleton, Mission Catalog Schema & Headless Hook Contracts *(Owner: Dev #1 + ChatGPT)*
+### [x] M0: Project Skeleton, Mission Catalog Schema & Headless Hook Contracts *(Owner: Developer #1 (Vision & Kinematics Lead))*
 - **Spec Path:** `specs/000-foundation/spec.md` | **Tasks:** `specs/000-foundation/tasks.md`
 - **Blocked by:** `F1`, `F5`
 - **Scope:**
@@ -48,14 +48,14 @@ All 5 Fog items reconciling the 3 project PDFs have been confirmed by the team a
   - `Seam 3` (`ExerciseAndMissionCatalog`): `src/content/missionCatalog.json` + strict validator covering the 4 ARED exercises (`SQUAT`, `DEADLIFT`, `OVERHEAD_PRESS`, `BICEP_CURL`), 3 cardio modalities, 3 gravity profiles (`0g`, `0.16g`, `0.38g`), and 2 planetary routes (`VALLES_MARINERIS`, `OLYMPUS_MONS`).
   - Define shared TypeScript contracts (`src/core/types.ts`) so Dev #1, Dev #2, and the 2 Frontend teammates can work in parallel immediately after `M0`.
 
-### [x] M1: 33-Point Kinematic Analysis Engine & Rep/Form State Machine *(Owner: Dev #1 + ChatGPT)*
+### [x] M1: 33-Point Kinematic Analysis Engine & Rep/Form State Machine *(Owner: Developer #1 (Vision & Kinematics Lead))*
 - **Spec Path:** `specs/001-kinematic-engine/spec.md` | **Tasks:** `specs/001-kinematic-engine/tasks.md`
 - **Blocked by:** `M0`, `F1`, `F3`
 - **Scope:**
   - `Seam 1` (`KinematicMath`): Pelvis-centered, torso-scaled 33-point normalization, 3D/2D joint-angle calculation, Range-of-Motion (ROM) %, bilateral symmetry %, spine alignment guard, and form fault detection (`"Depth insufficient"`, `"Spine not aligned"`).
   - `Seam 2` (`RepAndFormStateMachine`): Hysteresis rep counter (`IDLE -> ECCENTRIC -> INFLECTION -> CONCENTRIC -> COMPLETED`), form accuracy scoring, and automatic `KinematicSnapshot` capture on faulted reps.
 
-### [ ] M2: Live MediaPipe Pose Adapter, 60fps Skeletal Canvas & Snapshot Replay *(Owner: Dev #1 + ChatGPT)*
+### [x] M2: Live MediaPipe Pose Adapter, 60fps Skeletal Canvas & Snapshot Replay *(Owner: Developer #1 (Vision & Kinematics Lead))*
 - **Spec Path:** `specs/002-pose-camera-arena/spec.md` | **Tasks:** `specs/002-pose-camera-arena/tasks.md`
 - **Blocked by:** `M1`
 - **Scope:**
@@ -63,13 +63,13 @@ All 5 Fog items reconciling the 3 project PDFs have been confirmed by the team a
   - Built-in **Simulated Pose Trajectory Generator** (`Simulate Good Rep`, `Simulate Shallow/Bad Spine Rep`) so live pitches and Playwright E2E tests work deterministically even without a webcam.
   - 2D `<canvas>` **Kinematic Snapshot Replay** viewer for inspecting flagged improper reps in Workout Logs, plus headless `useWorkoutArena()` hook for the Frontend team.
 
-### [ ] M3: Planetary Expedition Engine, Strength Retention & Flight Surgeon Telemetry *(Owner: Dev #2 — Parallel Track)*
+### [ ] M3: Planetary Expedition Engine, Strength Retention & Flight Surgeon Telemetry *(Owner: Developer #2 (Telemetry & Offline Sync Lead))*
 - **Spec Path:** `specs/003-progression-and-telemetry/spec.md` | **Tasks:** `specs/003-progression-and-telemetry/tasks.md`
 - **Blocked by:** `M0`, `F4` *(Can run in parallel with `M1`/`M2`!)*
 - **Scope:**
   - `Seam 4` (`ProgressionAndTelemetryEngine`): Pure functions calculating session tonnage & effective load, converting cardio km + ARED tonnage into **Valles Marineris / Olympus Mons** route progress and milestone badges, computing 30-day **Earth-Baseline Strength Retention %** and symmetry scores, and generating the exportable **Flight Surgeon Telemetry Report** (JSON/CSV).
 
-### [ ] M4: Offline-First Store, 24-Min Comms Blackout Sync Queue & 30-Day Demo Seeder *(Owner: Dev #2 — Parallel Track)*
+### [ ] M4: Offline-First Store, 24-Min Comms Blackout Sync Queue & 30-Day Demo Seeder *(Owner: Developer #2 (Telemetry & Offline Sync Lead))*
 - **Spec Path:** `specs/004-offline-sync-store/spec.md` | **Tasks:** `specs/004-offline-sync-store/tasks.md`
 - **Blocked by:** `M3`, `F2`
 - **Scope:**

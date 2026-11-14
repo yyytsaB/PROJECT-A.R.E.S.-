@@ -1,7 +1,7 @@
 # Implementation Tasks (Vertical TDD Slices): M0 — Project Skeleton & Mission Catalog
 
 - **Spec Reference:** `./spec.md`
-- **Owner:** Developer #1 + ChatGPT Heavy Coder
+- **Owner:** Developer #1 (Vision & Kinematics Lead)
 
 ---
 
@@ -33,4 +33,4 @@
 - [x] `npm run typecheck` passes with zero errors.
 - [x] `ROADMAP.md` updated to mark `M0` complete (`[x]`), unlocking parallel work for Developer #2 on `M3`/`M4`.
 
-Verification evidence: `docs/M0-M1-VERIFICATION.md` (November 14, 2026).
+Verification: run the tests and typecheck commands recorded above.

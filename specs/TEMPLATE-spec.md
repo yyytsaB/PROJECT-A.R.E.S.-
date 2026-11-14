@@ -2,7 +2,7 @@
 
 - **Status:** `DRAFT` | `APPROVED` | `IMPLEMENTED`
 - **Milestone Reference:** `ROADMAP.md` -> `[M0 / M1 / M2 / M3 / M4]`
-- **Owner:** `[Dev #1 (You + ChatGPT) | Dev #2]`
+- **Owner:** `[Developer #1 (Vision & Kinematics Lead) | Developer #2 (Telemetry & Offline Sync Lead)]`
 - **Resolved Fog Items:** `[List F1, F2, etc. from ROADMAP.md]`
 
 ---

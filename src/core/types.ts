@@ -58,6 +58,7 @@ export interface KinematicFrameAnalysis {
 }
 export type RepPhase = 'IDLE' | 'ECCENTRIC' | 'INFLECTION' | 'CONCENTRIC' | 'COMPLETED';
 export interface KinematicSnapshot {
+  readonly frameWidth?: number; readonly frameHeight?: number;
   readonly repNumber: number; readonly timestampMs: number; readonly exerciseId: ExerciseId;
   readonly faultFlags: readonly FormFaultFlag[]; readonly primaryAngleDeg: number;
   readonly symmetryScorePct: number; readonly landmarks: readonly PoseLandmark33[];

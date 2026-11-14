@@ -1,0 +1,50 @@
+[
+  {
+    "title": "NASA HRP — exercise countermeasures and gravity environments",
+    "description": "NASA describes 2.5 hours of scheduled daily ISS exercise using ARED, a treadmill, and a cycle ergometer. Our catalog represents microgravity (0g), Moon (0.16g), and Mars (0.38g) as approximate environment profiles. Exercise loads and form thresholds are team-defined prototype settings, not NASA prescriptions.",
+    "links": [
+      { "label": "NASA Human Research Roadmap", "url": "https://humanresearchroadmap.nasa.gov/" },
+      { "label": "NASA astronaut health and daily exercise", "url": "https://www.nasa.gov/missions/station/faq-the-real-story-about-astronaut-health-care-in-space/" },
+      { "label": "NASA Moon-to-Mars gravity reference", "url": "https://ntrs.nasa.gov/api/citations/20250009282/downloads/2025%20IAC%20-%20Why%20Moon%20and%20Mars%20-%200916%20Edits.pdf?attachment=true" }
+    ]
+  },
+  {
+    "title": "NASA OSDR and LSDA — life-sciences research references",
+    "description": "OSDR and the Life Sciences Data Archive (LSDA) are research references for planned 30-day Earth-Baseline Strength Retention and Flight Surgeon telemetry. The retention equation and telemetry schema are team-defined; NASA participant records are not imported or used to validate them. LSDA is accessed through the NASA Life Sciences Portal.",
+    "links": [
+      { "label": "NASA Open Science Data Repository (OSDR)", "url": "https://science.nasa.gov/biological-physical/data/osdr/" },
+      { "label": "NASA Life Sciences Portal — LSDA", "url": "https://nlsp.nasa.gov/" }
+    ]
+  },
+  {
+    "title": "NASA MGS MOLA / Planetary Data System — Mars geography",
+    "description": "The catalog uses a 4,000 km Valles Marineris expedition and a 600 km Olympus Mons expedition. NASA describes these as approximate canyon length and volcano diameter, respectively. The Olympus expedition is a game distance, not a measured ascent. MGS MOLA is the official topographic archive; terrain rasters are not imported into this prototype.",
+    "links": [
+      { "label": "NASA PDS MGS MOLA topography archive", "url": "https://pds-geosciences.wustl.edu/missions/mgs/mola.html" },
+      { "label": "NASA/JPL Mars geographic dimensions", "url": "https://www.jpl.nasa.gov/news/press_kits/insight/landing/facts/mars-at-a-glance/" }
+    ]
+  },
+  {
+    "title": "CSA — TBone and MARROW",
+    "description": "TBone studies bone loss and recovery; MARROW studies bone marrow and blood-cell changes. These Canadian Space Agency studies provide scientific context for musculoskeletal monitoring. Their participant data are not imported into the exercise engine.",
+    "links": [
+      { "label": "CSA TBone studies", "url": "https://www.asc-csa.gc.ca/eng/sciences/tbone.asp" },
+      { "label": "CSA MARROW study", "url": "https://www.csa-asc.gc.ca/eng/sciences/marrow.asp" }
+    ]
+  },
+  {
+    "title": "ESA — communication delays and autonomous health monitoring",
+    "description": "ESA's Mars500 study used a 20-minute communication delay, while EchoFinder-2 illustrates autonomous health assessment for distant missions. Our 24-minute blackout is a team-selected resilience scenario, rather than an ESA medical protocol.",
+    "links": [
+      { "label": "ESA Mars500 delayed communications", "url": "https://www.esa.int/pt/articles/mars500-study-overview" },
+      { "label": "ESA EchoFinder-2 autonomous healthcare", "url": "https://www.esa.int/ESA_Multimedia/Images/2026/01/Finding_the_echo" }
+    ]
+  },
+  {
+    "title": "JAXA — Kibo muscle-atrophy countermeasure research",
+    "description": "Kibo's Zebrafish Muscle 2 research investigates microgravity-related muscle atrophy and potential countermeasures. This is a scientific reference; the project's exercise thresholds are not derived from this animal study.",
+    "links": [
+      { "label": "JAXA Kibo Zebrafish Muscle 2", "url": "https://humans-in-space.jaxa.jp/en/biz-lab/experiment/theme/detail/000854.html" }
+    ]
+  }
+]

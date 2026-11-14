@@ -6,9 +6,14 @@ coverage/
 playwright-report/
 test-results/
 .env.local
+/public/mediapipe/wasm/
 
 # Local assistant tooling and handoff prompts stay off GitHub.
 .agents/
 .codex/
+AGENTS.md
 CLAUDE.md
+docs/M0-M1-VERIFICATION.md
+docs/*-VERIFICATION.md
+docs/HACKATHON_WINNING_AUDIT.md
 **/*[Hh][Aa][Nn][Dd][Oo][Ff][Ff]*

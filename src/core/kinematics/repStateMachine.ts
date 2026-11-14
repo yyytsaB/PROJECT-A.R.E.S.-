@@ -9,7 +9,7 @@ const faultAlerts: Record<FormFaultFlag, string> = {
 function buildSnapshot(frame: RawPoseFrame, analysis: KinematicFrameAnalysis, repNumber: number, exerciseId: ExerciseId, faultFlags: readonly FormFaultFlag[]): KinematicSnapshot {
   const round = (n: number) => Number(n.toFixed(3));
   return {
-    repNumber, exerciseId, timestampMs: frame.timestampMs,
+    repNumber, exerciseId, timestampMs: frame.timestampMs, frameWidth: frame.width, frameHeight: frame.height,
     primaryAngleDeg: round(analysis.primaryAngleDeg), symmetryScorePct: round(analysis.symmetryScorePct),
     faultFlags, landmarks: frame.landmarks.map(p => ({ x: round(p.x), y: round(p.y), z: round(p.z), visibility: round(p.visibility) })),
   };
