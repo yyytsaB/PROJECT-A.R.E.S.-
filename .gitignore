@@ -1,0 +1,14 @@
+node_modules/
+.npm-cache/
+.playwright-browsers/
+dist/
+coverage/
+playwright-report/
+test-results/
+.env.local
+
+# Local assistant tooling and handoff prompts stay off GitHub.
+.agents/
+.codex/
+CLAUDE.md
+**/*[Hh][Aa][Nn][Dd][Oo][Ff][Ff]*
