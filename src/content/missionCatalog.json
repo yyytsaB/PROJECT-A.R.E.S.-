@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "exercises": [
+    { "id": "SQUAT", "name": "Squat", "kind": "RESISTANCE", "leftJoint": [23,25,27], "rightJoint": [24,26,28], "startAngleDeg": 170, "targetAngleDeg": 95, "hysteresisDeg": 10, "maxTrunkLeanDeg": 35, "symmetryToleranceDeg": 12, "defaultLoadKg": 80, "earthLoadMultiplier": 1 },
+    { "id": "DEADLIFT", "name": "Deadlift", "kind": "RESISTANCE", "leftJoint": [11,23,25], "rightJoint": [12,24,26], "startAngleDeg": 170, "targetAngleDeg": 100, "hysteresisDeg": 10, "maxTrunkLeanDeg": 45, "symmetryToleranceDeg": 12, "defaultLoadKg": 100, "earthLoadMultiplier": 1 },
+    { "id": "OVERHEAD_PRESS", "name": "Overhead Press", "kind": "RESISTANCE", "leftJoint": [11,13,15], "rightJoint": [12,14,16], "startAngleDeg": 75, "targetAngleDeg": 165, "hysteresisDeg": 10, "maxTrunkLeanDeg": 20, "symmetryToleranceDeg": 15, "defaultLoadKg": 40, "earthLoadMultiplier": 1 },
+    { "id": "BICEP_CURL", "name": "Bicep Curl", "kind": "RESISTANCE", "leftJoint": [11,13,15], "rightJoint": [12,14,16], "startAngleDeg": 160, "targetAngleDeg": 50, "hysteresisDeg": 10, "maxTrunkLeanDeg": 18, "symmetryToleranceDeg": 15, "defaultLoadKg": 20, "earthLoadMultiplier": 1 },
+    { "id": "TREADMILL", "name": "Treadmill", "kind": "CARDIO", "distanceMultiplier": 1, "earthLoadMultiplier": 1 },
+    { "id": "CYCLE_ERGOMETER", "name": "Cycle Ergometer", "kind": "CARDIO", "distanceMultiplier": 1, "earthLoadMultiplier": 1 },
+    { "id": "ROWING", "name": "Rowing", "kind": "CARDIO", "distanceMultiplier": 1, "earthLoadMultiplier": 1 }
+  ],
+  "gravityProfiles": [
+    { "id": "MICROGRAVITY_0G", "name": "Microgravity", "gravityG": 0 },
+    { "id": "MOON_016G", "name": "Moon", "gravityG": 0.16 },
+    { "id": "MARS_038G", "name": "Mars", "gravityG": 0.38 }
+  ],
+  "routes": [
+    { "id": "VALLES_MARINERIS", "name": "Valles Marineris", "totalDistanceKm": 4000, "milestones": [
+      { "id": "FIRST_TRAVERSE", "name": "First Traverse", "distanceKm": 50 },
+      { "id": "CANYON_MIDPOINT", "name": "Canyon Midpoint", "distanceKm": 2000 },
+      { "id": "CANYON_COMPLETE", "name": "Canyon Complete", "distanceKm": 4000 }
+    ] },
+    { "id": "OLYMPUS_MONS", "name": "Olympus Mons", "totalDistanceKm": 600, "milestones": [
+      { "id": "BASE_CAMP", "name": "Base Camp", "distanceKm": 50 },
+      { "id": "UPPER_SLOPE", "name": "Upper Slope", "distanceKm": 300 },
+      { "id": "CALDERA", "name": "Caldera", "distanceKm": 600 }
+    ] }
+  ]
+}
