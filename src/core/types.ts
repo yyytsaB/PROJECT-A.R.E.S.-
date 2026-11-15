@@ -152,7 +152,7 @@ export interface FlightSurgeonReport {
   readonly csv: string;
 }
 export type SimulatedRepKind = 'GOOD' | 'SHALLOW' | 'SPINE_FAULT' | 'ASYMMETRIC';
-export interface UseWorkoutArenaOptions { readonly exerciseId?: ResistanceExerciseId; readonly onCompleted?: (state: RepMachineState, durationSec: number) => void }
+export interface UseWorkoutArenaOptions { readonly active?: boolean; readonly exerciseId?: ResistanceExerciseId; readonly onCompleted?: (state: RepMachineState, durationSec: number) => void }
 export interface WorkoutArenaController {
   readonly state: RepMachineState; readonly analysis: KinematicFrameAnalysis | null;
   readonly activeFaultAlerts: readonly string[]; readonly isRunning: boolean;

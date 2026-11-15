@@ -8,7 +8,7 @@ import { advanceRepState, createInitialRepState } from '../core/kinematics/repSt
 import type { KinematicFrameAnalysis, RepMachineState, ResistanceExerciseId, SimulatedRepKind, UseWorkoutArenaOptions, WorkoutArenaController as CoreController } from '../core/types';
 import { useVoiceCoach } from './useVoiceCoach';
 
-type SessionStatus = 'IDLE' | 'STARTING' | 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'ERROR';
+type SessionStatus = 'IDLE' | 'STARTING' | 'READY' | 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'ERROR';
 interface ArenaView {
   readonly state: RepMachineState; readonly analysis: KinematicFrameAnalysis | null; readonly activeFaultAlerts: readonly string[];
   readonly sessionStatus: SessionStatus; readonly errorMessage: string | null; readonly maxRomPct: number;
@@ -23,6 +23,7 @@ export interface WorkoutArenaController extends CoreController, ArenaView {
   readonly voiceCoachEnabled: boolean; readonly voiceCoachStatus: string;
   setVoiceCoachEnabled(enabled: boolean): void;
   readonly canvasRef: RefObject<HTMLCanvasElement | null>; readonly videoRef: RefObject<HTMLVideoElement | null>;
+  prepare(mode: 'LIVE' | 'SIMULATED'): Promise<void>;
   selectExercise(id: ResistanceExerciseId): void;
   stop(): RepMachineState;
 }
@@ -61,10 +62,12 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
   const abort = useRef<AbortController | null>(null);
   const animation = useRef<number | null>(null);
   const generation = useRef(0);
+  const preparingOnly = useRef(false);
   const lastTick = useRef(-Infinity);
   const publish = () => setView({ ...current.current });
   const cancelAnimation = () => { if (animation.current !== null) cancelAnimationFrame(animation.current); animation.current = null; };
   const dispose = () => {
+    preparingOnly.current = false;
     stopTimer();
     voiceCoach.cancelSpeech();
     generation.current++;
@@ -105,10 +108,13 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
       dispose(); current.current = { ...current.current, sessionStatus: 'ERROR', errorMessage: 'Camera tracking stopped. Use a simulated rep to continue.' }; publish();
     }
   }
-  async function start(mode: 'LIVE' | 'SIMULATED'): Promise<void> {
+  async function openFeed(mode: 'LIVE' | 'SIMULATED', runImmediately: boolean): Promise<void> {
     finishPendingReps();
     dispose();
     resetTimer();
+    const canvas = canvasRef.current;
+    canvas?.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
+    preparingOnly.current = !runImmediately;
     const version = generation.current;
     abort.current = new AbortController();
     current.current = { state: createInitialRepState(current.current.state.exerciseId), analysis: null,
@@ -118,13 +124,23 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
       const opened = await createPoseSource({ mode, video: videoRef.current ?? undefined, signal: abort.current.signal });
       if (version !== generation.current) { opened.close(); return; }
       source.current = opened;
-      current.current = { ...current.current, sessionStatus: 'RUNNING' }; lastTick.current = -Infinity;
-      startTimer(); publish(); animation.current = requestAnimationFrame(tick);
+      if (runImmediately) beginRun();
+      else { current.current = { ...current.current, sessionStatus: 'READY' }; publish(); }
     } catch {
       if (version !== generation.current) return;
       dispose(); current.current = { ...current.current, sessionStatus: 'ERROR', errorMessage: 'Camera unavailable. Use a simulated rep to continue.' }; publish();
     }
   }
+  function beginRun() {
+    preparingOnly.current = false;
+    current.current = { ...current.current, sessionStatus: 'RUNNING' }; lastTick.current = -Infinity;
+    startTimer(); publish(); animation.current = requestAnimationFrame(tick);
+  }
+  async function start(mode: 'LIVE' | 'SIMULATED'): Promise<void> {
+    if (current.current.sessionStatus === 'READY' && current.current.mode === mode && source.current) beginRun();
+    else await openFeed(mode, true);
+  }
+  const prepare = (mode: 'LIVE' | 'SIMULATED') => openFeed(mode, false);
   function pause() {
     if (current.current.sessionStatus !== 'RUNNING') return;
     stopTimer();
@@ -150,23 +166,33 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
   function selectExercise(id: ResistanceExerciseId) {
     if (getExerciseById(id).kind !== 'RESISTANCE') throw new RangeError('Workout arena requires a resistance exercise');
     finishPendingReps();
+    if (current.current.sessionStatus === 'READY') {
+      current.current = { ...current.current, state: createInitialRepState(id), analysis: null, activeFaultAlerts: [], maxRomPct: 0 }; publish(); return;
+    }
     dispose(); resetTimer(); current.current = { state: createInitialRepState(id), analysis: null,
       activeFaultAlerts: [], sessionStatus: 'IDLE', errorMessage: null, maxRomPct: 0, mode: null }; publish();
   }
   async function triggerSimulatedRep(kind: SimulatedRepKind): Promise<void> {
     if (current.current.sessionStatus === 'STARTING' && current.current.mode !== 'LIVE') return;
-    if (!source.current?.enqueue) await start('SIMULATED');
+    if (!source.current?.enqueue || current.current.sessionStatus === 'READY') await start('SIMULATED');
     source.current?.enqueue?.(generateSimulatedRepFrames(current.current.state.exerciseId, kind));
   }
   useEffect(() => () => dispose(), []);
   useEffect(() => {
+    if (options.active === false && preparingOnly.current) {
+      dispose(); resetTimer();
+      current.current = { ...current.current, sessionStatus: 'IDLE', mode: null, analysis: null, errorMessage: null };
+      publish();
+    }
+  }, [options.active]);
+  useEffect(() => {
     if (options.exerciseId && options.exerciseId !== current.current.state.exerciseId) selectExercise(options.exerciseId);
   }, [options.exerciseId]);
   return { ...view, elapsedSeconds, formFeedback: view.analysis?.isVisible && view.activeFaultAlerts.length === 0 ? 'Spine aligned' : '',
-    canConfigureLoad: ['IDLE', 'COMPLETED'].includes(view.sessionStatus) || (view.sessionStatus === 'ERROR' && view.state.repCount === 0),
-    canEndSession: ['RUNNING', 'PAUSED', 'STARTING'].includes(view.sessionStatus) || (view.sessionStatus === 'ERROR' && view.state.repCount > 0),
+    canConfigureLoad: ['IDLE', 'READY', 'COMPLETED'].includes(view.sessionStatus) || (view.sessionStatus === 'ERROR' && view.state.repCount === 0),
+    canEndSession: ['READY', 'RUNNING', 'PAUSED', 'STARTING'].includes(view.sessionStatus) || (view.sessionStatus === 'ERROR' && view.state.repCount > 0),
     voiceEnabled: voiceCoach.voiceCoachEnabled, setVoiceEnabled: voiceCoach.setVoiceCoachEnabled, visualOverlayEnabled, setVisualOverlayEnabled,
     voiceCoachEnabled: voiceCoach.voiceCoachEnabled, voiceCoachStatus: voiceCoach.voiceCoachStatus,
     setVoiceCoachEnabled: voiceCoach.setVoiceCoachEnabled, isRunning: view.sessionStatus === 'RUNNING', canvasRef, videoRef,
-    start, pause, resume, stop, selectExercise, triggerSimulatedRep };
+    start, prepare, pause, resume, stop, selectExercise, triggerSimulatedRep };
 }

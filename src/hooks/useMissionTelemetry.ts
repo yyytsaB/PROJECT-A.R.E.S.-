@@ -144,15 +144,21 @@ export const useDashboardTelemetry = useDashboardSummary;
 export function useExpeditionJourney() {
   const { state, updateProfile } = useMissionTelemetry();
   const [showAllBadges, setShowAllBadges] = useState(false);
+  const [selectedWaypointId, setSelectedWaypointId] = useState<string | null>(null);
   const activeRoute = getPlanetaryRouteById(state.profile.routeId);
   const progress = computeExpeditionProgress(state.sessions, activeRoute);
   const totalTonnageKg = state.sessions.reduce((sum, s) => sum + s.resistanceVolumeKg, 0);
   const cardioKm = state.sessions.filter(s => loadMissionCatalog().exercises.some(e => e.id === s.exerciseId && e.kind === 'CARDIO')).reduce((sum, s) => sum + s.expeditionDistanceKm, 0);
   const badges = activeRoute.milestones.map(milestone => ({ ...milestone, isUnlocked: milestone.distanceKm <= progress.cumulativeDistanceKm }));
+  const nextWaypoint = activeRoute.milestones.find(milestone => milestone.distanceKm > progress.cumulativeDistanceKm) ?? null;
+  const selectedWaypoint = badges.find(milestone => milestone.id === selectedWaypointId) ?? badges.find(milestone => milestone.id === nextWaypoint?.id) ?? badges.at(-1);
   return { ...progress, activeRoute, totalTonnageKg, cardioKm, resistanceEquivalentKm: progress.cumulativeDistanceKm - cardioKm,
+    sessionCount: state.sessions.length, remainingDistanceKm: Math.max(0, activeRoute.totalDistanceKm - progress.cumulativeDistanceKm),
+    currentLegNumber: Math.min(activeRoute.milestones.length, progress.unlockedMilestones.length + 1),
+    selectedWaypoint, selectWaypoint: setSelectedWaypointId, waypoints: badges,
     unlockedBadges: progress.unlockedMilestones, showAllBadges, setShowAllBadges, badges: badges.filter(badge => showAllBadges || badge.isUnlocked),
-    nextWaypoint: activeRoute.milestones.find(m => m.distanceKm > progress.cumulativeDistanceKm) ?? null,
-    selectRoute: (routeId: AstronautProfile['routeId']) => updateProfile({ routeId }) };
+    nextWaypoint,
+    selectRoute: (routeId: AstronautProfile['routeId']) => { setSelectedWaypointId(null); updateProfile({ routeId }); } };
 }
 
 export function useMedicalTelemetry() {

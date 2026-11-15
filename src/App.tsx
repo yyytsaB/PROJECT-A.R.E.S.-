@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getExerciseById, loadMissionCatalog } from './core/catalog/missionCatalog';
 import { describeSnapshotDiagnostic, faultAlerts } from './core/kinematics/kinematicMath';
 import { formatDurationMmSs, getSessionFormStatus } from './core/telemetry/telemetryEngine';
-import type { CardioExerciseId, GravityProfileId, KinematicSnapshot, InjuryLimitation, MissionType, PlanetaryRouteId, RepMachineState, ResistanceExerciseId, WorkoutDateRange } from './core/types';
+import type { CardioExerciseId, GravityProfileId, KinematicSnapshot, InjuryLimitation, MissionType, RepMachineState, ResistanceExerciseId, WorkoutDateRange } from './core/types';
 import { renderKinematicSnapshot } from './adapters/poseCanvasRenderer';
 import { useWorkoutArena } from './hooks/useWorkoutArena';
 import { useAppNavigation } from './hooks/useAppNavigation';
@@ -12,10 +12,12 @@ import routineRules from './content/routineRules.json';
 import scienceSources from './content/scienceSources.json';
 import prototypeNotice from './content/prototypeNotice.json';
 import { MissionTelemetryProvider, useDashboardSummary, useExpeditionJourney, useMedicalTelemetry, useMissionProfile, useMissionTelemetry, useWorkoutHistory } from './hooks/useMissionTelemetry';
+import { ReferenceIcon } from './components/ReferenceIcon';
+import { JourneySection } from './components/JourneySection';
 import { DashboardSchedule } from './components/DashboardSchedule';
 import { SessionLaunchDock } from './components/SessionLaunchDock';
 import { MissionChrome } from './components/MissionChrome';
-import { MissionIcon, ProgressRing, RouteArtwork, TelemetryChart } from './components/MissionVisuals';
+import { MissionIcon, ProgressRing, TelemetryChart } from './components/MissionVisuals';
 
 export default function App() {
   return <MissionTelemetryProvider><MissionApp /></MissionTelemetryProvider>;
@@ -38,12 +40,13 @@ function MissionApp() {
   const [summary, setSummary] = useState<RepMachineState | null>(null);
   const [selectedSnapshot, setSelectedSnapshot] = useState<KinematicSnapshot | null>(null);
   const replayCanvas = useRef<HTMLCanvasElement>(null);
-  const arena = useWorkoutArena({ onCompleted: (state, durationSec) => {
+  const arena = useWorkoutArena({ active: navigation.activePage === 'arena', onCompleted: (state, durationSec) => {
     setSummary(state);
     if (state.repCount > 0) mission.saveWorkout({ id: crypto.randomUUID(), exerciseId: state.exerciseId, completedAtIso: new Date().toISOString(),
       durationSec, sets: 1, reps: state.repCount, loadKg, cardioDistanceKm: 0, formAccuracyPct: state.formAccuracyPct,
       symmetryScorePct: state.peakAnalysis?.symmetryScorePct ?? 100, snapshots: state.snapshots });
   } });
+  const arenaExercise = getExerciseById(arena.state.exerciseId);
   const dashboard = useDashboardSummary(id => { arena.selectExercise(id); setLoadKg(getExerciseById(id).defaultLoadKg); resetDisplay(); navigation.navigateToPage('arena'); void arena.start('SIMULATED'); }, arena.mode === 'LIVE' && arena.isRunning);
   const journey = useExpeditionJourney();
   const medical = useMedicalTelemetry();
@@ -56,6 +59,7 @@ function MissionApp() {
     else if (!settings.clearConfirmationPending && dialog?.open) dialog.close();
   }, [settings.clearConfirmationPending]);
   const resetDisplay = () => { setSummary(null); setSelectedSnapshot(null); };
+  const selectArenaExercise = (id: ResistanceExerciseId) => { arena.selectExercise(id); setLoadKg(getExerciseById(id).defaultLoadKg); resetDisplay(); };
   useEffect(() => {
     const ctx = replayCanvas.current?.getContext('2d');
     if (ctx && selectedSnapshot) renderKinematicSnapshot(ctx, selectedSnapshot);
@@ -105,21 +109,22 @@ function MissionApp() {
     </section>
     </div>
     <section className="mission-section arena-section" data-screen="arena" data-active={navigation.activePage === 'arena'} aria-labelledby="arena-heading">
-      <p className="eyebrow">02 / MOVEMENT INTELLIGENCE</p>
+      <p className="eyebrow">Live Form Coach</p>
       <h2 className="page-title" id="arena-heading">AI Workout Arena</h2>
-      <p className="section-subtitle">Real-time pose coaching. Camera-free simulation when you need it.</p>
-      <div className="arena-timer glass"><MissionIcon name="analytics" />Duration: <output aria-label="Workout duration">{formatDurationMmSs(arena.elapsedSeconds)}</output></div>
+      <p className="section-subtitle">Real-time pose tracking with joint-angle and range-of-motion feedback</p>
+      <div className="arena-timer glass"><ReferenceIcon name="timer" />Duration: <output aria-label="Workout duration">{formatDurationMmSs(arena.elapsedSeconds)}</output></div>
       <div className="arena-layout"><div className="glass arena-stage-card">
       <div className="tracking-stage">
       <div className="tracking-label"><span className="system-dot" />{arena.mode === 'SIMULATED' ? 'SIMULATED POSE FEED' : arena.mode === 'LIVE' ? 'CAMERA POSE FEED' : 'POSE TRACKING STANDBY'}<span>33 landmarks · processed locally</span></div>
-      <div className="tracking-viewport" data-idle={arena.sessionStatus === 'IDLE'}><video ref={arena.videoRef} aria-label="Live camera preview" width={640} height={480} muted playsInline
-        hidden={arena.mode !== 'LIVE' || !['STARTING', 'RUNNING', 'PAUSED'].includes(arena.sessionStatus)} />
-      <canvas ref={arena.canvasRef} aria-label="Live skeletal pose" width={640} height={480} hidden={!arena.visualOverlayEnabled}>Live pose wireframe and joint angle display.</canvas>
-      {arena.sessionStatus === 'IDLE' && <div className="tracking-placeholder"><MissionIcon name="camera" /><strong>Your next session starts here</strong><p>Start your webcam, or choose the simulator.<br />No webcam video is recorded.</p></div>}
+      <div className="tracking-viewport" data-idle={!['READY', 'RUNNING', 'PAUSED'].includes(arena.sessionStatus)}><video ref={arena.videoRef} aria-label="Live camera preview" width={640} height={480} muted playsInline
+        hidden={arena.mode !== 'LIVE' || !['STARTING', 'READY', 'RUNNING', 'PAUSED'].includes(arena.sessionStatus)} />
+      <canvas ref={arena.canvasRef} aria-label="Live skeletal pose" width={640} height={480} hidden={!arena.visualOverlayEnabled || !['READY', 'RUNNING', 'PAUSED'].includes(arena.sessionStatus)}>Live pose wireframe and joint angle display.</canvas>
+      {!['READY', 'RUNNING', 'PAUSED'].includes(arena.sessionStatus) && <div className="tracking-placeholder camera-access-panel"><span className="camera-access-icon"><ReferenceIcon name="camera" /></span><h3>{arena.sessionStatus === 'STARTING' ? arena.mode === 'LIVE' ? 'Waiting for camera access…' : 'Starting simulation…' : 'Allow camera access'}</h3><p role={arena.errorMessage ? 'alert' : undefined}>{arena.errorMessage ?? 'A.R.E.S. needs your camera to track 33 body landmarks and coach your form in real time. Video is processed locally and is not recorded or uploaded.'}</p><div className="camera-access-actions"><button disabled={arena.sessionStatus === 'STARTING'} onClick={() => { resetDisplay(); void arena.prepare('LIVE'); }}><ReferenceIcon name="camera" />Enable camera</button><button disabled={arena.sessionStatus === 'STARTING' && arena.mode !== 'LIVE'} onClick={() => { resetDisplay(); void arena.prepare('SIMULATED'); }}><ReferenceIcon name="scan-line" />Use simulation feed</button></div></div>}
+      {arena.sessionStatus === 'READY' && arena.mode === 'SIMULATED' && <div className="tracking-placeholder prepared-feed-panel"><ReferenceIcon name="scan-line" /><h3>Simulation feed ready</h3><p>Start simulator or choose a simulated rep to begin your workout.</p></div>}
       </div></div>
-      <p className="button-row">
+      <p className="button-row" data-feed={arena.mode ?? 'LIVE'}>
         <button disabled={arena.sessionStatus === 'STARTING'} onClick={() => { resetDisplay(); void arena.start('LIVE'); }}>Start webcam</button>{' '}
-        <button disabled={arena.sessionStatus === 'STARTING'} onClick={() => { resetDisplay(); void arena.start('SIMULATED'); }}>Start simulator</button>{' '}
+        <button disabled={arena.sessionStatus === 'STARTING' && arena.mode !== 'LIVE'} onClick={() => { resetDisplay(); void arena.start('SIMULATED'); }}>Start simulator</button>{' '}
         <button disabled={!arena.isRunning} onClick={arena.pause}>Pause</button>{' '}
         <button disabled={arena.sessionStatus !== 'PAUSED'} onClick={arena.resume}>Resume</button>{' '}
         <button disabled={!arena.canEndSession} onClick={() => arena.stop()}>End session</button>
@@ -136,20 +141,15 @@ function MissionApp() {
         <label><input type="checkbox" aria-label="Visual overlay" checked={arena.visualOverlayEnabled} onChange={e => arena.setVisualOverlayEnabled(e.target.checked)} /> Visual overlay</label>
       </fieldset>
       <p><output aria-label="Voice Coach status" aria-live="polite">{arena.voiceCoachStatus}</output></p>
-      </div><div className="arena-controls"><section className="glass exercise-settings"><h3>Exercise</h3><p>Select a movement to coach</p>      <label htmlFor="arena-exercise">Exercise</label>{' '}<select id="arena-exercise" value={arena.state.exerciseId} onChange={e => {
-        const id = e.target.value as ResistanceExerciseId; arena.selectExercise(id); setLoadKg(getExerciseById(id).defaultLoadKg); resetDisplay();
-      }}>
-        {catalog.exercises.filter(e => e.kind === 'RESISTANCE').map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-      </select>
-      <label htmlFor="ared-load">ARED load (kg)</label>{' '}<input id="ared-load" type="number" min="0" step="1" disabled={!arena.canConfigureLoad} value={loadKg} onChange={e => { const value = Number(e.target.value); if (Number.isFinite(value) && value >= 0) setLoadKg(value); }} />
-</section><section className="glass form-feedback-card"><h3>Form feedback</h3>      <p className="arena-readouts"><span>Session: <output aria-label="Session status">{arena.sessionStatus}</output></span>{' '}
-
-        <span>Reps: <output aria-label="Completed reps">{arena.state.repCount}</output></span>{' '}
-        <span>Phase: <output aria-label="Rep phase">{arena.state.phase}</output></span>{' '}
-        <span>Peak ROM: <output aria-label="Peak ROM">{Math.round(arena.maxRomPct)}%</output></span></p>
-      {arena.errorMessage && <p role="alert">{arena.errorMessage}</p>}
-      <ul aria-label="Form alerts" aria-live="polite">{arena.activeFaultAlerts.map(alert => <li key={alert}>{alert}</li>)}</ul>
-      <p className="success-message" aria-label="Form feedback" role="status">{arena.formFeedback}</p>
+      </div><div className="arena-controls"><section className="glass exercise-settings"><div className="exercise-heading"><h3>Exercise</h3><label className="visually-hidden" htmlFor="arena-exercise">Exercise</label><select id="arena-exercise" value={arena.state.exerciseId} onChange={event => selectArenaExercise(event.target.value as ResistanceExerciseId)}>{catalog.exercises.filter(exercise => exercise.kind === 'RESISTANCE').map(exercise => <option key={exercise.id} value={exercise.id}>{exercise.name}</option>)}</select></div><p>Select a movement to coach</p>
+      <div className="exercise-choices" role="radiogroup" aria-label="Quick exercise selection">{catalog.exercises.filter(exercise => exercise.kind === 'RESISTANCE').map(exercise => <label key={exercise.id} className="exercise-choice"><input type="radio" name="arena-exercise-choice" value={exercise.id} checked={arena.state.exerciseId === exercise.id} onChange={() => selectArenaExercise(exercise.id)} /><span>{exercise.name}</span></label>)}</div>
+      <p className="exercise-target">Configured target angle: {arenaExercise.kind === 'RESISTANCE' ? arenaExercise.targetAngleDeg : '—'}°</p>
+      <label htmlFor="ared-load">ARED load (kg)</label><input id="ared-load" type="number" min="0" step="1" disabled={!arena.canConfigureLoad} value={loadKg} onChange={event => { const value = Number(event.target.value); if (Number.isFinite(value) && value >= 0) setLoadKg(value); }} />
+</section><section className="glass form-feedback-card"><h3>Form feedback</h3>
+      <div className="feedback-banner" data-tone={arena.activeFaultAlerts.length ? 'warning' : arena.formFeedback ? 'good' : 'neutral'}><ReferenceIcon name="shield-check" /><div><p className="success-message" aria-label="Form feedback" role="status">{arena.formFeedback}</p>{!arena.formFeedback && <strong>{arena.activeFaultAlerts.length ? 'Correction needed' : arena.sessionStatus === 'PAUSED' ? 'Session paused' : arena.sessionStatus === 'RUNNING' ? 'Waiting for movement' : arena.sessionStatus === 'STARTING' ? 'Preparing feed' : arena.sessionStatus === 'READY' ? 'Feed ready' : arena.sessionStatus === 'COMPLETED' ? 'Session complete' : arena.sessionStatus === 'ERROR' ? 'Feed unavailable' : 'Ready to begin'}</strong>}<p>{arena.activeFaultAlerts.length ? 'Review the correction alerts below.' : arena.sessionStatus === 'IDLE' ? 'Enable camera or simulation to begin.' : arena.sessionStatus === 'READY' ? 'Start the workout when you are ready.' : 'Form scores are based on completed reps.'}</p></div></div>
+      <dl className="form-score-grid"><div><dt>Reps</dt><dd><output aria-label="Completed reps">{arena.state.repCount}</output></dd></div><div><dt>Accuracy</dt><dd><output aria-label="Form accuracy">{arena.state.repCount ? `${arena.state.formAccuracyPct.toFixed(0)}%` : '—'}</output></dd></div><div><dt>Flagged reps</dt><dd><output aria-label="Flagged rep count">{arena.state.faultedRepCount}</output></dd></div></dl>
+      <p className="arena-readouts"><span>Session: <output aria-label="Session status">{arena.sessionStatus}</output></span><span>Phase: <output aria-label="Rep phase">{arena.state.phase}</output></span><span>Peak ROM: <output aria-label="Peak ROM">{Math.round(arena.maxRomPct)}%</output></span></p>
+      <h4 className="correction-heading">Correction alerts this set</h4><ul aria-label="Form alerts" aria-live="polite">{arena.activeFaultAlerts.map(alert => <li key={alert}>{alert}</li>)}</ul>{!arena.activeFaultAlerts.length && <p className="no-corrections">No alerts yet.</p>}
       <p className="prototype-note">{arena.state.repCount ? `${arena.state.formAccuracyPct.toFixed(0)}% form accuracy across completed reps` : 'No completed reps yet. Form accuracy is available after your first rep.'}</p>
 </section></div></div>
       {summary && <p aria-label="Completed workout summary">Session complete: {summary.repCount} reps; {summary.faultedRepCount} flagged; {Math.round(summary.formAccuracyPct)}% form accuracy.</p>}
@@ -165,17 +165,7 @@ function MissionApp() {
       </form></details>
     </section>
     <section className="mission-section journey-section" data-screen="journey" data-active={navigation.activePage === 'journey'} aria-labelledby="journey-heading">
-      <p className="eyebrow">03 / EXPEDITION PROGRESS</p>
-      <h2 className="page-title" id="journey-heading">Expedition Journey</h2>
-      <p className="section-subtitle">Every logged kilometre and form-qualified rep advances your virtual expedition.</p>
-      <div className="journey-summary"><section className="glass journey-stats"><h3>Your Expedition</h3>      <label htmlFor="active-route">Active route</label>{' '}<select id="active-route" value={journey.activeRoute.id} onChange={e => journey.selectRoute(e.target.value as PlanetaryRouteId)}>{catalog.routes.map(route => <option key={route.id} value={route.id}>{route.name}</option>)}</select>
-      <p>Distance: <output aria-label="Expedition distance">{journey.cumulativeDistanceKm.toFixed(2)} km</output>. Progress: {journey.progressPct.toFixed(3)}%</p>
-      <progress aria-label="Route progress" max={100} value={journey.progressPct} />
-      <p>Cardio: {journey.cardioKm.toFixed(2)} km; resistance equivalent: {journey.resistanceEquivalentKm.toFixed(2)} km; tonnage: {journey.totalTonnageKg.toFixed(0)} kg.</p>
-</section><section className="glass journey-ring"><h3>Route Completion</h3><ProgressRing value={journey.progressPct}><strong>{journey.progressPct.toFixed(2)}%</strong><span>of virtual route</span></ProgressRing><p>{journey.activeRoute.name}</p></section></div>      <figure className="route-illustration"><RouteArtwork activeRoute={journey.activeRoute} routes={catalog.routes} /><figcaption>{journey.activeRoute.name} · {journey.activeRoute.totalDistanceKm.toLocaleString()} km game expedition · Schematic illustration</figcaption></figure>
-      <button aria-pressed={journey.showAllBadges} onClick={() => journey.setShowAllBadges(!journey.showAllBadges)}>View all badges</button>
-      <ul className="mission-badges" aria-label="Mission badges">{journey.badges.map(badge => <li key={badge.id} data-unlocked={badge.isUnlocked}><img src="/assets/mission-badge.svg" alt={`${badge.name} mission badge illustration`} width="64" height="70" /><span>{badge.name} · {badge.isUnlocked ? 'Unlocked' : 'Locked'} · {badge.description}</span></li>)}</ul>
-      <p>Next waypoint: {journey.nextWaypoint ? `${journey.nextWaypoint.name} at ${journey.nextWaypoint.distanceKm} km` : 'Route complete'}</p>
+      <JourneySection journey={journey} routes={catalog.routes} missionDay={dashboard.missionDay} durationDays={dashboard.missionDurationDays} />
     </section>
     <section className="mission-section medical-section" data-screen="analytics" data-active={navigation.activePage === 'analytics'} aria-labelledby="medical-heading">
       <p className="eyebrow">04 / LONGITUDINAL PERFORMANCE</p>
@@ -186,14 +176,12 @@ function MissionApp() {
       <button onClick={() => medical.exportFlightSurgeonReport('pdf')}>Print / Save as PDF</button>
       <p aria-label="Export confirmation" role="status">{medical.exportConfirmationMessage}</p>
 </div>
-      <p className="prototype-note">{prototypeNotice.disclaimer}</p>
-      <p className="prototype-note">{prototypeNotice.metricInterpretation}</p>
-      <label htmlFor="telemetry-date-window">Telemetry date window</label>{' '}<select id="telemetry-date-window" value={medical.dateWindowDays} onChange={e => medical.setDateWindowDays(Number(e.target.value) as 7 | 14 | 30)}><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option></select>
-      <p>{medical.dateWindowDays}-day tonnage: <output aria-label="Visible volume">{medical.visibleVolumeKg.toFixed(0)} kg</output>. Symmetry consistency (30 days): {medical.symmetryScoreAvg.toFixed(1)}%.</p>
-      <p>Chart windows show rolling 30-day scores. JSON/CSV reports include the full 30-day reporting period.</p>
-      <div className="chart-grid"><figure><figcaption>STRENGTH RETENTION · %</figcaption><TelemetryChart kind="retention" values={medical.retentionSeries.map(point => point.strengthRetentionPct)} /></figure><figure><figcaption>RESISTANCE VOLUME · KG</figcaption><TelemetryChart kind="volume" values={medical.volumeSeries.map(point => point.volumeKg)} /></figure><figure className="symmetry-card"><figcaption>MOVEMENT SYMMETRY</figcaption><ProgressRing value={medical.symmetryScoreAvg}><strong>{medical.symmetryScoreAvg.toFixed(1)}%</strong><span>30-day average</span></ProgressRing><p>Average recorded movement symmetry over the reporting period.</p></figure></div>
+      <aside className="telemetry-notice" aria-label="Prototype telemetry context"><ReferenceIcon name="info" /><div><h3>Prototype telemetry</h3><p className="prototype-note">{prototypeNotice.disclaimer}</p><p className="prototype-note">{prototypeNotice.metricInterpretation}</p></div></aside>
+      <div className="telemetry-toolbar"><div><label htmlFor="telemetry-date-window">Telemetry date window</label><select id="telemetry-date-window" value={medical.dateWindowDays} onChange={event => medical.setDateWindowDays(Number(event.target.value) as 7 | 14 | 30)}><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></div><p>Chart windows show rolling 30-day scores. JSON/CSV reports include the full 30-day reporting period.</p></div>
+      <dl className="telemetry-summary"><div><dt>{medical.dateWindowDays}-day tonnage:</dt><dd><output aria-label="Visible volume">{medical.visibleVolumeKg.toFixed(0)} kg</output></dd></div><div><dt>Symmetry consistency (30 days):</dt><dd>{medical.symmetryScoreAvg.toFixed(1)}%</dd></div></dl>
+      <div className="chart-grid"><figure><figcaption><span>STRENGTH RETENTION · %</span><strong>{medical.strengthRetentionPct.toFixed(1)}%</strong></figcaption><p className="chart-description">Workout-derived score against your pre-flight baseline</p><TelemetryChart kind="retention" values={medical.retentionSeries.map(point => point.strengthRetentionPct)} /></figure><figure><figcaption><span>RESISTANCE VOLUME · KG</span><strong>{(medical.visibleVolumeKg / 1000).toFixed(1)} t</strong></figcaption><p className="chart-description">Cumulative ARED weight moved per day</p><TelemetryChart kind="volume" values={medical.volumeSeries.map(point => point.volumeKg)} /></figure><figure className="symmetry-card"><figcaption>MOVEMENT SYMMETRY</figcaption><ProgressRing value={medical.symmetryScoreAvg}><strong>{medical.symmetryScoreAvg.toFixed(1)}%</strong><span>30-day average</span></ProgressRing><p>Average recorded movement symmetry over the reporting period.</p></figure></div>
       <div className="table-scroll" tabIndex={0} role="region" aria-label="Medical telemetry table scroll area"><table aria-label="Medical telemetry"><thead><tr><th>Date (UTC)</th><th>Strength retention (%)</th><th>Volume (kg)</th></tr></thead><tbody>{medical.retentionSeries.map((point, index) => <tr key={point.dateIso}><td>{point.dateIso}</td><td>{point.strengthRetentionPct.toFixed(1)}</td><td>{medical.volumeSeries[index].volumeKg.toFixed(0)}</td></tr>)}</tbody></table></div>
-      <ul aria-label="Fault counts">{Object.entries(medical.faultCounts).map(([fault, count]) => <li key={fault}>{fault}: {count}</li>)}</ul>
+      <section className="glass correction-summary"><h3>Recorded correction flags</h3><ul aria-label="Fault counts">{Object.entries(medical.faultCounts).map(([fault, count]) => <li key={fault}><span>{faultAlerts[fault as keyof typeof faultAlerts] ?? fault}</span><strong>{count}</strong></li>)}</ul></section>
     </section>
     <section className="mission-section history-section" data-screen="logs" data-active={navigation.activePage === 'logs'} aria-labelledby="history-heading">
       <p className="eyebrow">05 / SESSION ARCHIVE</p>

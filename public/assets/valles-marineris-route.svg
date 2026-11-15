@@ -1,9 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" fill="none">
-  <defs><linearGradient id="ground" x2="1" y2="1"><stop stop-color="#28252b"/><stop offset="1" stop-color="#151e2c"/></linearGradient><pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M60 0H0v60" stroke="#4c5260" stroke-width=".5"/></pattern></defs>
-  <path fill="url(#ground)" opacity=".35" d="M0 0h900v360H0z"/><path fill="url(#grid)" d="M0 0h900v360H0z"/>
-  <g stroke="#806652" stroke-width="1.2" opacity=".5"><path d="M-40 80C80 10 152 160 280 100S435 40 526 120 733 30 950 70"/><path d="M-40 102C80 32 160 186 288 125S440 68 526 145 733 54 950 94"/><path d="M-40 126C80 56 160 210 288 150S440 93 526 170 733 80 950 118"/><path d="M-40 240C100 300 165 185 287 222S429 308 546 232 735 282 950 200"/><path d="M-40 262C100 324 165 209 287 246S429 332 546 256 735 306 950 224"/><path d="M-40 284C100 346 165 233 287 270S429 356 546 280 735 330 950 248"/></g>
-  <path d="M50 190c100-68 130 24 225-12s145 65 220-9 173 48 335-25" stroke="#a56a49" stroke-width="35" opacity=".2"/>
-  <path d="M50 190c100-68 130 24 225-12s145 65 220-9 173 48 335-25" stroke="#ffbf45" stroke-width="2.5" stroke-dasharray="6 7"/>
-  <g fill="#172633" stroke="#ffe0a3" stroke-width="3"><circle cx="50" cy="190" r="7"/><circle cx="275" cy="178" r="6"/><circle cx="495" cy="169" r="6"/><circle cx="830" cy="144" r="7"/></g>
-  <g fill="#fff1db" font-family="monospace" font-size="11" letter-spacing="2"><text x="28" y="34">VM / VIRTUAL TRAVERSE</text><text x="28" y="334">SCHEMATIC · NOT TO SCALE</text><text x="50" y="219">START</text><text x="776" y="173">FINISH</text></g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" preserveAspectRatio="none" fill="none"><path d="M828 357 756 306.6 432 214.2 135 100.8" stroke="#ffffff88" stroke-width="2.5" stroke-dasharray="3 4"/></svg>
