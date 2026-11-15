@@ -85,6 +85,7 @@ test('all redesigned pages reflow and the mockup fonts and translucent surfaces 
 });
 test('skip navigation keeps the current screen instead of resetting the route', async ({ page }) => {
   await page.goto('/#/logs');
+  await expect(page.getByRole('heading', { name: 'Workout Logs & History', exact: true })).toBeVisible();
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Skip to main content', exact: true })).toBeFocused();
   await page.keyboard.press('Enter');

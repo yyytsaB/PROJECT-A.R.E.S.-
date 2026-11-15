@@ -11,6 +11,8 @@ const visible = (p: PoseLandmark33 | undefined): p is PoseLandmark33 => !!p && [
 
 export function drawPoseWireframe(ctx: CanvasRenderingContext2D, frame: RawPoseFrame, analysis: KinematicFrameAnalysis, exerciseId: ResistanceExerciseId = 'SQUAT'): void {
   const { width, height } = ctx.canvas;
+  // Strokes and labels scale with the bitmap so a native-resolution overlay stays legible on a projector.
+  const unit = Math.max(1, Math.min(width, height) / 480);
   const scale = Math.min(width / frame.width, height / frame.height);
   const drawnWidth = frame.width * scale, drawnHeight = frame.height * scale;
   const offsetX = (width - drawnWidth) / 2, offsetY = (height - drawnHeight) / 2;
@@ -31,7 +33,7 @@ export function drawPoseWireframe(ctx: CanvasRenderingContext2D, frame: RawPoseF
   try {
     ctx.clearRect(0, 0, width, height);
     if (frame.landmarks.length !== 33) return;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3 * unit; ctx.lineCap = 'round';
     for (const [from, to] of bones) {
       const a = frame.landmarks[from], b = frame.landmarks[to];
       if (!visible(a) || !visible(b)) continue;
@@ -41,14 +43,14 @@ export function drawPoseWireframe(ctx: CanvasRenderingContext2D, frame: RawPoseF
     frame.landmarks.forEach((p, i) => {
       if (!visible(p)) return;
       ctx.fillStyle = highlighted.has(i) ? '#c00' : '#bdebf2';
-      ctx.beginPath(); ctx.arc(x(p), y(p), 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x(p), y(p), 4 * unit, 0, Math.PI * 2); ctx.fill();
     });
-    ctx.fillStyle = '#e4f3ff'; ctx.font = '16px sans-serif';
+    ctx.fillStyle = '#e4f3ff'; ctx.font = `600 ${Math.round(16 * unit)}px sans-serif`;
     for (const index of [exercise.leftJoint[1], exercise.rightJoint[1]]) {
       const p = frame.landmarks[index];
-      if (visible(p)) ctx.fillText(`${Math.round(analysis.primaryAngleDeg)}°`, x(p) + 8, y(p));
+      if (visible(p)) ctx.fillText(`${Math.round(analysis.primaryAngleDeg)}°`, x(p) + 8 * unit, y(p));
     }
-    ctx.fillText(`ROM ${Math.round(analysis.romPct)}% · Symmetry ${Math.round(analysis.symmetryScorePct)}%`, 8, 20);
+    ctx.fillText(`ROM ${Math.round(analysis.romPct)}% · Symmetry ${Math.round(analysis.symmetryScorePct)}%`, offsetX + 8 * unit, offsetY + 20 * unit);
   } finally { ctx.restore(); }
 }
 

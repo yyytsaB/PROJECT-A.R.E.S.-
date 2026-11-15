@@ -11,13 +11,14 @@ import { HealthMetricFields } from './HealthMetricFields';
 import routineRules from './content/routineRules.json';
 import scienceSources from './content/scienceSources.json';
 import prototypeNotice from './content/prototypeNotice.json';
-import { MissionTelemetryProvider, useDashboardSummary, useExpeditionJourney, useMedicalTelemetry, useMissionProfile, useMissionTelemetry, useWorkoutHistory } from './hooks/useMissionTelemetry';
+import { MissionTelemetryProvider, useDashboardSummary, useExpeditionJourney, useMedicalTelemetry, useMilestoneCelebrations, useMissionProfile, useMissionTelemetry, useWorkoutHistory } from './hooks/useMissionTelemetry';
 import { ReferenceIcon } from './components/ReferenceIcon';
 import { JourneySection } from './components/JourneySection';
 import { DashboardSchedule } from './components/DashboardSchedule';
 import { SessionLaunchDock } from './components/SessionLaunchDock';
 import { MissionChrome } from './components/MissionChrome';
 import { MissionIcon, ProgressRing, TelemetryChart } from './components/MissionVisuals';
+import { MilestoneCelebration } from './components/MilestoneCelebration';
 
 export default function App() {
   return <MissionTelemetryProvider><MissionApp /></MissionTelemetryProvider>;
@@ -31,7 +32,8 @@ function SnapshotDiagnostic({ snapshot, label }: { snapshot: KinematicSnapshot |
 
 const LOG_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const formatLogDate = (iso: string) => `${LOG_MONTHS[Number(iso.slice(5, 7)) - 1]} ${Number(iso.slice(8, 10))}, ${iso.slice(0, 4)}`;
-const formatPace = (secPerKm: number) => `${Math.floor(secPerKm / 60)}:${String(Math.floor(secPerKm % 60)).padStart(2, '0')}/km`;
+const cameraStageHeadings = { PERMISSION: 'Waiting for camera access…', PERMISSION_SLOW: 'Waiting for camera access…', VIDEO: 'Starting camera preview…', MODEL: 'Loading the local pose model…' } as const;
+const formatPace =(secPerKm: number) => `${Math.floor(secPerKm / 60)}:${String(Math.floor(secPerKm % 60)).padStart(2, '0')}/km`;
 const statusLabels = { GREEN: 'Good', YELLOW: 'Review', RED: 'Flagged' } as const;
 const gravitySubtitles: Record<GravityProfileId, string> = { MICROGRAVITY_0G: 'ISS / transit', MOON_016G: 'Lunar surface', MARS_038G: 'Martian surface' };
 const sentenceCase = (label: string) => label.charAt(0).toUpperCase() + label.slice(1);
@@ -62,6 +64,7 @@ function MissionApp() {
   const dashboard = useDashboardSummary(id => { arena.selectExercise(id); setLoadKg(getExerciseById(id).defaultLoadKg); resetDisplay(); navigation.navigateToPage('arena'); void arena.start('SIMULATED'); }, arena.mode === 'LIVE' && arena.isRunning);
   const journey = useExpeditionJourney();
   const medical = useMedicalTelemetry();
+  const celebrations = useMilestoneCelebrations();
   const history = useWorkoutHistory();
   const settings = useMissionProfile();
   const scenarioGoalPct = catalog.gravityProfiles.find(gravity => gravity.id === settings.gravityProfile)?.prototypeGoalPct ?? 0;
@@ -139,7 +142,9 @@ function MissionApp() {
       <div className="tracking-viewport" data-idle={!['READY', 'RUNNING', 'PAUSED'].includes(arena.sessionStatus)}><video ref={arena.videoRef} aria-label="Live camera preview" width={640} height={480} muted playsInline
         hidden={arena.mode !== 'LIVE' || !['STARTING', 'READY', 'RUNNING', 'PAUSED'].includes(arena.sessionStatus)} />
       <canvas ref={arena.canvasRef} aria-label="Live skeletal pose" width={640} height={480} hidden={!arena.visualOverlayEnabled || !['READY', 'RUNNING', 'PAUSED'].includes(arena.sessionStatus)}>Live pose wireframe and joint angle display.</canvas>
-      {!['READY', 'RUNNING', 'PAUSED'].includes(arena.sessionStatus) && <div className="tracking-placeholder camera-access-panel"><span className="camera-access-icon"><ReferenceIcon name="camera" /></span><h3>{arena.sessionStatus === 'STARTING' ? arena.mode === 'LIVE' ? 'Waiting for camera access…' : 'Starting simulation…' : 'Allow camera access'}</h3><p role={arena.errorMessage ? 'alert' : undefined}>{arena.errorMessage ?? 'A.R.E.S. needs your camera to track 33 body landmarks and coach your form in real time. Video is processed locally and is not recorded or uploaded.'}</p><div className="camera-access-actions"><button disabled={arena.sessionStatus === 'STARTING'} onClick={() => { resetDisplay(); void arena.prepare('LIVE'); }}><ReferenceIcon name="camera" />Enable camera</button><button disabled={arena.sessionStatus === 'STARTING' && arena.mode !== 'LIVE'} onClick={() => { resetDisplay(); void arena.prepare('SIMULATED'); }}><ReferenceIcon name="scan-line" />Use simulation feed</button></div></div>}
+      {!['READY', 'RUNNING', 'PAUSED'].includes(arena.sessionStatus) && <div className="tracking-placeholder camera-access-panel"><span className="camera-access-icon"><ReferenceIcon name="camera" /></span><h3>{arena.sessionStatus === 'STARTING' ? arena.mode === 'LIVE' ? cameraStageHeadings[arena.preparationStage ?? 'PERMISSION'] : 'Starting simulation…' : arena.sessionStatus === 'ERROR' ? arena.cameraFailure === 'PERMISSION_DENIED' ? 'Camera permission blocked' : 'Camera needs attention' : 'Allow camera access'}</h3><p role={arena.errorMessage ? 'alert' : undefined}>{arena.errorMessage ?? (arena.preparationStage === 'PERMISSION_SLOW' ? 'Still waiting for permission. Look for the camera prompt next to the browser address bar, or use the simulation feed instead.' : 'A.R.E.S. needs your camera to track 33 body landmarks and coach your form in real time. Video is processed locally and is not recorded or uploaded.')}</p>{arena.sessionStatus === 'STARTING' && arena.mode === 'LIVE' && <ol className="camera-stage-steps" aria-label="Camera preparation steps">{(['PERMISSION', 'VIDEO', 'MODEL'] as const).map((stage, index) => { const at = ['PERMISSION', 'VIDEO', 'MODEL'].indexOf(arena.preparationStage === 'PERMISSION_SLOW' ? 'PERMISSION' : arena.preparationStage ?? 'PERMISSION'); return <li key={stage} data-state={index < at ? 'done' : index === at ? 'active' : 'pending'}>{['Permission', 'Camera preview', 'Pose model'][index]}</li>; })}</ol>}<div className="camera-access-actions"><button disabled={arena.sessionStatus === 'STARTING'} onClick={() => { resetDisplay(); void arena.prepare('LIVE'); }}><ReferenceIcon name="camera" />Enable camera</button><button disabled={arena.sessionStatus === 'STARTING' && arena.mode !== 'LIVE'} onClick={() => { resetDisplay(); void arena.prepare('SIMULATED'); }}><ReferenceIcon name="scan-line" />Use simulation feed</button></div></div>}
+      {arena.sessionStatus === 'READY' && arena.mode === 'LIVE' && <p className="tracking-chip ready-chip">Camera ready · reps and timer start when you select Start webcam</p>}
+      {arena.trackingGuidance && <p className="tracking-chip guidance-chip" aria-label="Framing guidance">{arena.trackingGuidance}</p>}
       {arena.sessionStatus === 'READY' && arena.mode === 'SIMULATED' && <div className="tracking-placeholder prepared-feed-panel"><ReferenceIcon name="scan-line" /><h3>Simulation feed ready</h3><p>Start simulator or choose a simulated rep to begin your workout.</p></div>}
       </div></div>
       <p className="button-row" data-feed={arena.mode ?? 'LIVE'}>
@@ -320,6 +325,7 @@ function MissionApp() {
       </li>)}</ul>
     </section>
   </main>
+  <MilestoneCelebration celebrations={celebrations} />
   <footer className="mission-footer">PROJECT A.R.E.S · Astronaut Resistance &amp; Exercise System · NASA Space Apps Challenge</footer>
   </MissionChrome></>;
 }

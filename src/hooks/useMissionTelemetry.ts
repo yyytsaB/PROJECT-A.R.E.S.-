@@ -10,10 +10,13 @@ import { withProfileDefaults } from '../core/telemetry/profileDefaults';
 import { profileWithFields, readProfileField, validateProfileFields } from '../core/telemetry/profileFields';
 import type { ProfileEdits, ProfileField } from '../core/telemetry/profileFields';
 import rules from '../content/routineRules.json';
+import journeyPresentation from '../content/journeyPresentation.json';
 import { buildFlightSurgeonReport, calculateBmi, computeExpeditionProgress, computeMedicalTelemetry, computeSessionRecord, describeGravityScenario, formatDurationMmSs, generatePersonalizedRoutine, getSessionFormStatus, measureMissionPayloads } from '../core/telemetry/telemetryEngine';
-import type { AstronautProfile, CompletedWorkoutInput, CommsLinkStatus, ExerciseId, KinematicSnapshot, MissionStoreState, MissionType, InjuryLimitation, PersonalizedRoutinePlan, ResistanceExerciseId, StorageLike, TelemetrySyncClient, WorkoutDateRange } from '../core/types';
+import type { AstronautProfile, CompletedWorkoutInput, CommsLinkStatus, ExerciseId, KinematicSnapshot, MissionStoreState, MissionType, InjuryLimitation, PersonalizedRoutinePlan, PlanetaryRouteId, ResistanceExerciseId, StorageLike, TelemetrySyncClient, WorkoutDateRange } from '../core/types';
 
 interface ProviderOptions { children: ReactNode; storage?: StorageLike; syncClient?: TelemetrySyncClient; now?: () => string }
+/** A milestone newly unlocked by one accepted, persisted workout. Presentation only; it never decides whether a badge is earned. */
+export interface MilestoneCelebrationEvent { readonly key: string; readonly milestoneId: string; readonly routeId: PlanetaryRouteId }
 export const ROUTINE_UPDATE_MESSAGE = 'Your routine has been updated based on your recent progress.';
 function useMissionController(options: ProviderOptions) {
   const storage = useRef(options.storage ?? createBrowserStorage()).current;
@@ -47,16 +50,26 @@ function useMissionController(options: ProviderOptions) {
   const [syncing, setSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [workoutError, setWorkoutError] = useState<string | null>(null);
+  const [celebrations, setCelebrations] = useState<readonly MilestoneCelebrationEvent[]>([]);
+  const unlockedIds = (state: MissionStoreState) => {
+    const route = getPlanetaryRouteById(state.profile.routeId);
+    return computeExpeditionProgress(state.sessions, route).unlockedMilestones.map(milestone => milestone.id);
+  };
   function publish(next: MissionStoreState) {
     current.current = persistMissionStore(next, storage); setState(current.current);
   }
   function saveWorkout(input: CompletedWorkoutInput) {
     try {
-      const next = recordCompletedWorkout(current.current, computeSessionRecord(input, current.current.profile));
-      if (next === current.current) return;
+      const before = current.current;
+      const next = recordCompletedWorkout(before, computeSessionRecord(input, before.profile));
+      if (next === before) return;
       publish(next.profile.autoAdjustRoutine !== false ? { ...next,
         personalizedRoutine: generatePersonalizedRoutine(next.profile, next.sessions, now()), routineNotification: ROUTINE_UPDATE_MESSAGE } : { ...next, routineNotification: '' });
       setWorkoutError(null);
+      // Only milestones this accepted save newly crossed are celebrated; persisted history is the baseline, so reloads never replay awards.
+      const earlier = new Set(unlockedIds(before)), mission = generation.current;
+      const earned = unlockedIds(current.current).filter(id => !earlier.has(id));
+      if (earned.length) setCelebrations(queue => [...queue, ...earned.map(milestoneId => ({ key: `${mission}:${input.id}:${milestoneId}`, milestoneId, routeId: current.current.profile.routeId }))]);
     } catch (error) {
       if (!(error instanceof RangeError)) throw error;
       setWorkoutError('Workout not saved: check the entered metrics and totals. Existing history is unchanged.');
@@ -99,7 +112,7 @@ function useMissionController(options: ProviderOptions) {
     try { await operation; } finally { inFlight.current = null; setSyncing(false); }
   }
   function replaceMission(seed: boolean) {
-    generation.current++; setSyncError(null); setWorkoutError(null);
+    generation.current++; setSyncError(null); setWorkoutError(null); setCelebrations([]);
     publish(initializeRoutine(seed ? seedDemoMissionState(now()) : clearMissionStore()));
   }
   function setScheduleCompletion(exerciseId: ExerciseId, completed: boolean) {
@@ -107,7 +120,7 @@ function useMissionController(options: ProviderOptions) {
     publish({ ...current.current, scheduleCompletion: { ...current.current.scheduleCompletion, [day]: { ...current.current.scheduleCompletion[day], [exerciseId]: completed } } });
   }
   useEffect(() => { if (!syncing && !syncError) void flushSyncQueueNow(); }, [state.commsStatus, state.syncQueue.length, syncing, syncError]);
-  return { state, ...measureMissionPayloads(state), nowIso: now(), missionRevision: generation.current, profileRevision: profileRevision.current, syncing, syncError, workoutError, saveWorkout, updateProfile, recalibrateRoutine, applyPersonalizedRoutine, setCommsStatus, flushSyncQueueNow, setScheduleCompletion,
+  return { state, ...measureMissionPayloads(state), nowIso: now(), missionRevision: generation.current, profileRevision: profileRevision.current, syncing, syncError, workoutError, saveWorkout, updateProfile, recalibrateRoutine, celebrations, dismissCelebration: (key: string) => setCelebrations(queue => queue.filter(item => item.key !== key)), applyPersonalizedRoutine, setCommsStatus, flushSyncQueueNow, setScheduleCompletion,
     toggleCommsWindow: () => setCommsStatus(current.current.commsStatus === 'WINDOW_OPEN' ? 'BLACKOUT_24MIN_DELAY' : 'WINDOW_OPEN'),
     seed30DayDemoData: () => replaceMission(true), clearLocalCache: () => replaceMission(false) };
 }
@@ -140,6 +153,19 @@ export function useDashboardSummary(quickLaunchExercise?: (id: ResistanceExercis
     statusIndicators: { isOfflineFirst: true, cameraReady, commsLinkStatus: mission.state.commsStatus, queuedSyncCount: mission.state.syncQueue.length }, quickLaunchExercise };
 }
 export const useDashboardTelemetry = useDashboardSummary;
+
+const badgeAssets: Readonly<Record<string, string>> = journeyPresentation.badgeAssets;
+/** Queue of newly earned milestone celebrations with display content from the catalog and the central badge-asset mapping. */
+export function useMilestoneCelebrations() {
+  const { celebrations, dismissCelebration } = useMissionTelemetry();
+  const queue = celebrations.map(event => {
+    const route = getPlanetaryRouteById(event.routeId);
+    const milestone = route.milestones.find(item => item.id === event.milestoneId)!;
+    return { key: event.key, milestoneId: milestone.id, name: milestone.name, description: milestone.description, distanceKm: milestone.distanceKm,
+      routeName: route.name, badgeSrc: badgeAssets[milestone.id] ?? '/assets/mission-badge.svg' };
+  });
+  return { queue, current: queue[0] ?? null, dismiss: dismissCelebration };
+}
 
 export function useExpeditionJourney() {
   const { state, updateProfile } = useMissionTelemetry();
