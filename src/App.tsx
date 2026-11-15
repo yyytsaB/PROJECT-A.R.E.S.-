@@ -17,6 +17,7 @@ import { JourneySection } from './components/JourneySection';
 import { DashboardSchedule } from './components/DashboardSchedule';
 import { SessionLaunchDock } from './components/SessionLaunchDock';
 import { MissionChrome } from './components/MissionChrome';
+import { TeamSection } from './components/TeamSection';
 import { MissionIcon, ProgressRing, TelemetryChart } from './components/MissionVisuals';
 import { MilestoneCelebration } from './components/MilestoneCelebration';
 import { RepIllustration } from './components/RepIllustration';
@@ -341,6 +342,7 @@ function MissionApp() {
         <p>{source.links.map((link, index) => <span key={link.url}>{index > 0 && ' · '}<a href={link.url}>{link.label}</a></span>)}</p>
       </li>)}</ul>
     </section>
+    <TeamSection active={navigation.activePage === 'team'} />
   </main>
   <MilestoneCelebration celebrations={celebrations} />
   <footer className="mission-footer">PROJECT ARES · Astronaut Resistance &amp; Exercise System · NASA Space Apps Challenge</footer>

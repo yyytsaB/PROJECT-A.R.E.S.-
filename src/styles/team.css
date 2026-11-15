@@ -1,0 +1,26 @@
+/* Meet the Team: group photo, member list, pitch deck link and the presentation video slot. */
+@layer figma {
+  .team-intro { max-width: 640px; }
+  .team-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, 1fr); gap: 24px; margin-top: 24px; align-items: start; }
+  .team-photo { margin: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 24px; background: var(--panel); box-shadow: var(--glass-shadow); }
+  .team-photo img { display: block; width: 100%; height: auto; aspect-ratio: 1170 / 878; object-fit: cover; }
+  .team-photo figcaption { padding: 12px 20px; color: #a0c1ff; font: 600 11px/1.6 var(--display); letter-spacing: 1.6px; text-transform: uppercase; }
+  .team-side { display: grid; gap: 24px; }
+  .team-card { padding: 24px; background: var(--glass-fill); border: 1px solid #ffffff33; border-radius: 24px; box-shadow: var(--glass-shadow); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+  .team-card h3 { margin: 0 0 12px; font-size: 17px; }
+  .team-members { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  .team-members li { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .team-members strong { display: block; color: #fff; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+  .team-members small { display: block; color: var(--muted); font-size: 12px; }
+  .team-initials { display: grid; flex-shrink: 0; place-items: center; width: 36px; height: 36px; border-radius: 50%; border: 1px solid #f6a62366; background: #f6a6231f; color: var(--amber); font: 600 11px/1 var(--display); letter-spacing: .5px; }
+  .team-link { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 10px 18px; border-radius: 999px; background: var(--amber); color: #17213a; font-weight: 700; text-decoration: none; }
+  .team-link:hover { background: #ffb840; }
+  .team-link:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  .team-link .mission-icon { width: 18px; height: 18px; }
+  .team-video { margin-top: 24px; }
+  .team-video video { display: block; width: 100%; height: auto; max-height: 70vh; aspect-ratio: 16 / 9; border-radius: 16px; background: #000; }
+  .team-video-pending { display: flex; align-items: center; gap: 12px; margin: 0; padding: 20px; border: 1px dashed #ffffff40; border-radius: 16px; }
+  .team-video-pending .mission-icon { flex-shrink: 0; width: 22px; height: 22px; color: var(--amber); }
+  @media (max-width: 1023px) { .team-layout { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 767px) { .team-card { padding: 20px; } .team-layout, .team-side { gap: 20px; } }
+}
