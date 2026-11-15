@@ -12,12 +12,18 @@ test('the static bundle serves every local runtime asset and initializes the rea
   }
   await context.grantPermissions(['camera']);
   await context.route('**/*', route => new URL(route.request().url()).origin === 'http://127.0.0.1:4173' ? route.continue() : route.abort());
-  await page.goto('/');
+  await page.goto('/#/sources');
   const sources = page.getByRole('region', { name: 'NASA Data & Space Agency Partner Sources', exact: true });
   await expect(sources).toBeVisible();
   await expect(sources.getByRole('link', { name: 'NASA Open Science Data Repository (OSDR)', exact: true })).toHaveAttribute('href', 'https://science.nasa.gov/biological-physical/data/osdr/');
+  await page.getByRole('navigation', { name: 'Mission sections' }).getByRole('link', { name: 'Workout Arena', exact: true }).click();
   await page.getByRole('button', { name: 'Start webcam', exact: true }).click();
   await expect(page.getByLabel('Session status')).toHaveText('RUNNING', { timeout: 30000 });
+  const videoBox = await page.getByLabel('Live camera preview', { exact: true }).boundingBox();
+  const overlayBox = await page.getByLabel('Live skeletal pose', { exact: true }).boundingBox();
+  expect(videoBox).not.toBeNull();
+  expect(overlayBox).toEqual(videoBox);
+
   await page.getByRole('button', { name: 'End session', exact: true }).click();
   expect(errors).toEqual([]);
   expect(failedAssets).toEqual([]);
@@ -33,7 +39,7 @@ for (const unavailable of ['camera', 'model', 'wasm'] as const) {
     });
     if (unavailable === 'model') await page.route('**/pose_landmarker_lite.task', route => route.fulfill({ status: 404, contentType: 'text/plain', body: 'Unavailable model' }));
     if (unavailable === 'wasm') await page.route('**/mediapipe/wasm/**', route => route.abort());
-    await page.goto('/');
+    await page.goto('/#/arena');
     await page.getByRole('button', { name: 'Start webcam', exact: true }).click();
     await expect(page.getByRole('alert')).toContainText('Use a simulated rep', { timeout: 15000 });
     for (const [i, name] of ['Simulate Good Rep', 'Simulate Shallow Rep', 'Simulate Spine Fault'].entries()) {
@@ -49,7 +55,7 @@ for (const unavailable of ['camera', 'model', 'wasm'] as const) {
 
 test('a pending camera permission prompt can be replaced directly by a one-click demo', async ({ page }) => {
   await page.addInitScript(() => { navigator.mediaDevices.getUserMedia = () => new Promise<MediaStream>(() => {}); });
-  await page.goto('/');
+  await page.goto('/#/arena');
   await page.getByRole('button', { name: 'Start webcam', exact: true }).click();
   await expect(page.getByLabel('Session status')).toHaveText('STARTING');
   const demo = page.getByRole('button', { name: 'Simulate Good Rep', exact: true });

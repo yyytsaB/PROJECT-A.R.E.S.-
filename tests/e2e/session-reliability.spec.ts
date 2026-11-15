@@ -1,23 +1,30 @@
+import { navigate } from './navigation';
 import { expect, test } from '@playwright/test';
 
 for (const offline of [false, true]) {
   test(`replacing demo data cancels the old workout ${offline ? 'offline' : 'online'}`, async ({ page, context }) => {
     await page.goto('/');
     if (offline) await context.setOffline(true);
+    await navigate(page, 'Workout Arena');
     await page.getByRole('button', { name: 'Simulate Shallow Rep', exact: true }).click();
     await expect(page.getByLabel('Completed reps', { exact: true })).toHaveText('1');
+    await navigate(page, 'Settings');
     await page.getByRole('button', { name: 'Seed 30-Day Mars Demo Data', exact: true }).click();
     await expect(page.getByLabel('Session status', { exact: true })).toHaveText('IDLE');
     await expect(page.getByLabel('Completed reps', { exact: true })).toHaveText('0');
+    await navigate(page, 'Workout Arena');
     await expect(page.getByRole('button', { name: 'End session', exact: true })).toBeDisabled();
     await expect(page.getByLabel('Saved session count', { exact: true })).toHaveText('60');
+    await navigate(page, 'Workout Arena');
     await page.getByRole('button', { name: 'Simulate Good Rep', exact: true }).click();
     await expect(page.getByLabel('Completed reps', { exact: true })).toHaveText('1');
+    await navigate(page, 'Settings');
     await page.getByRole('button', { name: 'Clear Local Data', exact: true }).click();
     await page.getByRole('button', { name: 'Confirm clear', exact: true }).click();
     await expect(page.getByLabel('Saved session count', { exact: true })).toHaveText('0');
     await expect(page.getByLabel('Queued sync count', { exact: true })).toHaveText('0');
     await expect(page.getByLabel('Completed reps', { exact: true })).toHaveText('0');
+    await navigate(page, 'Workout Arena');
     await expect(page.getByRole('button', { name: 'End session', exact: true })).toBeDisabled();
   });
   test(`completed workout metrics survive session transitions ${offline ? 'offline' : 'online'}`, async ({ page, context }) => {
@@ -25,10 +32,13 @@ for (const offline of [false, true]) {
     page.on('pageerror', error => errors.push(error.message));
     await page.goto('/');
     if (offline) await context.setOffline(true);
+    await navigate(page, 'Settings');
     await page.getByRole('button', { name: 'Clear Local Data', exact: true }).click();
     await page.getByRole('button', { name: 'Confirm clear', exact: true }).click();
+    await navigate(page, 'Workout Arena');
     const load = page.getByLabel('ARED load (kg)', { exact: true });
     await load.fill('70');
+    await navigate(page, 'Workout Arena');
     await page.getByRole('button', { name: 'Simulate Good Rep', exact: true }).click();
     await expect(page.getByLabel('Completed reps', { exact: true })).toHaveText('1');
     await expect(load).toBeDisabled();
@@ -37,6 +47,7 @@ for (const offline of [false, true]) {
     await page.getByRole('button', { name: 'Start simulator', exact: true }).click();
     await expect(page.getByLabel('Saved session count', { exact: true })).toHaveText('1');
     await expect(page.getByLabel('Visible volume', { exact: true })).toHaveText('70 kg');
+    await navigate(page, 'Workout Arena');
     await page.getByRole('button', { name: 'Simulate Good Rep', exact: true }).click();
     await expect(page.getByLabel('Completed reps', { exact: true })).toHaveText('1');
     await page.getByRole('combobox', { name: 'Exercise', exact: true }).selectOption('DEADLIFT');

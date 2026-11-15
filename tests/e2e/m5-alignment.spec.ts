@@ -1,3 +1,4 @@
+import { navigate } from './navigation';
 import { expect, test } from '@playwright/test';
 
 test('aligns the six sections through an accessible offline mission workflow', async ({ page, context }) => {
@@ -13,11 +14,13 @@ test('aligns the six sections through an accessible offline mission workflow', a
   const navigation = page.getByRole('navigation', { name: 'Mission sections' });
   await navigation.getByRole('link', { name: 'Settings', exact: true }).click();
   await expect(page).toHaveTitle('Settings — A.R.E.S.');
+  await navigate(page, 'Profile');
   await page.getByLabel('Body weight (kg)', { exact: true }).fill('0');
   await expect(page.getByText('Body weight must be greater than 0 kg.', { exact: true })).toBeVisible();
   await page.getByLabel('Body weight (kg)', { exact: true }).fill('82');
   await page.getByRole('button', { name: 'Save / Apply', exact: true }).click();
   await expect(page.getByLabel('Profile confirmation', { exact: true })).toHaveText('Profile saved.');
+  await navigate(page, 'Settings');
   await page.getByRole('button', { name: 'Clear Local Data', exact: true }).click();
   const warning = page.getByRole('dialog', { name: 'Clear all local mission data?' });
   await expect(warning).toBeVisible();
@@ -35,6 +38,7 @@ test('aligns the six sections through an accessible offline mission workflow', a
   await expect(page.getByLabel('Form feedback', { exact: true })).toHaveText('Spine aligned');
   await expect(page.getByLabel('Workout duration', { exact: true })).not.toHaveText('00:00');
   await page.getByRole('button', { name: 'End session', exact: true }).click();
+  await navigate(page, 'Dashboard');
   await expect(page.getByRole('checkbox', { name: 'Mark Deadlift complete', exact: true })).toBeChecked();
   await navigation.getByRole('link', { name: 'Logs', exact: true }).click();
   await expect(page).toHaveTitle('Logs — A.R.E.S.');
@@ -56,6 +60,7 @@ test('aligns the six sections through an accessible offline mission workflow', a
   await page.getByRole('button', { name: 'View all badges', exact: true }).click();
   await expect(page.getByRole('list', { name: 'Mission badges', exact: true }).getByRole('listitem')).toHaveCount(3);
   await page.reload();
+  await navigate(page, 'Dashboard');
   await expect(page.getByRole('checkbox', { name: 'Mark Squat complete', exact: true })).toBeChecked();
   await expect(page.getByRole('checkbox', { name: 'Mark Deadlift complete', exact: true })).toBeChecked();
   await page.goto('/#history-heading');

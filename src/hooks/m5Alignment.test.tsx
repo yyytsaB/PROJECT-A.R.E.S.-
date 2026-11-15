@@ -15,7 +15,7 @@ afterEach(async () => {
   window.history.replaceState(null, '', window.location.pathname + window.location.search);
 });
 const click = async (text: string) => {
-  const button = [...host.querySelectorAll('button')].find(button => button.textContent === text);
+  const button = [...host.querySelectorAll('button')].find(button => (button.getAttribute('aria-label') ?? button.textContent) === text);
   expect(button, text).toBeDefined();
   await act(async () => { button!.click(); });
 };
@@ -199,7 +199,7 @@ test('selects accessible sections with matching page titles and a focusable skip
   const navigation = host.querySelector('nav[aria-label="Mission sections"]');
   expect(navigation).not.toBeNull();
   for (const name of ['Workout Arena', 'Journey', 'Analytics', 'Logs', 'Settings', 'Dashboard']) {
-    const link = [...navigation!.querySelectorAll('a')].find(anchor => anchor.textContent === name)!;
+    const link = [...navigation!.querySelectorAll('a')].find(anchor => (anchor.getAttribute('aria-label') ?? anchor.textContent) === name)!;
     await act(async () => { link.click(); });
     expect(document.title).toBe(`${name} — A.R.E.S.`);
     expect(link.getAttribute('aria-current')).toBe('page');

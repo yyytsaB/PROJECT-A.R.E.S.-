@@ -1,43 +1,35 @@
 # Mission interface design
 
-## Purpose and audience
+The team's Figma mission mockup is the visual reference. Existing hooks and catalog data remain authoritative for working behavior and scores.
 
-Help crew operators review their prototype exercise program, record a locally coached session, and inspect progress on a laptop or tablet without an Earth connection. The visual reference is the team's Figma mission mockup; the existing application remains the source of truth for behavior and data.
+## Visual contracts
 
-## Principles
-
-1. Actual local state drives every operational indicator. Synthetic history and prototype scores remain explicitly identified.
-2. The next exercise action and retention ring carry primary emphasis. Navy surfaces and amber accents express the mission identity.
-3. Reflow the interface at narrow widths; never scale a fixed desktop canvas. Preserve readable text and touch controls.
-4. Preserve semantic names, labels, headings, outputs, media, dialogs, and existing hook boundaries.
-5. Keep artwork local and replaceable. Route imagery is a game illustration, not imported terrain or navigation data.
-
-Success means the operator can identify the active scenario and next workout, launch the simulator, save a session, inspect a flagged snapshot, and manage the queue without losing context.
-
-## Token spine
-
-The existing vanilla CSS stack is retained in `src/styles/mission.css`.
-
-| Primitive | Semantic / component use |
+| Primitive | Use |
 |---|---|
-| Navy 950 `#08142b`, navy 900 `#0c1b36`, navy 800 `#132748` | Canvas, sidebar, panel elevation |
-| Amber `#ffb323` | Primary action, active navigation, retention ring |
-| Blue `#82b7ff`, emerald `#70e3ba` | Secondary telemetry and positive form feedback |
-| White `#f6f8fc`, muted `#b9c7db` | Primary and supporting text |
-| 4 / 8 / 12 / 16 / 24 / 32px | Shared spacing scale |
-| 8 / 12 / 20px | Controls, nested surfaces, major cards |
-| 44px | Minimum control/touch target; checkboxes have a padded label target |
-| 14 / 16 / 24 / 36px | Supporting, body, section, page typography |
+| Canvas `#091d3a` → `#313946` | Fixed navy/slate ambient background with the exported transparent light overlay |
+| Plus Jakarta Sans, 400–800 | Local body and heading font; 14px body and 36px/800 desktop page titles |
+| Conthrax SemiBold | Local mission figures, progress ring and display accents |
+| JetBrains Mono, 500–700 | Local telemetry/time and supporting numeric labels |
+| Amber `#f6a623`, blue `#6ea8ff`, green `#3ddc97` | Primary actions, navigation and telemetry accents |
+| White / muted `#c7d0e0` | Primary and supporting text |
+| White alpha `.10` → `.035` → `.02`, 140-degree gradient | Transparent glass fill; no opaque panel color |
+| 16px backdrop blur, white 20% border | Glass separation with inset highlights and soft drop shadow |
+| 24px / 16px / 12px radius | Major cards, nested surfaces and controls |
+| 264px / 72px / 40px / 24px | Desktop sidebar width, topbar height, main padding and card gap |
+| 44px | Minimum primary control height; checkbox labels provide a larger target |
 
-Existing color aliases remain compatible with print styling. Focus uses a visible amber outline; numeric readouts use tabular figures. Transitions list specific properties and are disabled under reduced motion. Native dialog focus containment is retained.
+`src/styles/mission.css` retains the base and print layers; `src/styles/figma.css` supplies the reference typography, component surfaces, layouts and responsive overrides. Reduced motion disables transitions. Focus remains visible. Unsupported backdrop blur has an opaque fallback.
 
-## Surface contracts
+## Screens and navigation
 
-- Dashboard: retention and mission progress, real status strip, personalized schedule, local cache/queue details.
-- Arena: large skeletal stage, honest camera/simulator state, manual load, existing simulator and session controls.
-- Journey: existing two routes, schematic local artwork, distances, next milestone, locked/earned badge descriptions.
-- Medical and Logs: existing accessible tables and exports; local horizontal table scrolling; selected details clear with filters.
-- Settings: discoverable health metrics, routine calibration, baselines, explicit comms controls and protected clearing.
-- Onboarding: three-step flow with the existing field associations, live BMI and reviewed routine confirmation.
+Dashboard, Arena, Journey, Analytics, Logs, Settings, Profile, Onboarding and Sources each have their own `#/…` URL. Only the active screen is displayed. Headless hooks remain mounted so navigation preserves active workouts and mission state. Legacy heading hashes still open the corresponding screen.
 
-Clinical validation, new physiological models, cloud delivery promises, a new routing framework, and extra UI dependencies are outside this visual integration.
+The desktop shell uses a glass sidebar, topbar search, real queue/status indicators, notifications and crew profile. Below 1024px, navigation uses a native drawer with cyclic keyboard focus and Escape dismissal. Mobile layouts stack cards and retain local table scrolling. The three-step onboarding flow has its own branded rail and form layout.
+
+Dashboard uses paired hero cards above status indicators, then the schedule and strong glass launch card. Arena puts the stage and session controls on the left and exercise/feedback cards on the right. Journey places route statistics above the map. Analytics pairs volume and symmetry below retention. Logs pairs the table with its selected detail panel. Settings and Profile have distinct card layouts.
+
+## Integrity and accessibility
+
+Actual local state drives every indicator. Synthetic history and prototype scores remain identified. Preserve existing labels, IDs, media, outputs, dialogs and accessible control names. Business calculations belong in the existing core and hooks; chrome contains presentation and interaction state only.
+
+All assets and fonts are local and replaceable. Routes remain schematic game expeditions. Keep the team-defined goal and heuristic-score disclaimers, accessible reports and print readability. No clinical claims, new physiological model, remote font dependency or new UI package is part of this visual integration.

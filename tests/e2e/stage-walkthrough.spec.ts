@@ -1,3 +1,4 @@
+import { navigate as goTo, openCardio } from './navigation';
 import { expect, test } from '@playwright/test';
 import type { Download } from '@playwright/test';
 
@@ -20,12 +21,13 @@ for (const offline of [false, true]) {
     if (offline) await context.setOffline(true);
     const button = (name: string) => page.getByRole('button', { name, exact: true });
     const output = (name: string) => page.getByLabel(name, { exact: true });
-    const navigate = (name: string) => page.getByRole('navigation', { name: 'Mission sections' }).getByRole('link', { name, exact: true }).click();
+    const navigate = (name: string) => goTo(page, name);
     const capture = async (name: string, region: string) => {
       const path = info.outputPath(`${name}.png`);
       await page.getByRole('region', { name: region, exact: true }).screenshot({ path });
       await info.attach(name, { path, contentType: 'image/png' });
     };
+    await navigate('Settings');
     await button('Clear Local Data').click();
     await button('Confirm clear').click();
 
@@ -69,7 +71,9 @@ for (const offline of [false, true]) {
       await navigate('Dashboard');
       await expect(output('Personalized routine label')).toHaveText('Personalized for you — Adapted to your progress');
       for (const [gravity, goal, g] of [['MICROGRAVITY_0G', '75.0%', '0g'], ['MOON_016G', '82.0%', '0.16g'], ['MARS_038G', '88.0%', '0.38g']]) {
+        await navigate('Settings');
         await output('Gravity profile').selectOption(gravity);
+        await navigate('Dashboard');
         await expect(output('Gravity scenario comparison')).toContainText(`(${g})`);
         await expect(output('Gravity scenario comparison')).toContainText(`Prototype goal: ${goal}`);
       }
@@ -116,6 +120,7 @@ for (const offline of [false, true]) {
     });
 
     await test.step('4. Switch routes and inspect unlocked and locked badge descriptions', async () => {
+      await openCardio(page);
       await output('Cardio distance (km)').fill('55');
       await button('Log cardio session').click();
       await navigate('Journey');
@@ -166,6 +171,7 @@ for (const offline of [false, true]) {
       const row = page.getByRole('table', { name: 'Workout history', exact: true }).getByRole('row').filter({ hasText: 'SQUAT' });
       await row.getByRole('button', { name: 'Details', exact: true }).click();
       await expect(page.getByRole('region', { name: 'Session details', exact: true })).toContainText('load: 80 kg; volume: 240 kg');
+      await row.locator('summary').click();
       await row.getByRole('button', { name: 'Replay saved rep 2', exact: true }).click();
       await expect(output('Saved snapshot replay')).toBeVisible();
       await expect(output('Saved snapshot diagnostic')).toContainText('short of target');
@@ -173,24 +179,34 @@ for (const offline of [false, true]) {
     });
 
     await test.step('6. Recalibrate, toggle automatic updates, flush comms, seed and confirm clear', async () => {
-      await navigate('Settings');
+      await navigate('Profile');
       await output('Height (cm)').fill('182');
       await expect(output('Settings BMI')).toHaveText('24.5 kg/m²');
+      await navigate('Settings');
       const automatic = page.getByRole('checkbox', { name: 'Auto-adjust routine based on progress', exact: true });
       await automatic.uncheck();
       const schedule = page.getByRole('list', { name: 'Personalized daily schedule', exact: true });
+      await navigate('Dashboard');
       const frozen = await schedule.innerText();
+      await openCardio(page);
       await output('Cardio distance (km)').fill('7');
       await button('Log cardio session').click();
+      await navigate('Dashboard');
       await expect(schedule).toHaveText(frozen, { useInnerText: true });
+      await navigate('Settings');
       await button('Recalibrate Routine').click();
       await expect(output('Routine update notification')).toHaveText('Your routine has been updated based on your recent progress.');
+      await navigate('Dashboard');
       await expect(schedule).toContainText('6 km');
+      await navigate('Settings');
       await automatic.check();
+      await openCardio(page);
       await output('Cardio distance (km)').fill('8');
       await button('Log cardio session').click();
+      await navigate('Dashboard');
       await expect(schedule).toContainText('6.8 km');
       await expect(output('Queued sync count')).toHaveText('4');
+      await navigate('Settings');
       await button('Open comms window').click();
       await expect(output('Queued sync count')).toHaveText('0');
       await expect(output('Acknowledged session count')).toHaveText('4');

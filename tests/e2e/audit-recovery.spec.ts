@@ -1,3 +1,4 @@
+import { navigate } from './navigation';
 import { expect, test } from '@playwright/test';
 
 test('an idle page starts a fresh exercise schedule at the UTC mission-day boundary', async ({ page }) => {
@@ -24,7 +25,7 @@ test('live feedback clears when a new camera observation has no detected person'
       return { detectForVideo() { const frame = frames.shift(); return { landmarks: frame ? [frame.landmarks] : [] }; }, close() {} };
     } };
   ` }));
-  await page.goto('/');
+  await page.goto('/#/arena');
   await page.evaluate(async () => {
     const path = '/src/adapters/poseCameraAdapter.ts';
     const { generateSimulatedRepFrames } = await import(path);
@@ -41,8 +42,10 @@ test('live feedback clears when a new camera observation has no detected person'
 
 test('a tracking error leaves End session available to save completed reps once', async ({ page }) => {
   await page.goto('/');
+  await navigate(page, 'Settings');
   await page.getByRole('button', { name: 'Clear Local Data', exact: true }).click();
   await page.getByRole('button', { name: 'Confirm clear', exact: true }).click();
+  await navigate(page, 'Workout Arena');
   await page.getByRole('button', { name: 'Simulate Good Rep', exact: true }).click();
   await expect(page.getByLabel('Completed reps', { exact: true })).toHaveText('1');
   await page.getByLabel('Live skeletal pose', { exact: true }).evaluate((canvas: HTMLCanvasElement) => {

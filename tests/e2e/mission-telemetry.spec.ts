@@ -1,23 +1,32 @@
+import { navigate, openCardio } from './navigation';
 import { expect, test } from '@playwright/test';
 
 test('mission screens share saved workouts, settings, queue acknowledgements, history replay and offline exports', async ({ page, context }) => {
   await context.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
   await page.goto('/');
-  for (const name of ['Command Center', 'Expedition Journey', 'Medical Telemetry', 'Workout Logs & History', 'Profile & Mission Settings']) await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+  for (const [screen, name] of [['Dashboard', 'Command Center'], ['Journey', 'Expedition Journey'], ['Analytics', 'Medical Telemetry'], ['Logs', 'Workout Logs & History'], ['Settings', 'Profile & Mission Settings']]) {
+    await navigate(page, screen);
+    await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+  }
   await expect(page.getByLabel('Saved session count', { exact: true })).toHaveText('60');
   await page.getByRole('button', { name: 'Clear Local Data', exact: true }).click();
   await page.getByRole('button', { name: 'Confirm clear', exact: true }).click();
   await page.reload();
   await expect(page.getByLabel('Saved session count', { exact: true })).toHaveText('0');
+  await navigate(page, 'Profile');
   await page.getByLabel('Astronaut name', { exact: true }).fill('Commander Ares');
+  await navigate(page, 'Settings');
   await page.getByLabel('Gravity profile', { exact: true }).selectOption('MOON_016G');
+  await navigate(page, 'Journey');
   await page.getByLabel('Active route', { exact: true }).selectOption('OLYMPUS_MONS');
+  await navigate(page, 'Dashboard');
   await page.getByRole('button', { name: 'Quick launch Squat', exact: true }).click();
   await page.getByRole('button', { name: 'Simulate Shallow Rep', exact: true }).click();
   await expect(page.getByLabel('Completed reps', { exact: true })).toHaveText('1');
   await page.getByRole('button', { name: 'End session', exact: true }).click();
   await expect(page.getByLabel('Saved session count', { exact: true })).toHaveText('1');
   await expect(page.getByLabel('Queued sync count', { exact: true })).toHaveText('1');
+  await openCardio(page);
   await page.getByLabel('Cardio distance (km)', { exact: true }).fill('15');
   await page.getByRole('button', { name: 'Log cardio session', exact: true }).click();
   await expect(page.getByLabel('Expedition distance', { exact: true })).toHaveText('15.00 km');
@@ -25,15 +34,20 @@ test('mission screens share saved workouts, settings, queue acknowledgements, hi
   await expect(page.getByLabel('Saved session count', { exact: true })).toHaveText('2');
   await expect(page.getByLabel('Astronaut name', { exact: true })).toHaveValue('Commander Ares');
   await expect(page.getByLabel('Gravity profile', { exact: true })).toHaveValue('MOON_016G');
+  await navigate(page, 'Logs');
   await page.getByLabel('Search workouts', { exact: true }).fill('SQUAT');
+  await page.getByRole('table', { name: 'Workout history', exact: true }).locator('summary').first().click();
   await page.getByRole('button', { name: 'Replay saved rep 1', exact: true }).click();
   await expect(page.getByLabel('Saved snapshot replay', { exact: true })).toBeVisible();
+  await navigate(page, 'Settings');
   await page.getByRole('button', { name: 'Open comms window', exact: true }).click();
   await expect(page.getByLabel('Queued sync count', { exact: true })).toHaveText('0');
   await expect(page.getByLabel('Acknowledged session count', { exact: true })).toHaveText('2');
+  await navigate(page, 'Analytics');
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export Flight Surgeon JSON', exact: true }).click();
   expect((await download).suggestedFilename()).toBe('ares-flight-surgeon.json');
+  await navigate(page, 'Settings');
   await page.getByRole('button', { name: 'Seed 30-Day Mars Demo Data', exact: true }).click();
   await expect(page.getByLabel('Saved session count', { exact: true })).toHaveText('60');
 });
