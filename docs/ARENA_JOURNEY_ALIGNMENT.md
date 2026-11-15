@@ -1,5 +1,7 @@
 # Arena, Journey and medical reference alignment
 
+The subsequent supplied React export comparison is documented in [Mockup source alignment](MOCKUP_SOURCE_ALIGNMENT.md). That revision supersedes screenshot-based sizing estimates below.
+
 The supplied screenshots and the rendered team Figma Make preview are the visual references. The uploaded `.fig` archive includes a canvas binary, a thumbnail and two raster assets; its thumbnail shows onboarding and it does not supply the Make app's React/TypeScript source. The archive was left unchanged. Arena, Journey and Analytics were inspected in the running Make preview before implementation.
 
 ## Arena

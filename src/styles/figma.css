@@ -1,6 +1,6 @@
 @font-face { font-family: "Plus Jakarta Sans"; src: url('/assets/fonts/plus-jakarta-sans-latin.woff2') format('woff2'); font-style: normal; font-weight: 400 800; font-display: swap; }
 @font-face { font-family: "JetBrains Mono"; src: url('/assets/fonts/jetbrains-mono-latin.woff2') format('woff2'); font-style: normal; font-weight: 500 700; font-display: swap; }
-@font-face { font-family: Conthrax; src: url('/assets/fonts/conthrax-semibold.otf') format('opentype'); font-style: normal; font-weight: 600; font-display: swap; }
+@font-face { font-family: Conthrax; src: url('/assets/fonts/conthrax-semibold.otf') format('opentype'); font-style: normal; font-weight: 100 900; font-display: swap; }
 
 @layer figma {
   :root { --background: #091d3a; --panel: #10234a; --panel-raised: #20385c; --border: #ffffff33; --text: #fff; --muted: #c7d0e0; --cyan: #8fbcff; --amber: #f6a623; --emerald: #64e3ae; --mono: "JetBrains Mono", monospace; --display: Conthrax, "Plus Jakarta Sans", sans-serif; --sans: "Plus Jakarta Sans", system-ui, sans-serif; --glass-fill: linear-gradient(140deg, #ffffff1a 0%, #ffffff09 45%, #ffffff05 100%); --glass-shadow: inset 0 1px 0 #ffffff29, inset 0 0 24px #ffffff08, 0 24px 48px -28px #000c; font-family: var(--sans); background: var(--background); }

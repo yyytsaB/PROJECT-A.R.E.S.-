@@ -55,3 +55,29 @@ test('reference health tiles show unavailable measurements honestly and use save
   await page.getByRole('button', { name: 'View week', exact: true }).click();
   await expect(page.getByRole('dialog', { name: "This week's microcycle", exact: true })).toBeVisible();
 });
+
+test('wide desktop preserves the reference proportions and keeps the detached launch aligned while scrolling', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  // The supplied desktop artboard is 1440px wide with a 264px sidebar.
+  const sidebar = page.getByRole('navigation', { name: 'Mission sections', exact: true });
+  expect((await sidebar.boundingBox())!.width).toBeGreaterThan(290);
+  const banner = (await page.getByRole('banner').boundingBox())!;
+  expect(banner.x + banner.width).toBeGreaterThan(1890);
+  const ready = page.getByRole('region', { name: 'Ready when you are', exact: true });
+  const launch = page.getByRole('button', { name: "INITIATE TODAY'S SESSION", exact: true });
+  await expect(launch).toBeInViewport({ ratio: 1 });
+  const start = (await launch.boundingBox())!, rail = (await ready.boundingBox())!;
+  expect(Math.abs(start.x - rail.x)).toBeLessThan(2);
+  expect(Math.abs(start.width - rail.width)).toBeLessThan(2);
+  expect(start.y + start.height).toBeGreaterThan(1040);
+  expect(start.y + start.height).toBeLessThanOrEqual(1057);
+  await page.mouse.wheel(0, 150);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(100);
+  expect(Math.abs((await launch.boundingBox())!.y - start.y)).toBeLessThan(2);
+  await page.getByText('Prototype scoring, routine & local data details', { exact: true }).click();
+  await page.getByLabel('Local cache used', { exact: true }).scrollIntoViewIfNeeded();
+  await page.mouse.wheel(0, 4000);
+  await expect.poll(async () => (await launch.boundingBox())!.y).toBeLessThan(start.y - 48);
+});

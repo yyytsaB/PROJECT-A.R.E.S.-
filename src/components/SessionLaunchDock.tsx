@@ -15,8 +15,9 @@ export function SessionLaunchDock({ active, disabled, onLaunch }: Props) {
       frame = 0;
       if (!home.current || !button.current) return;
       const rect = home.current.getBoundingClientRect(), height = button.current.getBoundingClientRect().height;
-      const inset = Number.parseFloat(getComputedStyle(home.current).scrollMarginBottom) || 24;
-      const next = { pinned: rect.top + height > window.innerHeight - inset, left: rect.left, width: rect.width, height };
+      const scale = rect.width / home.current.offsetWidth;
+      const inset = (Number.parseFloat(getComputedStyle(home.current).scrollMarginBottom) || 24) * scale;
+      const next = { pinned: rect.top + height > window.innerHeight - inset, left: rect.left / scale, width: rect.width / scale, height: height / scale };
       const last = previous.current;
       if (!last || Object.entries(next).some(([key, value]) => last[key as keyof Placement] !== value)) {
         previous.current = next; setPlacement(next);

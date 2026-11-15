@@ -11,7 +11,7 @@
 - **Current Phase:** Hackathon implementation — **M0 through M6 and the approved demo enhancements complete**, verified November 14, 2026. Coding began after the 09:00 AM local start gate.
 - **HACKATHON FAIR-PLAY HARD GATE:** Do **NOT** run `npm init`, scaffold `package.json`, or create any files under `src/` or `tests/` until the official **Nov 14, 09:00 AM** start signal.
 - **Next Step:** Native print-preview and stage speaker/webcam checks, then final frontend/artwork revision. The complete Parts 1–4 re-audit fixed seven additional defects and passed both six-flow software rehearsals. Publication verification remains separate. See `docs/INTEGRATION_FULL_AUDIT.md` for current findings, evidence and limitations; earlier reports remain historical records.
-- **Verification:** Latest frontend integration checks passed 80 unit/Chromium tests, 32 E2E tests, 5 production-bundle tests, strict typecheck, architecture lint and production build. Reproduce with `npm run test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run test:e2e`, and `npm run test:production`.
+- **Verification:** Latest frontend integration checks passed 80 unit/Chromium tests, 44 E2E tests, 5 production-bundle tests, strict typecheck, architecture lint and production build. Reproduce with `npm run test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run test:e2e`, and `npm run test:production`.
 - **Team Topology (6 Members):**
   - **Developers (2):** Developer #1 (Vision & Kinematics Lead) on `M0`, `M1`, `M2`; Dev #2 on `M3`, `M4`.
   - **Frontend / Wireframes (2):** Owns Vite/React dark-mode UI, progression rings, planetary map visuals, and charts consuming `src/hooks/`.

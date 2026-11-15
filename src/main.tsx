@@ -5,3 +5,4 @@ import './styles/figma.css';
 import './styles/reference-pages.css';
 
 createRoot(document.getElementById('root')!).render(<App />);
+import './styles/mockup-source.css';

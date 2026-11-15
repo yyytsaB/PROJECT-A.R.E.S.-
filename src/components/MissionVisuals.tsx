@@ -31,6 +31,8 @@ const iconPaths: Record<string, string> = {
 
 /** Native navigation geometry measured in the team's rendered reference. */
 const referenceIconShapes: Readonly<Record<string, ReactNode>> = {
+  globe: <><path d="M21.54 15H17a2 2 0 0 0-2 2v4.54" /><path d="M7 3.34V5a3 3 0 0 0 3 3a2 2 0 0 1 2 2c0 1.1.9 2 2 2a2 2 0 0 0 2-2c0-1.1.9-2 2-2h3.17" /><path d="M11 21.95V18a2 2 0 0 0-2-2a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2H2.05" /><circle cx="12" cy="12" r="10" /></>,
+  storage: <><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5V19A9 3 0 0 0 21 19V5" /><path d="M3 12A9 3 0 0 0 21 12" /></>,
   dashboard: <><rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" /></>,
   arena: <><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" /></>,
   journey: <><path d="M9 5h8.5a1 1 0 010 7h-11a1 1 0 000 7H15" /><circle cx="18" cy="19" r="3" /><circle cx="6" cy="5" r="3" /></>,
@@ -46,17 +48,23 @@ export function MissionIcon({ name }: { name: string }) {
 export function ProgressRing({ value, children }: { value: number; children: ReactNode }) {
   const fraction = Math.max(0, Math.min(100, value)) / 100;
   return <div className="progress-ring">
-    <svg viewBox="0 0 160 160" aria-hidden="true" focusable="false"><circle className="ring-track" cx="80" cy="80" r="67" /><circle className="ring-value" cx="80" cy="80" r="67" pathLength="100" strokeDasharray={`${fraction * 100} 100`} /></svg>
+    <svg viewBox="0 0 160 160" aria-hidden="true" focusable="false"><circle className="ring-track" cx="80" cy="80" r="75" /><circle className="ring-value" cx="80" cy="80" r="75" pathLength="100" strokeDasharray={`${fraction * 100} 100`} /></svg>
     <div className="ring-content">{children}</div>
   </div>;
 }
 
-export function TelemetryChart({ values, kind }: { values: readonly number[]; kind: 'retention' | 'volume' }) {
+export function TelemetryChart({ values, dates = [], kind }: { values: readonly number[]; dates?: readonly string[]; kind: 'retention' | 'volume' }) {
   const max = Math.max(kind === 'retention' ? 100 : 1, ...values);
-  const points = values.map((value, index) => `${16 + index / Math.max(1, values.length - 1) * 608},${156 - value / max * 128}`).join(' ');
-  return <svg className={`telemetry-chart ${kind}`} viewBox="0 0 640 190" aria-hidden="true" focusable="false">
-    {[28, 70, 112, 156].map(y => <line key={y} x1="16" x2="624" y1={y} y2={y} className="chart-gridline" />)}
-    {kind === 'retention' ? <><polygon points={`16,156 ${points} 624,156`} className="chart-area" /><polyline points={points} className="chart-line" /></> : values.map((value, index) => <rect key={index} x={16 + index * 608 / Math.max(1, values.length)} y={156 - value / max * 128} width={Math.max(1, 608 / Math.max(1, values.length) - 6)} height={value / max * 128} rx="2" className="chart-bar" />)}
-    <text x="16" y="182">EARLIER</text><text x="566" y="182">LATEST</text>
+  const left = 62, right = 980, top = 22, bottom = 244;
+  const x = (index: number) => kind === 'volume' ? left + (index + .5) / Math.max(1, values.length) * (right - left) : left + index / Math.max(1, values.length - 1) * (right - left);
+  const y = (value: number) => bottom - value / max * (bottom - top);
+  const points = values.map((value, index) => `${x(index)},${y(value)}`).join(' ');
+  const ticks = [0, .25, .5, .75, 1];
+  return <svg className={`telemetry-chart ${kind}`} viewBox="0 0 1000 300" aria-hidden="true" focusable="false">
+    <defs><linearGradient id={`telemetry-fill-${kind}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f6a623" stopOpacity=".35" /><stop offset="100%" stopColor="#f6a623" stopOpacity="0" /></linearGradient></defs>
+    {ticks.map(tick => <g key={tick}><line x1={left} x2={right} y1={y(tick * max)} y2={y(tick * max)} className="chart-gridline" /><text x={left - 10} y={y(tick * max) + 4} textAnchor="end">{kind === 'retention' ? `${tick * 100}%` : Math.round(tick * max).toLocaleString()}</text></g>)}
+    {kind === 'retention' ? <><polygon points={`${left},${bottom} ${points} ${right},${bottom}`} fill={`url(#telemetry-fill-${kind})`} /><polyline points={points} className="chart-line" /></> : values.map((value, index) => <rect key={index} x={left + index * (right - left) / Math.max(1, values.length)} y={y(value)} width={Math.max(1, (right - left) / Math.max(1, values.length) - 6)} height={bottom - y(value)} rx="3" className="chart-bar" />)}
+    {dates.map((date, index) => index % Math.max(1, Math.ceil(dates.length / 6)) === 0 || index === dates.length - 1 ? <text key={date} x={x(index)} y="267" textAnchor={index === 0 ? 'start' : index === dates.length - 1 ? 'end' : 'middle'}>{date.slice(5)}</text> : null)}
+    <text x="520" y="292" textAnchor="middle">Date (UTC)</text><text transform="translate(16 135) rotate(-90)" textAnchor="middle">{kind === 'retention' ? 'Retention %' : 'Volume kg'}</text>
   </svg>;
 }
