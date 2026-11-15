@@ -16,7 +16,7 @@ export function TeamSection({ active }: { active: boolean }) {
     <p className="team-intro">{team.teamName} built this prototype for the NASA Space Apps Challenge.</p>
     <div className="team-layout">
       <figure className="team-photo">
-        <img src={team.photo.src} alt={team.photo.alt} width={team.photo.width} height={team.photo.height} loading="lazy" decoding="async" />
+        <img src={team.photo.src} alt={team.photo.alt} width={team.photo.width} height={team.photo.height} decoding="async" />
         <figcaption>{team.teamName}</figcaption>
       </figure>
       <div className="team-side">
