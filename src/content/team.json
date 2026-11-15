@@ -1,14 +1,35 @@
 {
-  "teamName": "Team ARES",
-  "photo": { "src": "/assets/team/team.jpg", "width": 1170, "height": 878, "alt": "Group photo of the six ARES team members standing together in a classroom" },
+  "teamName": "Space Sheeps",
+  "photo": {
+    "src": "/assets/team/team.jpg",
+    "width": 1170,
+    "height": 878,
+    "alt": "Group photo of the six Space Sheeps team members standing together in a classroom"
+  },
   "members": [
-    { "name": "Regina Annemarie I. Bool" },
-    { "name": "Sebastian Miguel A. Bueno" },
-    { "name": "Aldred Laurenze C. De Castro" },
-    { "name": "Haidie N. Fanoga" },
-    { "name": "Athena Ashley R. Punzalan" },
-    { "name": "Karl Andrei C. Talagtag" }
+    {
+      "name": "Regina Annemarie I. Bool"
+    },
+    {
+      "name": "Sebastian Miguel A. Bueno"
+    },
+    {
+      "name": "Aldred Laurenze C. De Castro"
+    },
+    {
+      "name": "Haidie N. Fanoga"
+    },
+    {
+      "name": "Athena Ashley R. Punzalan"
+    },
+    {
+      "name": "Karl Andrei C. Talagtag"
+    }
   ],
   "pitchDeckUrl": "https://www.figma.com/make/Ztf5NQe7wMI5HFzqa6cWUO/PROJECT-ARES?p=f&fullscreen=1",
-  "video": null
+  "video": {
+    "src": "/assets/team/team-presentation.mp4",
+    "title": "Space Sheeps 30-second team presentation",
+    "poster": "/assets/team/team-presentation-poster.jpg"
+  }
 }
