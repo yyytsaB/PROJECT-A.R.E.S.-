@@ -5,7 +5,7 @@ import type { CameraFailureKind, CameraPreparationStage, PoseSource } from '../a
 import { drawPoseWireframe } from '../adapters/poseCanvasRenderer';
 import { getExerciseById } from '../core/catalog/missionCatalog';
 import { analyzeExerciseFrame, normalizePose33 } from '../core/kinematics/kinematicMath';
-import { advanceRepState, createInitialRepState } from '../core/kinematics/repStateMachine';
+import { abandonRepInProgress, advanceRepState, createInitialRepState, OCCLUSION_ABANDON_MS } from '../core/kinematics/repStateMachine';
 import type { KinematicFrameAnalysis, RawPoseFrame, RepMachineState, ResistanceExerciseId, SimulatedRepKind, UseWorkoutArenaOptions, WorkoutArenaController as CoreController } from '../core/types';
 import { useVoiceCoach } from './useVoiceCoach';
 
@@ -94,6 +94,7 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
   const runWhenReady = useRef(false);
   const pending = useRef<Promise<void> | null>(null);
   const lastTick = useRef(-Infinity);
+  const occludedSince = useRef<number | null>(null);
   const publish = () => setView({ ...current.current });
   const update = (patch: Partial<ArenaView>) => { current.current = { ...current.current, ...patch }; publish(); };
   const cancelAnimation = () => { if (animation.current !== null) cancelAnimationFrame(animation.current); animation.current = null; };
@@ -159,10 +160,17 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
           if (messages.length) voiceCoach.speak(messages.join('. '), hasNewFault);
           draw(frame, step.analysis, exercise.id);
           const trackingState = trackingStateOf(step.analysis);
-          current.current = { ...before, state: step.state, analysis: step.analysis, trackingState,
+          let repState = step.state;
+          if (step.analysis?.isVisible) occludedSince.current = null;
+          else {
+            occludedSince.current ??= frame.timestampMs;
+            // Someone who left the frame mid-rep cannot finish that rep on return; brief detector dropouts are tolerated.
+            if (frame.timestampMs - occludedSince.current >= OCCLUSION_ABANDON_MS && (repState.phase !== 'IDLE' || repState.isArmed)) repState = abandonRepInProgress(repState);
+          }
+          current.current = { ...before, state: repState, analysis: step.analysis, trackingState,
             activeFaultAlerts: step.activeFaultAlerts, maxRomPct: Math.max(before.maxRomPct, step.analysis?.romPct ?? 0) };
-          if (before.trackingState !== trackingState || before.state.phase !== step.state.phase || before.state.repCount !== step.state.repCount ||
-            before.state.faultFlags.join() !== step.state.faultFlags.join() || before.activeFaultAlerts.join() !== step.activeFaultAlerts.join()) publish();
+          if (before.trackingState !== trackingState || before.state.phase !== repState.phase || before.state.repCount !== repState.repCount ||
+            before.state.faultFlags.join() !== repState.faultFlags.join() || before.activeFaultAlerts.join() !== step.activeFaultAlerts.join()) publish();
         }
       }
       animation.current = requestAnimationFrame(tick);
@@ -206,7 +214,7 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
         if (runWhenReady.current) beginRun();
         else {
           update({ sessionStatus: 'READY', preparationStage: null });
-          lastTick.current = -Infinity;
+          lastTick.current = -Infinity; occludedSince.current = null;
           if (mode === 'LIVE') animation.current = requestAnimationFrame(previewTick);
         }
       } catch (error) {
@@ -221,7 +229,7 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
   function beginRun() {
     preparingOnly.current = false; runWhenReady.current = false;
     cancelAnimation();
-    current.current = { ...current.current, sessionStatus: 'RUNNING', preparationStage: null }; lastTick.current = -Infinity;
+    current.current = { ...current.current, sessionStatus: 'RUNNING', preparationStage: null }; lastTick.current = -Infinity; occludedSince.current = null;
     startTimer(); publish(); animation.current = requestAnimationFrame(tick);
   }
   async function start(mode: 'LIVE' | 'SIMULATED'): Promise<void> {
@@ -237,7 +245,7 @@ export function useWorkoutArena(options: UseWorkoutArenaOptions = {}): WorkoutAr
   }
   function resume() {
     if (current.current.sessionStatus !== 'PAUSED' || !source.current) return;
-    current.current = { ...current.current, sessionStatus: 'RUNNING' }; lastTick.current = -Infinity;
+    current.current = { ...current.current, sessionStatus: 'RUNNING' }; lastTick.current = -Infinity; occludedSince.current = null;
     startTimer();
     publish(); animation.current = requestAnimationFrame(tick);
   }

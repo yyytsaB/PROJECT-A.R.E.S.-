@@ -10,8 +10,14 @@ function buildSnapshot(frame: RawPoseFrame, analysis: KinematicFrameAnalysis, re
   };
 }
 
-/** Longest gap between visible frames that still counts as one continuous observation (occlusion, pause, hidden tab). */
-export const MAX_OBSERVATION_GAP_MS = 750;
+/**
+ * Longest gap between visible frames that still counts as one continuous observation. Longer gaps (pause/resume,
+ * hidden tab, a stalled device) abandon the rep in progress. Generous enough for brief stalls on low-end laptops;
+ * frames that show the person missing are handled separately by the caller via `abandonRepInProgress`.
+ */
+export const MAX_OBSERVATION_GAP_MS = 1500;
+/** How long frames may show no usable body before the caller should abandon the rep in progress. */
+export const OCCLUSION_ABANDON_MS = 500;
 
 export function createInitialRepState(exerciseId: ExerciseId): RepMachineState {
   return {
@@ -20,6 +26,12 @@ export function createInitialRepState(exerciseId: ExerciseId): RepMachineState {
     lastTimestampMs: null, departureFrames: 0, returnFrames: 0, isArmed: false,
     previousFrame: null, previousAnalysis: null, targetConfirmed: false,
   };
+}
+
+/** Drop the rep in progress (unobserved motion cannot complete or start a rep); completed reps and snapshots are kept. */
+export function abandonRepInProgress(state: RepMachineState): RepMachineState {
+  return { ...createInitialRepState(state.exerciseId), repCount: state.repCount, faultedRepCount: state.faultedRepCount,
+    formAccuracyPct: state.formAccuracyPct, snapshots: state.snapshots, lastTimestampMs: state.lastTimestampMs };
 }
 
 export function advanceRepState(state: RepMachineState, frame: RawPoseFrame | null, exercise: ExerciseDefinition): RepMachineStepResult {
@@ -41,7 +53,7 @@ export function advanceRepState(state: RepMachineState, frame: RawPoseFrame | nu
   let next = { ...state, lastTimestampMs: frame.timestampMs };
   // Unobserved motion cannot complete or start a rep: abandon progress and require a fresh start position.
   if (state.lastTimestampMs !== null && frame.timestampMs - state.lastTimestampMs > MAX_OBSERVATION_GAP_MS) {
-    next = { ...createInitialRepState(state.exerciseId), repCount: state.repCount, faultedRepCount: state.faultedRepCount, formAccuracyPct: state.formAccuracyPct, snapshots: state.snapshots, lastTimestampMs: frame.timestampMs };
+    next = { ...abandonRepInProgress(state), lastTimestampMs: frame.timestampMs };
   }
   if (next.phase === 'COMPLETED') {
     if (progress <= buffer + 1e-8) return result(next, analysis);
