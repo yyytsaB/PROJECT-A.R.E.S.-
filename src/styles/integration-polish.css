@@ -1,0 +1,124 @@
+/*
+ * Mockup integration polish (Nov 2026).
+ * Loaded last inside the existing `figma` layer so it refines, rather than replaces,
+ * the shared rules in figma.css / reference-pages.css / mockup-source.css.
+ */
+@layer figma {
+  /* ---------- Shared shell ---------- */
+  .topbar-start { font: 700 14px/1 var(--sans); letter-spacing: 0; }
+  .connection-chip { padding: 8px 12px; border-radius: 12px; font: 600 12px/1.4 var(--sans); }
+  @media (min-width: 1201px) { .connection-chip { display: inline-flex; align-items: center; gap: 8px; } }
+  .crew-profile small { display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mission-footer { color: #ffffff73; font: 12px/1.5 var(--sans); letter-spacing: 0; text-align: center; }
+
+  /* Status dots (dashboard system strip, log status) */
+  .status-dot { display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; background: #9fb0c8; vertical-align: -1px; flex-shrink: 0; }
+  .status-dot[data-tone=ok] { background: var(--emerald); box-shadow: 0 0 8px #64e3ae66; }
+  .status-dot[data-tone=warn] { background: var(--amber); box-shadow: 0 0 8px #f6a62366; }
+  .status-dot[data-tone=info] { background: #6ea8ff; box-shadow: 0 0 8px #6ea8ff66; }
+  .system-status-strip dd { display: flex; align-items: center; font-size: 14px; }
+
+  /* ---------- Analytics ---------- */
+  .chart-grid figcaption > span, .chart-grid .symmetry-card > figcaption { text-transform: none; letter-spacing: 0; }
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 12px 0 0; padding: 0; list-style: none; color: #ffffffcc; font-size: 13px; }
+  .chart-legend li { display: flex; align-items: center; gap: 8px; }
+  .chart-legend li::before { content: ''; width: 20px; border-top: 3px solid var(--amber); }
+  .chart-legend [data-series=baseline]::before { border-top: 2px dashed #6ea8ff; }
+  .chart-legend [data-series=goal]::before { border-top: 2px dashed #ff6b6b; }
+  .telemetry-chart .chart-reference { stroke-width: 2; stroke-dasharray: 8 6; fill: none; }
+  .telemetry-chart .chart-reference.baseline { stroke: #6ea8ff; }
+  .telemetry-chart .chart-reference.goal { stroke: #ff6b6b; }
+  .telemetry-chart.volume text { font-size: 13px; }
+  .volume-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 16px 0 4px; }
+  .volume-stats > div { padding: 12px 14px; border: 1px solid #ffffff1f; border-radius: 14px; background: #ffffff0a; }
+  .volume-stats dt { color: #ffffffa6; font: 600 11px/1.4 var(--sans); letter-spacing: .06em; text-transform: uppercase; }
+  .volume-stats dd { margin: 4px 0 0; font: 700 20px/1.3 var(--display); color: #fff; }
+
+  /* ---------- Logs ---------- */
+  .history-master .table-scroll { max-height: none; overflow-x: auto; overflow-y: visible; }
+  .history-master th, .history-master td { font-size: 13px; }
+  .history-master th { font-size: 11px; }
+  .history-master th:nth-child(1) { width: 128px; }
+  .history-master th:nth-child(4) { width: 96px; }
+  .history-master td time > small { font-size: 11px; }
+  .history-master tbody tr { cursor: pointer; transition: background-color 150ms; }
+  .history-master tbody tr:hover { background: #ffffff0a; }
+  .history-master tbody tr[data-selected=true] { background: #ffffff12; }
+  .history-master tbody tr[data-selected=true] > td:first-child { box-shadow: inset 3px 0 0 var(--amber); }
+  .form-status { display: inline-flex; align-items: center; padding: 0; border: 0; background: none; color: #fff; font: 600 13px/1.4 var(--sans); white-space: nowrap; }
+  .form-status .status-dot { width: 8px; height: 8px; }
+  .form-status[data-status=GREEN] .status-dot { background: var(--emerald); }
+  .form-status[data-status=YELLOW] .status-dot { background: var(--amber); }
+  .form-status[data-status=RED] .status-dot { background: #ff6b6b; }
+  [aria-label="Session details"] > .form-status { margin: 8px 0 4px; padding: 4px 12px; border: 1px solid #ffffff26; border-radius: 999px; background: #ffffff0d; font-size: 12px; }
+  .history-filters > input[type=search] { padding-left: 40px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff99' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 14px center; }
+  .status-legend { color: #ffffffa6; font-size: 12px; }
+
+  /* ---------- Journey ---------- */
+  .route-start-marker, .route-current-marker { position: absolute; z-index: 2; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; }
+  .route-start-marker { width: 14px; height: 14px; border: 3px solid var(--amber); background: #0b1a36; }
+  .route-current-marker { width: 18px; height: 18px; background: var(--amber); box-shadow: 0 0 0 6px #f6a62340, 0 0 18px #f6a623aa; }
+  .route-start-marker > small, .route-current-marker > small { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); padding: 2px 8px; border-radius: 6px; background: #0b1428d9; color: #fff; font: 600 11px/1.5 var(--sans); white-space: nowrap; }
+
+  /* ---------- Settings ---------- */
+  .gravity-options button { gap: 2px; }
+  .gravity-options strong { text-transform: none; }
+  .gravity-options small { color: #ffffffa6; font-size: 12px; }
+  .routine-settings > label.toggle-row { flex-direction: row; justify-content: space-between; align-items: center; gap: 24px; font-weight: 400; }
+  .toggle-row strong { display: block; font-size: 14px; font-weight: 600; }
+  .toggle-row small { display: block; margin-top: 2px; color: #ffffffa6; font-size: 13px; }
+  .routine-settings > label.toggle-row > input { width: 48px; height: 28px; flex-shrink: 0; cursor: pointer; }
+  .routine-settings > label.toggle-row > input::after { width: 22px; height: 22px; }
+  .routine-settings > label.toggle-row > input:checked::after { transform: translateX(20px); }
+  .routine-settings > label.toggle-row > input:focus-visible { outline: 2px solid #8fbcff; outline-offset: 3px; }
+  .settings-links { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 16px; }
+  .settings-links > .text-action { padding: 0; border: 0; background: none; color: #6ea8ff; font-size: 14px; font-weight: 600; }
+  .settings-links > .text-action:hover { color: #9fc7ff; background: none; }
+  .settings-links .mission-icon { width: 16px; height: 16px; }
+
+  /* ---------- Profile & onboarding fields ---------- */
+  .unit-input { position: relative; display: block; width: 100%; }
+  .unit-input > input { width: 100%; padding-right: 64px; }
+  .unit-input::after { content: attr(data-unit); position: absolute; top: 50%; right: 14px; transform: translateY(-50%); color: #ffffff8c; font-size: 13px; pointer-events: none; }
+  .baseline-card label > .unit-input { margin-top: 8px; }
+  .bmi-readout { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 12px; }
+  .bmi-label { grid-column: 1; color: #ffffffa6; font: 600 11px/1.4 var(--sans); letter-spacing: .06em; text-transform: uppercase; }
+  .bmi-readout > output { grid-column: 1; font: 700 22px/1.3 var(--display); color: #fff; }
+  .bmi-category { grid-column: 2; grid-row: 1 / span 2; padding: 4px 10px; border: 1px solid #64e3ae4d; border-radius: 999px; background: #64e3ae1a; color: #a0f2cf; font: 600 12px/1.4 var(--sans); white-space: nowrap; }
+  .bmi-category[data-tone=warn] { border-color: #f6a6234d; background: #f6a6231a; color: #ffd28a; }
+  .bmi-category[data-tone=alert] { border-color: #ff6b6b4d; background: #ff6b6b1a; color: #ffb3b3; }
+
+  .onboarding-section fieldset > .health-metrics-grid { display: grid; width: 100%; margin: 0; }
+  .onboarding-progress { display: flex; justify-content: space-between; gap: 12px; color: #fff; font: 600 14px/1.5 var(--sans); }
+  .onboarding-progress > span:last-child { color: #ffffffa6; font-weight: 500; }
+  .onboarding-sidebar > a small { letter-spacing: 0; }
+  .onboarding-sidebar li > div { font: 600 15px/1.4 var(--sans); letter-spacing: 0; }
+  .onboarding-sidebar li small { letter-spacing: 0; font-weight: 400; }
+  .onboarding-actions { display: flex; justify-content: space-between; align-items: center; }
+  .onboarding-actions > .primary-action:only-child, .onboarding-actions > .primary-action { margin-left: auto; }
+  .onboarding-actions > .back-action { border: 0; background: none; color: #ffffffa6; }
+  .onboarding-actions > .back-action:hover { color: #fff; background: none; }
+}
+
+@layer figma {
+  /* Round-two refinements */
+  .history-detail-panel > [aria-label="Session details"] { padding: 0; border: 0; background: none; box-shadow: none; backdrop-filter: none; }
+  .session-replay-empty { color: #ffffffa6; font-size: 13px; }
+  .route-current-marker > small { top: auto; bottom: calc(100% + 10px); }
+  .routine-settings > label.toggle-row { display: flex; width: 100%; }
+  .gravity-options small { font-weight: 400; }
+}
+
+@layer figma {
+  .onboarding-actions > .primary-action::after { content: '→' / ''; margin-left: 8px; }
+  .onboarding-actions > .back-action::before { content: '←' / ''; margin-right: 8px; }
+  [aria-label="Session details"] .session-metrics dd { white-space: nowrap; }
+}
+
+@layer figma {
+  /* The 30-day retention chart keeps readable labels on phones by scrolling horizontally. */
+  @media (max-width: 767px) {
+    .chart-grid > figure:first-child { overflow-x: auto; }
+    .telemetry-chart.retention { min-width: 640px; }
+  }
+}
