@@ -23,9 +23,14 @@ export function normalizePose33(raw: RawPoseFrame): NormalizedPose33 {
   if (!Number.isFinite(raw.width) || raw.width <= 0 || !Number.isFinite(raw.height) || raw.height <= 0 || !Number.isFinite(raw.timestampMs) || raw.timestampMs < 0 || raw.landmarks.length !== 33 || !Array.from(raw.landmarks).every(p => finitePoint(p) && Number.isFinite(p.visibility) && p.visibility >= 0 && p.visibility <= 1)) {
     throw new RangeError('Pose requires 33 finite landmarks, visibility in 0..1, positive dimensions and a nonnegative timestamp');
   }
+  // Metric world landmarks give steadier joint angles than image-space depth; visibility always comes from the image.
+  const world = raw.worldLandmarks;
+  const useWorld = world !== undefined && world.length === 33 && world.every(finitePoint);
   // MediaPipe image x and z use image width; y uses image height.
   const aspect = raw.width / raw.height;
-  const points = raw.landmarks.map(p => ({ ...p, x: p.x * aspect, z: p.z * aspect }));
+  const points = useWorld
+    ? raw.landmarks.map((p, i) => ({ x: world[i].x, y: world[i].y, z: world[i].z, visibility: p.visibility }))
+    : raw.landmarks.map(p => ({ ...p, x: p.x * aspect, z: p.z * aspect }));
   const pelvis = midpoint(points[23], points[24]);
   const torso = length(subtract(midpoint(points[11], points[12]), pelvis));
   if (!Number.isFinite(torso) || torso <= 1e-10) throw new RangeError('Pose torso must have nonzero length');

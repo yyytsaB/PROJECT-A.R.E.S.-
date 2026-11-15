@@ -99,7 +99,8 @@ test('runs all four exercises, pauses without losing a rep, returns summaries an
     expect(arena.isRunning).toBe(true);
     await act(() => arena.triggerSimulatedRep('GOOD'));
     const renderStart = renders;
-    await tick(4);
+    // The start zone spans a quarter of the range, so the synthetic rep departs on its fifth frame.
+    await tick(5);
     expect(arena.state.phase).toBe('ECCENTRIC');
     await act(() => arena.pause());
     const paused = arena.state;
