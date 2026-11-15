@@ -1,0 +1,42 @@
+/*
+ * Motion: entrance choreography when a screen is shown, a sliding navigation indicator, tactile presses and a rep
+ * counter pop. Rules for low-end laptops and accessibility:
+ *   - transforms and opacity only;
+ *   - entrances use fill-mode `backwards`, so nothing stays transformed afterwards (sticky headers, fixed layers
+ *     and the camera canvas behave exactly as before);
+ *   - entrances run once per navigation, never per frame, so nothing animates continuously while the camera is
+ *     tracking; the only Arena motion during tracking is a 300 ms pop when a rep completes;
+ *   - the global prefers-reduced-motion reset (mission.css, figma.css) removes all of it.
+ */
+@layer figma {
+  :root { --ease-out-expo: cubic-bezier(.16, 1, .3, 1); --ease-spring: cubic-bezier(.34, 1.56, .64, 1); }
+  @keyframes ares-rise { from { opacity: 0; transform: translate3d(0, 14px, 0); } }
+  @keyframes ares-fade { from { opacity: 0; } }
+  @keyframes ares-indicator { from { opacity: 0; transform: scaleY(.2); } }
+  @keyframes ares-pop { 0% { transform: scale(1); } 40% { transform: scale(1.28); } 100% { transform: scale(1); } }
+
+  /* Screen entrance: headings and copy first, then each card of the screen's main grid, in reading order. */
+  main > [data-screen][data-active=true] > :not(.dashboard-grid, .command-lower-grid, .chart-grid, .arena-layout, .configuration-grid, .history-layout, .team-layout, .catalog-grid),
+  [data-screen][data-active=true] :is(.dashboard-grid, .command-lower-grid, .chart-grid, .arena-layout, .configuration-grid, .history-layout, .team-layout) > * {
+    --enter-step: 0; animation: ares-rise 560ms var(--ease-out-expo) backwards; animation-delay: calc(var(--enter-base, 0ms) + var(--enter-step) * 55ms); }
+  [data-screen][data-active=true] :is(.dashboard-grid, .command-lower-grid, .chart-grid, .arena-layout, .configuration-grid, .history-layout, .team-layout) > * { --enter-base: 140ms; }
+  [data-screen][data-active=true] .command-lower-grid > * { --enter-base: 300ms; }
+  main > [data-screen][data-active=true] > :nth-child(2), [data-screen][data-active=true] :is(.dashboard-grid, .command-lower-grid, .chart-grid, .arena-layout, .configuration-grid, .history-layout, .team-layout) > :nth-child(2) { --enter-step: 1; }
+  main > [data-screen][data-active=true] > :nth-child(3), [data-screen][data-active=true] :is(.dashboard-grid, .command-lower-grid, .chart-grid, .arena-layout, .configuration-grid, .history-layout, .team-layout) > :nth-child(3) { --enter-step: 2; }
+  main > [data-screen][data-active=true] > :nth-child(4), [data-screen][data-active=true] :is(.dashboard-grid, .command-lower-grid, .chart-grid, .arena-layout, .configuration-grid, .history-layout, .team-layout) > :nth-child(4) { --enter-step: 3; }
+  main > [data-screen][data-active=true] > :nth-child(5), [data-screen][data-active=true] :is(.dashboard-grid, .command-lower-grid, .chart-grid, .arena-layout, .configuration-grid, .history-layout, .team-layout) > :nth-child(5) { --enter-step: 4; }
+  main > [data-screen][data-active=true] > :nth-child(n+6), [data-screen][data-active=true] :is(.dashboard-grid, .command-lower-grid, .chart-grid, .arena-layout, .configuration-grid, .history-layout, .team-layout) > :nth-child(n+6) { --enter-step: 5; }
+
+  /* A transformed ancestor would re-anchor the fixed session launch dock, so anything containing it only fades. */
+  main > [data-screen][data-active=true] > :has(.session-launch), [data-screen][data-active=true] :is(.dashboard-grid, .command-lower-grid, .chart-grid, .arena-layout, .configuration-grid, .history-layout, .team-layout) > :has(.session-launch) { animation-name: ares-fade; }
+
+  /* Active navigation indicator grows into place on each route change. */
+  .mission-sidebar nav a[aria-current=page]::before { transform-origin: center; animation: ares-indicator 420ms var(--ease-out-expo) backwards; }
+
+  /* Tactile presses on primary actions. */
+  :is(.team-link, .topbar-start, .primary-action, .button-row button, .camera-access-actions button, .exercise-quick-launch) { transition-property: transform, background-color, border-color, color, box-shadow; transition-duration: 160ms; transition-timing-function: var(--ease-out-expo); }
+  :is(.team-link, .topbar-start, .primary-action, .button-row button, .camera-access-actions button, .exercise-quick-launch):not(:disabled):active { transform: scale(.96); }
+
+  /* A completed rep pops the counter (the element is re-keyed per rep, so this runs once per rep). */
+  .form-score-grid output.rep-count-pop { display: inline-block; animation: ares-pop 320ms var(--ease-spring); }
+}

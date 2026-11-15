@@ -11,3 +11,4 @@ import './styles/camera-milestones.css';
 import './styles/milestone-celebration.css';
 import './styles/team.css';
 import './styles/valid-rep-guide.css';
+import './styles/motion.css';
