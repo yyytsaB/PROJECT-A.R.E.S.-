@@ -10,11 +10,12 @@
     background: linear-gradient(#5f8fff, #5f8fff) top left / 14px 1.5px, linear-gradient(#5f8fff, #5f8fff) top left / 1.5px 14px, linear-gradient(#5f8fff, #5f8fff) top right / 14px 1.5px, linear-gradient(#5f8fff, #5f8fff) top right / 1.5px 14px no-repeat; background-repeat: no-repeat; }
   .valid-rep-stage::after { transform: scaleY(-1); }
   .valid-rep-stage svg { position: absolute; top: 7%; left: 8%; width: 84%; height: 71%; }
-  .valid-rep-tag { position: absolute; top: 14px; left: 18px; display: inline-flex; align-items: center; gap: 6px; color: #dbe6ff; font: 600 9px/1 var(--display); letter-spacing: 1.4px; text-transform: uppercase; }
+  .valid-rep-tag { position: absolute; top: 14px; left: 18px; display: inline-flex; align-items: center; gap: 6px; color: #dbe6ff; font: 600 10px/1 var(--display); letter-spacing: 1.4px; text-transform: uppercase; }
   .valid-rep-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--emerald); box-shadow: 0 0 8px #64e3ae99; }
   .valid-rep-phase { position: absolute; top: 12px; right: 18px; color: #a0c1ff; font: 500 10px/1.4 var(--mono); }
-  .valid-rep-caption { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); padding: 5px 12px; border: 1px solid #8fbcff40; border-radius: 999px; background: #050d22cc; color: #dbe6ff; font: 600 9px/1.2 var(--display); letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
-  .valid-rep-gauge { display: grid; gap: 6px; }
+  .valid-rep-caption { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); padding: 5px 12px; border: 1px solid #8fbcff40; border-radius: 999px; background: #050d22cc; color: #dbe6ff; font: 600 10px/1.2 var(--display); letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+  /* Clip the marker rail horizontally: at full depth it slides one track-width to the right. */
+  .valid-rep-gauge { display: grid; gap: 6px; padding-inline: 3px; overflow-x: clip; }
   .valid-rep-track { position: relative; height: 8px; border-radius: 999px; }
   .valid-rep-rail { position: absolute; inset: 0; will-change: transform; }
   .valid-rep-marker { position: absolute; top: -4px; left: -2px; width: 4px; height: 16px; border-radius: 2px; background: #fff; box-shadow: 0 0 6px #ffffffaa; }
