@@ -184,6 +184,7 @@
   .text-action { font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; min-height: 32px; }
   .global-save-error:not(:empty) { padding: 16px 20px; margin: 0 0 24px; color: #ffe4e6; background: #7f1d1d66; border: 1px solid #fda4af80; border-radius: 16px; }
   .prototype-details { margin-top: 24px; color: #c7d0e0; font-size: 12px; }
+  .prototype-details > summary, .cardio-disclosure > summary { min-height: 32px; padding-block: 6px; cursor: pointer; }
   summary { cursor: pointer; }
   .comms-details { margin-top: 16px; padding: 16px; border: 1px solid #ffffff26; border-radius: 14px; background: #08183a22; }
   .routine-notice:not(:empty) { padding: 14px 18px; margin: 0 0 24px; border: 1px solid #f6a62366; border-radius: 16px; background: #f6a62314; color: #ffe2a8; font-size: 13px; }
@@ -412,7 +413,7 @@
   .history-master .form-status { white-space: nowrap; font-size: 8px; padding: 4px 6px; }
   .history-master tr[data-selected=true] { background: #f6a6230d; box-shadow: inset 3px 0 var(--amber); }
   .row-replays { display: inline-block; vertical-align: middle; }
-  .row-replays > summary { padding: 8px 0; font-size: 9px; color: #ffd792; }
+  .row-replays > summary { min-height: 32px; padding: 8px 0; font-size: 11px; color: #ffd792; cursor: pointer; }
   .row-replays[open] { display: block; margin-top: 8px; }
   .row-replays button { display: block; width: 100%; margin-top: 6px !important; }
   .history-master td { font-size: 12px; }
@@ -438,7 +439,7 @@
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
   @media (min-width: 640px) and (max-width: 767px) { .page-title { font-size: 36px; line-height: 40px; } }
   @media (max-width: 1279px) and (min-width: 768px) { .command-lower-grid { grid-template-columns: minmax(0, 1fr); } .ready-rail { display: grid; grid-template-columns: minmax(0, 1fr); } }
-  @media (max-width: 400px) { .daily-schedule > li { grid-template-columns: 28px 28px minmax(0, 1fr) auto 20px; gap: 6px; padding: 8px; } .exercise-icon { width: 28px; height: 32px; } .schedule-copy > strong, .exercise-quick-launch { font-size: 13px; } .daily-schedule time { font-size: 12px; } .routine-rationale > summary { width: 20px; } .schedule-heading { gap: 8px; } .view-week { font-size: 12px; padding-inline: 8px; } .session-launch strong { font-size: 15px; line-height: 24px; } }
+  @media (max-width: 400px) { .daily-schedule > li { grid-template-columns: 28px 28px minmax(0, 1fr) auto 24px; gap: 6px; padding: 8px; } .exercise-icon { width: 28px; height: 32px; } .schedule-copy > strong, .exercise-quick-launch { font-size: 13px; } .daily-schedule time { font-size: 12px; } .routine-rationale > summary { width: 24px; } .schedule-heading { gap: 8px; } .view-week { font-size: 12px; padding-inline: 8px; } .session-launch strong { font-size: 15px; line-height: 24px; } }
   @supports not (backdrop-filter: blur(16px)) { .glass, .readiness-card, .mission-progress-card, .schedule-card, .ready-card, .arena-controls, .chart-grid figure { background: #172c4de8; } }
 }
 

@@ -35,3 +35,14 @@ test('the valid rep reference fits a phone screen without horizontal overflow', 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.getByRole('region', { name: 'Valid rep reference', exact: true }).screenshot({ path: 'test-results/valid-rep-guide-375.png' });
 });
+
+test('the reference gauge never widens the page, even resting at full depth', async ({ page }) => {
+  // Reduced motion rests the reference on the target pose, where the gauge marker is at the far end.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const width of [1440, 768, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/#/arena');
+    await page.getByRole('region', { name: 'Valid rep reference', exact: true }).waitFor();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), `${width}px`).toBe(true);
+  }
+});
