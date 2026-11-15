@@ -19,6 +19,7 @@ import { SessionLaunchDock } from './components/SessionLaunchDock';
 import { MissionChrome } from './components/MissionChrome';
 import { MissionIcon, ProgressRing, TelemetryChart } from './components/MissionVisuals';
 import { MilestoneCelebration } from './components/MilestoneCelebration';
+import { RepIllustration } from './components/RepIllustration';
 
 export default function App() {
   return <MissionTelemetryProvider><MissionApp /></MissionTelemetryProvider>;
@@ -33,7 +34,9 @@ function SnapshotDiagnostic({ snapshot, label }: { snapshot: KinematicSnapshot |
 const LOG_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const formatLogDate = (iso: string) => `${LOG_MONTHS[Number(iso.slice(5, 7)) - 1]} ${Number(iso.slice(8, 10))}, ${iso.slice(0, 4)}`;
 const cameraStageHeadings = { PERMISSION: 'Waiting for camera access…', PERMISSION_SLOW: 'Waiting for camera access…', VIDEO: 'Starting camera preview…', MODEL: 'Loading the local pose model…' } as const;
-const formatPace =(secPerKm: number) => `${Math.floor(secPerKm / 60)}:${String(Math.floor(secPerKm % 60)).padStart(2, '0')}/km`;
+/** Display-only rounding: stored loads keep full precision, but 73.600000000001 should read 73.6. */
+const roundKg = (kg: number) => Number(kg.toFixed(1)).toLocaleString();
+const formatPace = (secPerKm: number) => `${Math.floor(secPerKm / 60)}:${String(Math.floor(secPerKm % 60)).padStart(2, '0')}/km`;
 const statusLabels = { GREEN: 'Good', YELLOW: 'Review', RED: 'Flagged' } as const;
 const gravitySubtitles: Record<GravityProfileId, string> = { MICROGRAVITY_0G: 'ISS / transit', MOON_016G: 'Lunar surface', MARS_038G: 'Martian surface' };
 const sentenceCase = (label: string) => label.charAt(0).toUpperCase() + label.slice(1);
@@ -70,6 +73,12 @@ function MissionApp() {
   const scenarioGoalPct = catalog.gravityProfiles.find(gravity => gravity.id === settings.gravityProfile)?.prototypeGoalPct ?? 0;
   const windowDates = new Set(medical.volumeSeries.map(point => point.dateIso));
   const windowSessions = medical.sessions.filter(session => windowDates.has(new Date(session.completedAtIso).toISOString().slice(0, 10)));
+  const windowLifts = windowSessions.filter(session => getExerciseById(session.exerciseId).kind === 'RESISTANCE');
+  const windowFormAccuracyPct = windowLifts.length ? windowLifts.reduce((sum, session) => sum + session.formAccuracyPct, 0) / windowLifts.length : null;
+  const symmetryByExercise = catalog.exercises.filter(exercise => exercise.kind === 'RESISTANCE').map(exercise => {
+    const sessions = windowLifts.filter(session => session.exerciseId === exercise.id);
+    return { id: exercise.id, name: exercise.name, sessions: sessions.length, symmetryPct: sessions.reduce((sum, session) => sum + session.symmetryScorePct, 0) / Math.max(1, sessions.length) };
+  }).filter(row => row.sessions > 0);
   const clearDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const dialog = clearDialog.current;
@@ -204,7 +213,10 @@ function MissionApp() {
       <aside className="telemetry-notice" aria-label="Prototype telemetry context"><ReferenceIcon name="info" /><div><h3>Prototype telemetry</h3><p className="prototype-note">{prototypeNotice.disclaimer}</p><p className="prototype-note">{prototypeNotice.metricInterpretation}</p></div></aside>
       <div className="telemetry-toolbar"><div><label htmlFor="telemetry-date-window">Telemetry date window</label><select id="telemetry-date-window" value={medical.dateWindowDays} onChange={event => medical.setDateWindowDays(Number(event.target.value) as 7 | 14 | 30)}><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></div><p>Chart windows show rolling 30-day scores. JSON/CSV reports include the full 30-day reporting period.</p></div>
       <dl className="telemetry-summary"><div><dt>{medical.dateWindowDays}-day tonnage:</dt><dd><output aria-label="Visible volume">{medical.visibleVolumeKg.toFixed(0)} kg</output></dd></div><div><dt>Symmetry consistency (30 days):</dt><dd>{medical.symmetryScoreAvg.toFixed(1)}%</dd></div></dl>
-      <div className="chart-grid"><figure><figcaption><span>{medical.dateWindowDays}-Day Strength Retention · %</span><strong>{medical.strengthRetentionPct.toFixed(1)}%</strong></figcaption><p className="chart-description">Workout-derived score against your pre-flight baseline</p><ul className="chart-legend" aria-label="Chart legend"><li data-series="retention">Retention score</li><li data-series="baseline">Earth baseline (100%)</li><li data-series="goal">Scenario goal ({scenarioGoalPct}%)</li></ul><TelemetryChart kind="retention" goalPct={scenarioGoalPct} dates={medical.retentionSeries.map(point => point.dateIso)} values={medical.retentionSeries.map(point => point.strengthRetentionPct)} /></figure><figure><figcaption><span>Resistance Volume · kg</span><strong>{(medical.visibleVolumeKg / 1000).toFixed(1)} t</strong></figcaption><p className="chart-description">Cumulative ARED weight moved per day</p><dl className="volume-stats"><div><dt>Sets</dt><dd>{windowSessions.reduce((sum, session) => sum + session.sets, 0).toLocaleString()}</dd></div><div><dt>Reps</dt><dd>{windowSessions.reduce((sum, session) => sum + session.sets * session.reps, 0).toLocaleString()}</dd></div><div><dt>Sessions</dt><dd>{windowSessions.length}</dd></div></dl><TelemetryChart kind="volume" dates={medical.volumeSeries.map(point => point.dateIso)} values={medical.volumeSeries.map(point => point.volumeKg)} /></figure><figure className="symmetry-card"><figcaption>Movement Symmetry</figcaption><ProgressRing value={medical.symmetryScoreAvg}><strong>{medical.symmetryScoreAvg.toFixed(1)}%</strong><span>30-day average</span></ProgressRing><p>Average recorded movement symmetry over the reporting period.</p></figure></div>
+      <div className="chart-grid"><figure><figcaption><span>{medical.dateWindowDays}-Day Strength Retention · %</span><strong>{medical.strengthRetentionPct.toFixed(1)}%</strong></figcaption><p className="chart-description">Workout-derived score against your pre-flight baseline</p><ul className="chart-legend" aria-label="Chart legend"><li data-series="retention">Retention score</li><li data-series="baseline">Earth baseline (100%)</li><li data-series="goal">Scenario goal ({scenarioGoalPct}%)</li></ul><TelemetryChart kind="retention" goalPct={scenarioGoalPct} dates={medical.retentionSeries.map(point => point.dateIso)} values={medical.retentionSeries.map(point => point.strengthRetentionPct)} /></figure><figure><figcaption><span>Resistance Volume · kg</span><strong>{(medical.visibleVolumeKg / 1000).toFixed(1)} t</strong></figcaption><p className="chart-description">Cumulative ARED weight moved per day</p><dl className="volume-stats"><div><dt>Sets</dt><dd>{windowSessions.reduce((sum, session) => sum + session.sets, 0).toLocaleString()}</dd></div><div><dt>Reps</dt><dd>{windowSessions.reduce((sum, session) => sum + session.sets * session.reps, 0).toLocaleString()}</dd></div><div><dt>Sessions</dt><dd>{windowSessions.length}</dd></div></dl><TelemetryChart kind="volume" dates={medical.volumeSeries.map(point => point.dateIso)} values={medical.volumeSeries.map(point => point.volumeKg)} /></figure><figure className="symmetry-card"><figcaption>Movement Symmetry</figcaption><div className="symmetry-rings"><ProgressRing value={medical.symmetryScoreAvg}><strong>{medical.symmetryScoreAvg.toFixed(1)}%</strong><span>Symmetry</span></ProgressRing><div className="form-ring"><ProgressRing value={windowFormAccuracyPct ?? 0}><strong>{windowFormAccuracyPct === null ? '—' : `${windowFormAccuracyPct.toFixed(1)}%`}</strong><span>Form accuracy</span></ProgressRing></div></div>
+        <h4 className="symmetry-breakdown-title">Symmetry by exercise · {medical.dateWindowDays} days</h4>
+        {symmetryByExercise.length ? <ul className="symmetry-breakdown" aria-label="Symmetry by exercise">{symmetryByExercise.map(row => <li key={row.id}><span>{row.name}</span><strong>{row.symmetryPct.toFixed(1)}%</strong><progress aria-label={`${row.name} average symmetry`} max={100} value={row.symmetryPct} /><small>{row.sessions} {row.sessions === 1 ? 'session' : 'sessions'}</small></li>)}</ul> : <p className="symmetry-empty">No resistance sessions in this window yet.</p>}
+        <p>Averages of recorded movement symmetry and completed-rep form accuracy.</p></figure></div>
       <div className="table-scroll" tabIndex={0} role="region" aria-label="Medical telemetry table scroll area"><table aria-label="Medical telemetry"><thead><tr><th>Date (UTC)</th><th>Strength retention (%)</th><th>Volume (kg)</th></tr></thead><tbody>{medical.retentionSeries.map((point, index) => <tr key={point.dateIso}><td>{point.dateIso}</td><td>{point.strengthRetentionPct.toFixed(1)}</td><td>{medical.volumeSeries[index].volumeKg.toFixed(0)}</td></tr>)}</tbody></table></div>
       <section className="glass correction-summary"><h3>Recorded correction flags</h3><ul aria-label="Fault counts">{Object.entries(medical.faultCounts).map(([fault, count]) => <li key={fault}><span>{faultAlerts[fault as keyof typeof faultAlerts] ?? fault}</span><strong>{count}</strong></li>)}</ul></section>
     </section>
@@ -239,15 +251,18 @@ function MissionApp() {
             ['Distance', `${history.selectedSession.cardioDistanceKm} km`], ['Duration', formatDurationMmSs(history.selectedSession.durationSec)],
             ['Pace', history.selectedSession.durationSec > 0 && history.selectedSession.cardioDistanceKm > 0 ? `${formatPace(history.selectedSession.durationSec / history.selectedSession.cardioDistanceKm)}` : '—'],
           ] : [
-            ['Reps', history.selectedSession.sets * history.selectedSession.reps], ['Sets', history.selectedSession.sets], ['Load', `${history.selectedSession.loadKg} kg`],
+            ['Reps', history.selectedSession.sets * history.selectedSession.reps], ['Sets', history.selectedSession.sets], ['Load', `${roundKg(history.selectedSession.loadKg)} kg`],
             ['Duration', formatDurationMmSs(history.selectedSession.durationSec)], ['Accuracy', `${history.selectedSession.formAccuracyPct.toFixed(1)}%`], ['Symmetry', `${history.selectedSession.symmetryScorePct.toFixed(1)}%`],
           ]).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
-          <p className="session-volume">Logged load: {history.selectedSession.loadKg} kg; volume: {history.selectedSession.resistanceVolumeKg} kg · Distance: {history.selectedSession.cardioDistanceKm} km · Sync: {mission.state.acknowledgements.some(ack => ack.sessionId === history.selectedSession?.id) ? 'SYNCED' : 'QUEUED_BLACKOUT'}</p>
+          <p className="session-volume">Logged load: {roundKg(history.selectedSession.loadKg)} kg; volume: {roundKg(history.selectedSession.resistanceVolumeKg)} kg · Distance: {history.selectedSession.cardioDistanceKm} km · Sync: {mission.state.acknowledgements.some(ack => ack.sessionId === history.selectedSession?.id) ? 'SYNCED' : 'QUEUED_BLACKOUT'}</p>
           <h4 className="session-flags-title">Form issues flagged ({history.selectedSession.snapshots.length})</h4>
           <p className="session-flags">Flagged issues: {[...new Set(history.selectedSession.snapshots.flatMap(snapshot => snapshot.faultFlags))].map(flag => faultAlerts[flag]).join(', ') || 'None'}</p>
           <h4 className="session-replay-title">Kinematic snapshot replay</h4>
-          {!history.selectedSession.snapshots.length && <p className="session-replay-empty">No flagged reps were captured for this session.</p>}
-          {history.selectedSession.snapshots.map(snapshot => <button key={snapshot.repNumber} onClick={() => history.selectSnapshotForReplay(snapshot)}>Replay detail rep {snapshot.repNumber}</button>)}
+          {!history.selectedSession.snapshots.length && <p className="session-replay-empty">No flagged reps were captured for this session — clean session.</p>}
+          {(() => { const session = history.selectedSession, shown = (history.selectedSnapshot && session.snapshots.includes(history.selectedSnapshot) ? history.selectedSnapshot : session.snapshots[0]);
+            return shown && getExerciseById(session.exerciseId).kind === 'RESISTANCE' ? <RepIllustration exerciseId={session.exerciseId as ResistanceExerciseId} repNumber={shown.repNumber} faultFlags={shown.faultFlags} faultLabel={shown.faultFlags.map(flag => faultAlerts[flag]).join(' · ')} /> : null; })()}
+          {history.selectedSession.snapshots.length > 0 && <p className="session-replay-note">Motion is illustrated from the recorded fault. Select a rep to view its saved pose.</p>}
+          <div className="session-replay-reps">{history.selectedSession.snapshots.map(snapshot => <button key={snapshot.repNumber} aria-pressed={history.selectedSnapshot === snapshot} onClick={() => history.selectSnapshotForReplay(snapshot)}>Replay detail rep {snapshot.repNumber}</button>)}</div>
         </>}
         <canvas ref={history.replayCanvasRef} aria-label="Saved snapshot replay" width={640} height={480} hidden={!history.selectedSnapshot}>Saved flagged rep skeletal replay.</canvas>
         <SnapshotDiagnostic snapshot={history.selectedSnapshot} label="Saved snapshot diagnostic" />

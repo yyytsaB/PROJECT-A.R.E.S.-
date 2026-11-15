@@ -121,3 +121,21 @@ test('no-person frames and pauses clear stale reassurance, give framing guidance
   await act(() => view.arena.pause());
   expect(view.arena.formFeedback).toBe('');
 });
+
+test('leaving the camera view mid-rep for half a second abandons that rep, while a brief stall does not', async () => {
+  const exercise = getExerciseById('SQUAT');
+  const rep = [...buildRepTrajectory(exercise)];
+  const nobody = { ...rep[0], landmarks: rep[0].landmarks.map(() => ({ x: 0, y: 0, z: 0, visibility: 0 })) };
+  const view = await mount();
+  await act(async () => { void view.arena.start('LIVE'); });
+  // Reach the bottom of the squat, leave view for 20 frames (~680 ms), then come back standing.
+  await act(async () => camera.calls[0].resolve(liveSource([...rep.slice(0, 7), ...Array.from({ length: 20 }, () => nobody), rep[11], rep[11], rep[11], rep[11]])));
+  await view.step(30);
+  expect(view.arena.state.repCount).toBe(0);
+  // A single dropped detection mid-rep (well under the occlusion limit) does not cost a real rep.
+  camera.calls.length = 0;
+  await act(async () => { void view.arena.start('LIVE'); });
+  await act(async () => camera.calls[0].resolve(liveSource([...rep.slice(0, 6), nobody, nobody, ...rep.slice(6), rep[11]])));
+  await view.step(16);
+  expect(view.arena.state.repCount).toBe(1);
+});
