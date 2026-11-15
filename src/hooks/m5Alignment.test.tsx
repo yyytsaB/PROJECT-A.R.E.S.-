@@ -2,6 +2,7 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import App from '../App';
+import { ONBOARDING_STATUS_KEY } from './useMissionTelemetry';
 import { clearMissionStore, MISSION_STORAGE_KEY, recordCompletedWorkout, seedDemoMissionState } from '../core/storage/telemetryStore';
 import { computeSessionRecord } from '../core/telemetry/telemetryEngine';
 
@@ -197,6 +198,7 @@ test('shows sample schedule times, persists completion per mission day and launc
 
 test('selects accessible sections with matching page titles and a focusable skip target', async () => {
   seedDemoMissionState(new Date().toISOString(), localStorage);
+  localStorage.setItem(ONBOARDING_STATUS_KEY, 'completed');
   await act(() => root.render(<App />));
   expect(document.title).toBe('Dashboard — ARES');
   const navigation = host.querySelector('nav[aria-label="Mission sections"]');
@@ -232,11 +234,14 @@ test('aligns titles and active navigation with direct section links and browser 
   expect(document.title).toBe('Dashboard — ARES');
 });
 
-test('a first visit starts an empty mission on onboarding, and a returning visitor is not sent back', async () => {
+test('a first visit starts an empty mission on onboarding, and a visitor who skipped it is not sent back', async () => {
   await act(() => root.render(<App />));
   expect(window.location.hash).toBe('#/onboarding');
   expect(document.title).toBe('Onboarding — ARES');
   expect(JSON.parse(localStorage.getItem(MISSION_STORAGE_KEY)!).sessions).toEqual([]);
+  await click('Return to dashboard');
+  expect(document.title).toBe('Dashboard — ARES');
+  expect(localStorage.getItem(ONBOARDING_STATUS_KEY)).toBe('skipped');
   await act(() => root.unmount());
   window.location.hash = '/dashboard';
   root = createRoot(host);
@@ -249,4 +254,11 @@ test('a first visit through a deep link opens that page rather than onboarding',
   await act(() => root.render(<App />));
   expect(document.title).toBe('NASA Data Sources — ARES');
   expect(window.location.hash).toBe('#/sources');
+});
+
+test('a browser holding older demo data that never saw onboarding is still taken to onboarding', async () => {
+  seedDemoMissionState(new Date().toISOString(), localStorage);
+  await act(() => root.render(<App />));
+  expect(document.title).toBe('Onboarding — ARES');
+  expect(JSON.parse(localStorage.getItem(MISSION_STORAGE_KEY)!).sessions).toHaveLength(60);
 });

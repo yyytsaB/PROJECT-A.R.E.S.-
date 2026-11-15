@@ -53,8 +53,8 @@ function MissionApp() {
   const mainRef = useRef<HTMLElement>(null);
   const catalog = loadMissionCatalog();
   const mission = useMissionTelemetry();
-  // First visit: open onboarding instead of an empty dashboard. Deep links to other pages are respected.
-  useEffect(() => { if (mission.isFirstVisit && navigation.activePage === 'dashboard') navigation.navigateToPage('onboarding'); }, []);
+  // Until onboarding is completed or skipped, landing on the dashboard opens onboarding. Deep links are respected.
+  useEffect(() => { if (mission.needsOnboarding && navigation.activePage === 'dashboard') navigation.navigateToPage('onboarding'); }, []);
   const [loadKg, setLoadKg] = useState(getExerciseById('SQUAT').defaultLoadKg);
   const [cardioExercise, setCardioExercise] = useState<CardioExerciseId>('TREADMILL');
   const [cardioDistance, setCardioDistance] = useState('5');
@@ -129,7 +129,7 @@ function MissionApp() {
       <p className="prototype-note">{prototypeNotice.dataNotice}</p>
 </div></details>
     </section>
-    <div data-screen="onboarding" data-active={navigation.activePage === 'onboarding'}><OnboardingSection onSkip={() => navigation.navigateToPage('dashboard')} /></div>
+    <div data-screen="onboarding" data-active={navigation.activePage === 'onboarding'}><OnboardingSection onSkip={() => { mission.skipOnboarding(); navigation.navigateToPage('dashboard'); }} /></div>
     <div className="catalog-grid" data-screen="sources" data-active={navigation.activePage === 'sources'}>
     <section className="mission-section catalog-section" aria-labelledby="exercises-heading">
       <h2 id="exercises-heading">ARED resistance exercises</h2>

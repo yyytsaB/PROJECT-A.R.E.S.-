@@ -19,6 +19,9 @@ declare global { interface Window { __ARES_TEST_SEED_DEMO__?: boolean } }
 interface ProviderOptions { children: ReactNode; storage?: StorageLike; syncClient?: TelemetrySyncClient; now?: () => string }
 /** A milestone newly unlocked by one accepted, persisted workout. Presentation only; it never decides whether a badge is earned. */
 export interface MilestoneCelebrationEvent { readonly key: string; readonly milestoneId: string; readonly routeId: PlanetaryRouteId }
+/** Whether this browser has finished or deliberately skipped onboarding. Absent means onboarding is still due. */
+export const ONBOARDING_STATUS_KEY = 'ares.onboarding.v1';
+type OnboardingStatus = 'completed' | 'skipped';
 export const ROUTINE_UPDATE_MESSAGE = 'Your routine has been updated based on your recent progress.';
 function useMissionController(options: ProviderOptions) {
   const storage = useRef(options.storage ?? createBrowserStorage()).current;
@@ -47,6 +50,19 @@ function useMissionController(options: ProviderOptions) {
     const seedDemo = missing && typeof window !== 'undefined' && window.__ARES_TEST_SEED_DEMO__ === true;
     return { isFirstVisit: missing && !seedDemo, seedDemo };
   });
+  const readOnboardingStatus = () => { try { return storage.getItem(ONBOARDING_STATUS_KEY); } catch { return null; } };
+  // Browsers that ran an older build hold auto-seeded demo data but never saw onboarding, so status decides, not data.
+  const [onboardingStatus, setOnboardingStatus] = useState<string | null>(() => {
+    const stored = readOnboardingStatus();
+    if (stored !== null || !seedDemo) return stored;
+    // Suites seeded with the demo stand in for a visitor who already dismissed onboarding; keep that across reloads.
+    try { storage.setItem(ONBOARDING_STATUS_KEY, 'skipped'); } catch { /* Safe to continue in memory. */ }
+    return 'skipped';
+  });
+  function recordOnboarding(status: OnboardingStatus | null) {
+    try { if (status) storage.setItem(ONBOARDING_STATUS_KEY, status); else storage.removeItem(ONBOARDING_STATUS_KEY); } catch { /* Safe to continue in memory. */ }
+    setOnboardingStatus(status);
+  }
   const [state, setState] = useState(() => initializeRoutine(seedDemo ? seedDemoMissionState(now(), storage)
     : isFirstVisit ? clearMissionStore() : loadMissionStore(storage, now())));
   const current = useRef(state);
@@ -90,7 +106,7 @@ function useMissionController(options: ProviderOptions) {
     const reviewed = { ...profile, id: latest.id, routeId: latest.routeId, autoAdjustRoutine: latest.autoAdjustRoutine };
     const next = { ...current.current, profile: withProfileDefaults(reviewed), personalizedRoutine: structuredClone(personalizedRoutine), routineNotification: ROUTINE_UPDATE_MESSAGE };
     if (!isMissionStoreState(next)) throw new RangeError('Invalid profile or personalized routine');
-    profileRevision.current++; publish(next);
+    profileRevision.current++; publish(next); recordOnboarding('completed');
   }
   function updateProfile(patch: Partial<AstronautProfile>) {
     const next = { ...current.current, profile: { ...current.current.profile, ...patch } };
@@ -120,13 +136,15 @@ function useMissionController(options: ProviderOptions) {
   function replaceMission(seed: boolean) {
     generation.current++; setSyncError(null); setWorkoutError(null); setCelebrations([]);
     publish(initializeRoutine(seed ? seedDemoMissionState(now()) : clearMissionStore()));
+    // Clearing local data starts over, onboarding included; demo seeding keeps the visitor's onboarding choice.
+    if (!seed) recordOnboarding(null);
   }
   function setScheduleCompletion(exerciseId: ExerciseId, completed: boolean) {
     const day = new Date(now()).toISOString().slice(0, 10);
     publish({ ...current.current, scheduleCompletion: { ...current.current.scheduleCompletion, [day]: { ...current.current.scheduleCompletion[day], [exerciseId]: completed } } });
   }
   useEffect(() => { if (!syncing && !syncError) void flushSyncQueueNow(); }, [state.commsStatus, state.syncQueue.length, syncing, syncError]);
-  return { state, ...measureMissionPayloads(state), isFirstVisit, nowIso: now(), missionRevision: generation.current, profileRevision: profileRevision.current, syncing, syncError, workoutError, saveWorkout, updateProfile, recalibrateRoutine, celebrations, dismissCelebration: (key: string) => setCelebrations(queue => queue.filter(item => item.key !== key)), applyPersonalizedRoutine, setCommsStatus, flushSyncQueueNow, setScheduleCompletion,
+  return { state, ...measureMissionPayloads(state), isFirstVisit, needsOnboarding: onboardingStatus === null, skipOnboarding: () => { if (onboardingStatus === null) recordOnboarding('skipped'); }, nowIso: now(), missionRevision: generation.current, profileRevision: profileRevision.current, syncing, syncError, workoutError, saveWorkout, updateProfile, recalibrateRoutine, celebrations, dismissCelebration: (key: string) => setCelebrations(queue => queue.filter(item => item.key !== key)), applyPersonalizedRoutine, setCommsStatus, flushSyncQueueNow, setScheduleCompletion,
     toggleCommsWindow: () => setCommsStatus(current.current.commsStatus === 'WINDOW_OPEN' ? 'BLACKOUT_24MIN_DELAY' : 'WINDOW_OPEN'),
     seed30DayDemoData: () => replaceMission(true), clearLocalCache: () => replaceMission(false) };
 }
