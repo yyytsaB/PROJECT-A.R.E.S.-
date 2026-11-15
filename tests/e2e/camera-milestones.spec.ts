@@ -28,7 +28,13 @@ test('a workout that crosses a milestone shows one accessible celebration that f
   await expect(card).toContainText('Valles Marineris · 50 km');
   await expect(card.locator('img')).toHaveAttribute('src', '/assets/badges/first-traverse.svg');
   await expect(page.getByLabel('Milestone announcements', { exact: true })).toHaveText('Milestone unlocked: First Traverse. Valles Marineris, 50 km.');
-  // The layer never takes focus or intercepts clicks outside the card.
+  // Container-free and centred: no card surface, a large badge in the middle of the viewport.
+  expect(await card.evaluate(element => { const style = getComputedStyle(element); return [style.backgroundColor, style.borderTopWidth]; })).toEqual(['rgba(0, 0, 0, 0)', '0px']);
+  // Layout box (offset*), not the animated bounding box, so the check does not depend on the moment in the flip.
+  const coin = await page.locator('.milestone-coin').evaluate((element: HTMLElement) => { const stage = element.parentElement!.getBoundingClientRect(); return { width: element.offsetWidth, centre: stage.left + stage.width / 2, visibleCentre: (() => { const overlay = document.querySelector('.milestone-celebration')!.getBoundingClientRect(); return overlay.left + overlay.width / 2; })() }; });
+  expect(coin.width).toBeGreaterThanOrEqual(160);
+  expect(Math.abs(coin.centre - coin.visibleCentre)).toBeLessThan(2);
+  // The layer never takes focus or intercepts clicks outside the dismiss button.
   await expect(page.getByRole('button', { name: 'Log cardio session', exact: true })).toBeFocused();
   expect(await page.locator('.milestone-celebration').evaluate(element => getComputedStyle(element).pointerEvents)).toBe('none');
   await expect(card).toBeHidden({ timeout: 7000 });

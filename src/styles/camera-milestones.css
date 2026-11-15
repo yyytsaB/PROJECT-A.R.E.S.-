@@ -1,5 +1,5 @@
 /*
- * Live camera states and the milestone celebration.
+ * Live camera states, analytics and logs refinements. The milestone celebration lives in milestone-celebration.css.
  * Kept separate from page layout styles; loaded last inside the existing `figma` layer.
  */
 @layer figma {
@@ -18,65 +18,11 @@
   .ready-chip { top: 16px; border: 1px solid #64e3ae66; background: #04221bd9; color: #a0f2cf; }
   .guidance-chip { bottom: 16px; border: 1px solid #f6a62380; background: #2a1a04e6; color: #ffd28a; }
 
-  /* ---------- Milestone celebration ---------- */
-  .milestone-celebration { position: fixed; z-index: 60; inset: calc(88px + env(safe-area-inset-top, 0px)) 0 auto; display: flex; justify-content: center; padding: 0 16px; pointer-events: none; }
-  .milestone-celebration-card { position: relative; display: grid; justify-items: center; gap: 12px; width: min(380px, 100%); padding: 24px 28px 22px; border: 1px solid #f6a62366; border-radius: 24px;
-    background: linear-gradient(180deg, #13284dfc, #091a36fc); box-shadow: 0 24px 64px #000a, 0 0 0 1px #ffffff0d inset, 0 0 48px #f6a6231f; text-align: center; color: #fff; pointer-events: auto;
-    animation: milestone-celebration-life 4200ms ease both; }
-  .milestone-coin-stage { position: relative; display: grid; place-items: center; width: 128px; height: 128px; perspective: 700px; }
-  .milestone-coin { position: relative; width: 112px; height: 112px; transform-style: preserve-3d; animation: milestone-coin-flip 1000ms cubic-bezier(.2, .8, .25, 1) both; will-change: transform; }
-  .milestone-coin-face, .milestone-coin-back { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-  .milestone-coin-face { object-fit: contain; filter: drop-shadow(0 6px 14px #0008); }
-  /* The reverse face shares the badges' hexagon outline so the flip reads as one solid medal, never mirrored art. */
-  .milestone-coin-back { transform: rotateY(180deg); clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%); background: radial-gradient(circle at 35% 30%, #ffd58a, #c46a00 70%); }
-  .milestone-halo { position: absolute; inset: -18px; border-radius: 50%; background: radial-gradient(circle, #ffd58a99 0%, #f6a62340 38%, transparent 68%); opacity: 0; animation: milestone-halo 900ms 700ms ease-out both; }
-  .milestone-celebration-copy { display: grid; gap: 4px; animation: milestone-copy-in 450ms 650ms ease-out both; }
-  .milestone-kicker { margin: 0; color: #ffca72; font: 700 12px/1.4 var(--sans); letter-spacing: .14em; text-transform: uppercase; }
-  .milestone-celebration-copy > h2 { margin: 0; font: 700 26px/1.25 var(--sans); letter-spacing: -.01em; }
-  .milestone-route { margin: 0; color: #cfe0ff; font: 600 14px/1.4 var(--sans); }
-  .milestone-detail { margin: 0; color: #c7d0e0; font-size: 13px; line-height: 1.5; }
-  .milestone-dismiss { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 32px; height: 32px; min-height: 0; padding: 0; border: 1px solid transparent; border-radius: 10px; background: transparent; color: #ffffffa6; }
-  .milestone-dismiss:hover { color: #fff; background: #ffffff14; }
-  .milestone-dismiss:focus-visible { outline: 2px solid #8fbcff; outline-offset: 2px; }
-
-  /* 0–700 ms reveal + two turns, 700–1000 ms settle front-facing; card holds until ~3600 ms, then fades by 4200 ms. */
-  @keyframes milestone-coin-flip {
-    0% { opacity: 0; transform: translateY(18px) scale(.2) rotateY(0deg); }
-    15% { opacity: 1; }
-    70% { transform: translateY(-6px) scale(1.08) rotateY(720deg); }
-    100% { opacity: 1; transform: translateY(0) scale(1) rotateY(720deg); }
-  }
-  @keyframes milestone-halo { 0% { opacity: 0; transform: scale(.6); } 35% { opacity: 1; } 100% { opacity: 0; transform: scale(1.5); } }
-  @keyframes milestone-copy-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  @keyframes milestone-celebration-life {
-    0% { opacity: 0; transform: translateY(-8px); }
-    8% { opacity: 1; transform: none; }
-    86% { opacity: 1; transform: none; }
-    100% { opacity: 0; transform: scale(.96); }
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .milestone-coin, .milestone-halo, .milestone-celebration-copy { animation: none; }
-    .milestone-halo { opacity: 0; }
     .camera-stage-steps > li[data-state=active]::before { animation: none; }
   }
-  @keyframes milestone-celebration-life-reduced { 0% { opacity: 0; } 8% { opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; } }
-
   @media (max-width: 767px) {
-    .milestone-celebration { inset-block-start: calc(140px + env(safe-area-inset-top, 0px)); }
-    .milestone-celebration-card { padding: 20px 20px 18px; }
-    .milestone-celebration-copy > h2 { font-size: 22px; }
     .tracking-chip { font-size: 12px; padding: 6px 10px; }
-  }
-}
-
-/*
- * Reduced motion: the project's global reset sets `animation: none !important`. Important declarations in earlier
- * layers win, so the deliberate opacity-only replacement fade must live in the first layer (`reset`) to apply.
- */
-@layer reset {
-  @media (prefers-reduced-motion: reduce) {
-    .milestone-celebration-card { animation: milestone-celebration-life-reduced 3600ms linear both !important; }
   }
 }
 

@@ -1,0 +1,99 @@
+/*
+ * Milestone celebration: container-free, centred coin moment (4.8 s).
+ *   0–1.2 s   spins up from small to large (three fast turns), settles front-facing
+ *   1.2–3.2 s slow-motion hold: gentle sway, light sweep across the badge, glow bloom, sparkles, title
+ *   3.2–4.4 s second, accelerating flip while shrinking away
+ * Transforms and opacity only (no animated blur), so it stays smooth on low-end laptops.
+ */
+@layer figma {
+  .milestone-celebration { --coin: clamp(168px, 34vmin, 300px); position: fixed; z-index: 60; inset: 0; display: grid; place-items: center; padding: 16px; pointer-events: none; }
+  .milestone-celebration-card { position: relative; display: grid; justify-items: center; gap: 4px; max-width: min(560px, 100%); text-align: center; color: #fff; pointer-events: none;
+    animation: milestone-celebration-life 4800ms linear both; }
+  .milestone-backdrop { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 44%, #030915eb 0%, #030915c7 40%, #03091599 100%); animation: milestone-backdrop 4800ms ease both; }
+
+  .milestone-coin-stage { position: relative; display: grid; place-items: center; width: calc(var(--coin) * 1.7); height: calc(var(--coin) * 1.45); perspective: calc(var(--coin) * 5); }
+  .milestone-coin { position: relative; width: var(--coin); height: var(--coin); transform-style: preserve-3d; will-change: transform, opacity; animation: milestone-coin 4800ms linear both; }
+  .milestone-coin-face, .milestone-coin-back { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .milestone-coin-face > img { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 10px 28px #000a) drop-shadow(0 0 22px #f6a62366); }
+  /* Reverse face: the badges' hexagon in brushed gold with the mission emblem, so the flip reads as one solid medal. */
+  .milestone-coin-back { transform: rotateY(180deg); clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+    background: url('/assets/ares-mark.svg') center / 46% no-repeat, radial-gradient(circle at 35% 28%, #ffe2a3, #e0901a 48%, #8f4a00 100%); }
+  .milestone-shine { position: absolute; inset: 0; mask-size: contain; mask-position: center; mask-repeat: no-repeat; -webkit-mask-size: contain; -webkit-mask-position: center; -webkit-mask-repeat: no-repeat;
+    background: linear-gradient(105deg, #fff0 38%, #ffffffe6 50%, #fff0 62%) no-repeat; background-size: 260% 100%; background-position: 160% 0; mix-blend-mode: screen; animation: milestone-shine 4800ms linear both; }
+  .milestone-halo { position: absolute; width: calc(var(--coin) * 1.55); height: calc(var(--coin) * 1.55); border-radius: 50%; background: radial-gradient(circle, #ffd58ab3 0%, #f6a62359 30%, #f6a62300 66%); opacity: .55; animation: milestone-halo 4800ms ease-in-out both; }
+  .milestone-rays { position: absolute; width: calc(var(--coin) * 1.9); height: calc(var(--coin) * 1.9); border-radius: 50%; opacity: 0;
+    background: repeating-conic-gradient(from 0deg, #ffd58a2e 0deg 5deg, #ffd58a00 5deg 20deg);
+    mask-image: radial-gradient(circle, #000 18%, #0000 68%); -webkit-mask-image: radial-gradient(circle, #000 18%, #0000 68%);
+    animation: milestone-rays 4800ms ease-in-out both, milestone-rays-spin 14s linear infinite; }
+  .milestone-sparkle { position: absolute; opacity: 0; transform: translate(-50%, -50%) scale(0); background: radial-gradient(circle, #fff 0 22%, #ffe2a3 40%, #ffd58a00 70%);
+    clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); animation: milestone-sparkle 1000ms ease-out both; }
+
+  .milestone-celebration-copy { display: grid; gap: 6px; margin-top: -8px; animation: milestone-copy 4800ms ease both; }
+  .milestone-kicker { margin: 0; color: #ffca72; font: 700 13px/1.4 var(--sans); letter-spacing: .32em; text-transform: uppercase; text-shadow: 0 0 18px #f6a62399; }
+  .milestone-celebration-copy > h2 { margin: 0; font: 700 clamp(30px, 5vw, 46px)/1.1 var(--sans); letter-spacing: -.015em; text-shadow: 0 2px 24px #000c, 0 0 32px #f6a62366; }
+  .milestone-route { margin: 0; color: #cfe0ff; font: 600 15px/1.4 var(--sans); text-shadow: 0 1px 12px #000c; }
+  .milestone-detail { margin: 0; color: #c7d0e0; font-size: 14px; line-height: 1.5; text-shadow: 0 1px 12px #000c; }
+  .milestone-dismiss { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; min-height: 32px; padding: 6px 14px; border: 1px solid #ffffff2e; border-radius: 999px; background: #040c1f99;
+    color: #ffffffb3; font: 600 12px/1 var(--sans); pointer-events: auto; animation: milestone-copy 4800ms ease both; }
+  .milestone-dismiss:hover { color: #fff; border-color: #ffffff66; background: #040c1fcc; }
+  .milestone-dismiss:focus-visible { outline: 2px solid #8fbcff; outline-offset: 3px; }
+
+  /* Lifecycle carrier: fires animationend to remove the celebration; visually transparent. */
+  @keyframes milestone-celebration-life { 0%, 96% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes milestone-backdrop { 0% { opacity: 0; } 8%, 80% { opacity: 1; } 96%, 100% { opacity: 0; } }
+  @keyframes milestone-coin {
+    0% { opacity: 0; transform: translateY(70px) scale(.12) rotateY(0deg); animation-timing-function: cubic-bezier(.12, .62, .3, 1); }
+    3% { opacity: 1; }
+    20% { transform: translateY(0) scale(1.08) rotateY(1080deg); animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+    25% { transform: translateY(0) scale(1) rotateY(1080deg); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+    /* Slow-motion hold: a few degrees of sway either side of front-facing. */
+    41% { transform: translateY(-6px) scale(1.035) rotateY(1100deg); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+    56% { transform: translateY(-3px) scale(1.035) rotateY(1062deg); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+    66% { opacity: 1; transform: translateY(0) scale(1) rotateY(1080deg); animation-timing-function: cubic-bezier(.6, 0, .9, .4); }
+    /* Exit: accelerating flip while shrinking away. */
+    88% { opacity: 1; }
+    93%, 100% { opacity: 0; transform: translateY(-24px) scale(.06) rotateY(1980deg); }
+  }
+  @keyframes milestone-shine {
+    0%, 27% { background-position: 160% 0; opacity: 1; }
+    40% { background-position: -60% 0; }
+    49.9% { background-position: -60% 0; }
+    50% { background-position: 160% 0; }
+    61%, 100% { background-position: -60% 0; }
+  }
+  @keyframes milestone-halo {
+    0%, 21% { opacity: 0; transform: scale(.55); }
+    27% { opacity: 1; transform: scale(1.18); }
+    35% { opacity: .62; transform: scale(1); }
+    46% { opacity: .85; transform: scale(1.06); }
+    57% { opacity: .62; transform: scale(1); }
+    66% { opacity: .5; transform: scale(.96); }
+    76%, 100% { opacity: 0; transform: scale(.4); }
+  }
+  @keyframes milestone-rays { 0%, 22% { opacity: 0; } 32%, 60% { opacity: 1; } 72%, 100% { opacity: 0; } }
+  @keyframes milestone-rays-spin { to { rotate: 360deg; } }
+  @keyframes milestone-sparkle { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0) rotate(0deg); } 35% { opacity: 1; transform: translate(-50%, -50%) scale(1.15) rotate(45deg); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(.2) rotate(90deg); } }
+  @keyframes milestone-copy { 0%, 22% { opacity: 0; transform: translateY(12px); } 30%, 64% { opacity: 1; transform: none; } 74%, 100% { opacity: 0; transform: translateY(-8px); } }
+
+  /* Reduced motion: no spinning, sweeping or sparkles. The front-facing badge, a soft glow and the text simply fade in and out. */
+  @media (prefers-reduced-motion: reduce) {
+    .milestone-rays, .milestone-sparkle, .milestone-shine { display: none; }
+    .milestone-halo { opacity: .5; }
+  }
+  @keyframes milestone-celebration-life-reduced { 0% { opacity: 0; } 8% { opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; } }
+
+  @media (max-width: 767px) {
+    .milestone-celebration { --coin: clamp(150px, 46vw, 220px); }
+    .milestone-detail { font-size: 13px; }
+  }
+}
+
+/*
+ * The project's global reduced-motion reset sets `animation: none !important`. Important declarations in earlier layers
+ * win, so the deliberate opacity-only replacement fade must live in the first layer (`reset`) to apply.
+ */
+@layer reset {
+  @media (prefers-reduced-motion: reduce) {
+    .milestone-celebration-card { animation: milestone-celebration-life-reduced 4000ms linear both !important; }
+  }
+}
