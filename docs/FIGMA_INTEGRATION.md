@@ -8,7 +8,7 @@ The working application now follows the team's Figma screen structure and visual
 - Arena: camera/skeleton viewport with session and simulator controls beneath; exercise configuration and form feedback at the right; timer in the page header. Video and canvas share the same viewport. Active tracking preserves a 4:3 coordinate surface so pose geometry is not stretched.
 - Journey: expedition statistics and completion ring above the textured route map, followed by earned/locked badges. The two real catalog expeditions and their distances remain authoritative.
 - Analytics: full-width retention chart, volume and symmetry cards, date window, accessible data table and existing report actions.
-- Logs: compact session table beside the selected-session/replay panel. Full rep counts, volume and sync status are in Session Details; flagged row replay actions expand on demand.
+- Logs: compact session table beside the selected-session/replay panel. Full rep counts, volume and sync status are in Session Details; flagged row replay actions expand on demand. Search accepts both displayed exercise names and original catalog IDs.
 - Settings: gravity/mission configuration, routine personalization and local data/comms cards.
 - Profile: separate personal details, health metrics and Earth baselines, available from navigation and the crew avatar.
 - Onboarding: standalone three-step screen with a branded progress rail and glass form.
@@ -35,7 +35,7 @@ The app reflows at narrow widths rather than scaling a fixed desktop canvas. Con
 | Unit and Chromium browser tests | 80 passed across 13 files |
 | Strict TypeScript / architecture lint | Passed |
 | Production build | Passed |
-| Full Playwright E2E suite | 31 passed, including online/offline six-flow rehearsals |
+| Full Playwright E2E suite | 32 passed, including online/offline six-flow rehearsals |
 | Production bundle browser tests | 5 passed, including real model initialization with a fake camera and matching video/canvas bounds |
 | Responsive checks | All nine screens at 320/768/1440px; additional dashboard checks at 375/390/1024/1280px |
 | Local typography/glass | Font availability, no remote asset requests, translucent fill and 16px blur verified in Chromium |

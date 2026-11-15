@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { createBrowserStorage } from '../adapters/telemetryStorageAdapter';
 import { createSupabaseSyncAdapter } from '../adapters/supabaseSyncAdapter';
 import { renderKinematicSnapshot } from '../adapters/poseCanvasRenderer';
-import { getGravityProfileById, getPlanetaryRouteById, loadMissionCatalog } from '../core/catalog/missionCatalog';
+import { getExerciseById, getGravityProfileById, getPlanetaryRouteById, loadMissionCatalog } from '../core/catalog/missionCatalog';
 import { clearMissionStore, flushCommsSyncQueue, loadMissionStore, MISSION_STORAGE_KEY, persistMissionStore, recordCompletedWorkout, seedDemoMissionState } from '../core/storage/telemetryStore';
 import { isMissionStoreState } from '../core/storage/validateMissionStore';
 import { withProfileDefaults } from '../core/telemetry/profileDefaults';
@@ -192,7 +192,7 @@ export function useWorkoutHistory() {
   const days = { LAST_7_DAYS: 7, LAST_14_DAYS: 14, LAST_30_DAYS: 30, ALL: Infinity }[dateRange];
   const now = Date.parse(nowIso);
   const start = Math.floor(now / 86400000) * 86400000 - (days - 1) * 86400000;
-  const filtered = state.sessions.filter(session => `${session.exerciseId} ${session.completedAtIso} ${session.id}`.toLowerCase().includes(searchQuery.toLowerCase()) &&
+  const filtered = state.sessions.filter(session => `${session.exerciseId} ${getExerciseById(session.exerciseId).name} ${session.completedAtIso} ${session.id}`.toLowerCase().includes(searchQuery.toLowerCase()) &&
     (dateRange === 'ALL' || (Date.parse(session.completedAtIso) >= start && Date.parse(session.completedAtIso) <= now)))
     .reverse().sort((a, b) => Date.parse(b.completedAtIso) - Date.parse(a.completedAtIso));
   const totalPages = Math.max(1, Math.ceil(filtered.length / 10));
