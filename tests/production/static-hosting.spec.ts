@@ -10,6 +10,7 @@ test('the static bundle serves every local runtime asset and initializes the rea
     expect((await response.body()).byteLength, path).toBeGreaterThan(100000);
     if (path.endsWith('.wasm')) expect(response.headers()['content-type']).toContain('application/wasm');
   }
+  await page.setViewportSize({ width: 1920, height: 1080 });
   await context.grantPermissions(['camera']);
   await context.route('**/*', route => new URL(route.request().url()).origin === 'http://127.0.0.1:4173' ? route.continue() : route.abort());
   await page.goto('/#/sources');

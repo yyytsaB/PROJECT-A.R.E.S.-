@@ -1,0 +1,233 @@
+@layer figma {
+  html { scrollbar-gutter: stable; }
+  .mission-shell { zoom: var(--presentation-scale, 1); width: 1440px; max-width: 100%; min-height: calc(100dvh / var(--presentation-scale, 1)); }
+  .mission-sidebar { height: calc(100dvh / var(--presentation-scale, 1)); }
+}
+@layer print { @media print { .mission-shell { zoom: 1; width: 100%; } } }
+
+/* Measurements and layout copied from the supplied MOCKUP React export. */
+@layer figma {
+  :root { --emerald: #3ddc97; }
+  body { line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  button, input:not([type=checkbox]), select { font-size: 14px; }
+  input:not([type=checkbox]), select { border-radius: 14px; background: #040c1f8c; font-size: 15px; }
+  .mission-brand strong { font-size: 15px; letter-spacing: .22em; }
+  .mission-brand small { font-size: 11px; color: #ffffff99; }
+  .nav-caption { letter-spacing: .3em; }
+  .mission-sidebar nav a { font-size: 15px; }
+  .crew-profile strong { font-size: 14px; }
+  .crew-profile small { font-size: 11px; }
+  .crew-avatar { width: 40px; height: 40px; font-weight: 700; border: 2px solid #ffffff33; }
+  .mission-search input { font-size: 15px; }
+  .topbar-start { font-size: 14px; font-weight: 600; }
+  main { padding-top: 32px; }
+  .eyebrow { font-size: 11px; line-height: 16.5px; letter-spacing: .3em; color: #6ea8ff; margin-bottom: 8px; }
+  .mission-section > .eyebrow { margin-bottom: 8px; }
+  .page-heading { align-items: flex-end; margin-bottom: 32px; }
+  .page-title { margin-bottom: 6px; }
+  .page-heading > div > p:last-child, .section-subtitle { font-size: 16px; line-height: 24px; font-weight: 500; }
+  .section-subtitle { margin-bottom: 32px; }
+  .mission-day-badge strong { font-size: 30px; line-height: 37.5px; }
+  .mission-day-badge small { font-size: 14px; font-weight: 500; }
+  .mission-day-badge > span { letter-spacing: .25em; color: #ffffffa6; }
+  .card-heading p { font-size: 14px; line-height: 20px; }
+  .routine-notice:not(:empty) { display: flex; align-items: center; gap: 12px; padding: 14px 16px; min-height: 62px; font-size: 14px; }
+  .routine-notice:not(:empty)::before { content: ''; flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px; background: #f6a62326 url('/assets/icons/sparkles.svg') center / 20px no-repeat; }
+  .retention-breakdown { gap: 16px; }
+  .retention-breakdown label, .retention-breakdown label > span { font-size: 14px; line-height: 20px; }
+  .retention-breakdown progress { height: 10px; margin-top: 6px; }
+  .card-footnote { font-size: 12px; line-height: 16px; }
+  .readiness-card .card-footnote { margin-left: 192px; margin-top: 12px; }
+  .mission-progress-card { position: relative; }
+  .completion-chip { font-size: 12px; padding: 4px 10px; }
+  .system-status-strip { gap: 12px; }
+  .system-status-strip > div { padding-left: 68px; }
+  .system-status-strip .mission-icon { width: 40px; height: 40px; padding: 10px; border-radius: 12px; background: #ffffff0d; left: 16px; top: 50%; transform: translateY(-50%); }
+  .system-status-strip dt { font-size: 11px; font-weight: 600; letter-spacing: .55px; }
+  .system-status-strip dd { font-size: 14px; }
+  .arena-timer { top: 43px; }
+  .arena-timer output { font-size: 24px; }
+  .arena-stage-card .tracking-viewport[data-idle=true] { min-height: 0; }
+  .exercise-heading select { width: 130px; min-height: 32px; font-size: 11px; padding: 4px 8px; }
+  .exercise-target { color: #ffffff99; }
+  .arena-stage-card .cue-controls { gap: 12px; background: transparent; border: 0; padding: 0; }
+  .arena-stage-card .cue-controls label { font-size: 12px; }
+  .journey-summary { grid-template-columns: minmax(0, 1fr) 340px; }
+  .journey-ring { flex-direction: row; align-items: center; gap: 20px; }
+  .journey-ring .progress-ring { width: 120px; min-width: 120px; margin: 0; }
+  .journey-ring .ring-content strong { font-size: 24px; line-height: 32px; }
+  .journey-ring > div:last-child { width: auto; min-width: 0; }
+  .journey-ring .destination-kicker { font-size: 12px; }
+  .journey-route-canvas .route-map { height: auto; aspect-ratio: 21 / 9; }
+  .journey-map-heading { margin-bottom: 12px; }
+  .waypoint-details { bottom: 56px; }
+  .badge-panel .mission-badges { gap: 16px; }
+  .badge-panel .mission-badges p { font-size: 14px; line-height: 20px; }
+  .badge-panel .mission-badges small { font-size: 12px; }
+  .history-layout { grid-template-columns: minmax(0, 1fr) 380px; margin-top: 24px; }
+  .history-section { position: relative; }
+  .history-section > p:not(.eyebrow, .section-subtitle) { font-size: 12px; color: #c7d0e0; }
+  .history-master { padding: 20px; }
+  .history-filters { margin: 0 0 16px; gap: 12px; }
+  .history-filters input { padding-left: 14px; }
+  .history-filters > label:not(.visually-hidden) { font-size: 12px; }
+  .history-master .table-scroll { border: 1px solid #ffffff1f; border-radius: 16px; background: transparent; box-shadow: none; backdrop-filter: none; }
+  .history-master > p { padding: 0; margin: 16px 0 0; font-size: 12px; flex-wrap: wrap; }
+  .history-master th { font-size: 11px; }
+  .history-master td { font-size: 13px; }
+  .history-master td time > small { font-size: 10px; }
+  .history-master td:nth-child(3), .history-master td:nth-child(5) { font-family: var(--mono); }
+  .history-master .form-status { font-size: 10px; }
+  .history-detail-panel { padding: 24px; }
+  .history-detail-panel [aria-label='Session details'] > h3 { font-size: 12px; line-height: 18px; text-transform: uppercase; letter-spacing: .6px; color: #b7c3d6; }
+  .history-exercise-title { font: 700 20px/28px var(--sans); margin: 4px 0 0; }
+  .history-detail-panel .history-session-date { font-size: 13px; line-height: 20px; margin-top: 4px; }
+  .session-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 20px 0; }
+  .session-metrics > div { padding: 8px 12px; border: 1px solid #ffffff1f; border-radius: 12px; background: #ffffff0a; min-width: 0; }
+  .session-metrics dt { color: #c7d0e0; font-size: 11px; line-height: 16.5px; text-transform: uppercase; letter-spacing: .55px; }
+  .session-metrics dd { font: 700 16px/24px var(--display); color: white; margin: 0; }
+  .history-detail-panel .session-volume { font-size: 12px; line-height: 20px; }
+  .session-flags-title, .session-replay-title { font-size: 14px; font-weight: 700; margin: 24px 0 8px; }
+  .session-flags { border: 1px solid #f6a62340; border-radius: 12px; background: #f6a6230a; padding: 12px; }
+  .telemetry-chart { width: 100%; height: auto; max-height: none; }
+  .telemetry-chart text { font: 11px var(--sans); fill: #c5cbd6; }
+  .telemetry-chart .chart-line { stroke-width: 3px; }
+  .chart-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+  .medical-section .chart-grid figcaption { font-size: 18px; text-transform: none; }
+  .chart-description { font-size: 14px; line-height: 20px; }
+  .settings-section[data-view=settings] .configuration-grid { grid-template-columns: minmax(0, 1fr); }
+  .configuration-grid .section-card-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+  .section-card-heading > svg, .section-card-heading > img { width: 36px; height: 36px; border-radius: 12px; padding: 8px; border: 1px solid #ffffff26; background: #ffffff0d; color: #6ea8ff; flex-shrink: 0; }
+  .configuration-grid > section > .section-subtitle { font-size: 14px; line-height: 20px; margin: 0 0 20px 48px; font-weight: 400; }
+  .settings-section[data-view=profile] .personal-card { grid-column: 1; grid-row: 1; }
+  .settings-section[data-view=profile] .health-card { grid-column: 2; grid-row: 1 / span 2; }
+  .settings-section[data-view=profile] .baseline-card { grid-column: 1; grid-row: 2; padding: 24px; background: var(--glass-fill); border: 1px solid #ffffff33; border-radius: 24px; box-shadow: var(--glass-shadow); backdrop-filter: blur(16px); }
+  .personal-details-body { display: flex; align-items: flex-start; gap: 24px; margin-top: 20px; }
+  .profile-portrait { width: 96px; height: 96px; border: 2px dashed #ffffff40; border-radius: 50%; background: #ffffff0a; display: grid; place-items: center; flex-shrink: 0; }
+  .profile-portrait svg { width: 40px; height: 40px; color: #ffffff66; }
+  .profile-fields { display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0; flex: 1; }
+  .profile-fields label:not(:first-child) { margin-top: 12px; }
+  .profile-fields > input { font-size: 15px; }
+  .health-card .health-metrics-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .health-card .health-field label { font-size: 14px; font-weight: 600; }
+  .health-card .health-metrics-grid > p { padding: 12px 14px; border: 1px solid #ffffff1a; background: #ffffff0a; border-radius: 14px; }
+  .health-card [aria-label='Settings BMI'] { color: white; font-family: var(--display); font-size: 18px; }
+  .baseline-card > fieldset { border: 0; padding: 0; margin: 0; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .baseline-card legend { padding: 0 0 20px; color: white; font: 700 18px/28px var(--sans); }
+  .baseline-card label { font-size: 14px; }
+  .gravity-options { grid-template-columns: minmax(0, 1fr); margin: 20px 0; }
+  .gravity-options button { position: relative; align-items: flex-start; gap: 4px; padding: 16px; text-align: left; }
+  .gravity-options .mission-icon { position: absolute; right: 16px; top: 16px; }
+  .gravity-options strong { font-size: 24px; line-height: 32px; }
+  .gravity-options span { font-size: 16px; font-weight: 600; }
+  .gravity-options [aria-pressed=true]::after { content: '✓'; position: absolute; right: 16px; bottom: 16px; color: var(--amber); }
+  .routine-settings > label { border-top: 1px solid #ffffff1f; border-bottom: 1px solid #ffffff1f; margin-top: 20px; }
+  .routine-settings > label > input { appearance: none; width: 40px; height: 24px; border-radius: 20px; background: #ffffff33; border: 1px solid #ffffff33; position: relative; transition: background-color 150ms; }
+  .routine-settings > label > input::after { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: white; top: 2px; left: 2px; transition: transform 150ms; }
+  .routine-settings > label > input:checked { background: var(--amber); }
+  .routine-settings > label > input:checked::after { transform: translateX(16px); }
+  .sync-settings > button:last-of-type { border-color: #ff6b6b66; background: #ff6b6b26; color: #ffb3b3; }
+  .mission-shell[data-route=onboarding] { zoom: 1; width: 100%; }
+  .onboarding-layout { width: min(1152px, 100%); margin: auto; padding: 56px 24px; grid-template-columns: 320px minmax(0, 1fr); gap: 32px; }
+  .onboarding-sidebar { border: 0; padding: 0; background: none; backdrop-filter: none; gap: 24px; }
+  .onboarding-sidebar > a { margin: 0; }
+  .onboarding-sidebar > a strong { font: 600 18px var(--display); letter-spacing: .2em; }
+  .onboarding-sidebar > a img { width: 56px; height: 56px; border-radius: 16px; border: 1px solid #8b7bff99; }
+  .onboarding-sidebar > h3 { font-size: 24px; }
+  .onboarding-sidebar ol { gap: 8px; margin: 8px 0; }
+  .onboarding-sidebar li { padding: 12px; border: 1px solid transparent; border-radius: 16px; font-size: 14px; }
+  .onboarding-sidebar li[data-active=true] { border-color: #ffffff40; background: #ffffff12; }
+  .onboarding-sidebar li[data-active=true] > span { background: var(--amber); border-color: var(--amber); color: #040c1f; }
+  .onboarding-content { padding: 32px; border: 1px solid #ffffff33; border-radius: 24px; background: var(--glass-fill); box-shadow: var(--glass-shadow); backdrop-filter: blur(16px); margin: 0; max-width: none; }
+  .onboarding-content .page-title { font-size: 30px; line-height: 36px; }
+  .onboarding-content fieldset { margin: 24px 0; padding: 0; border: 0; background: none; box-shadow: none; backdrop-filter: none; }
+  .onboarding-content fieldset > legend { padding: 0 0 16px; color: white; font-size: 14px; }
+  .onboarding-content fieldset label { font-size: 14px; font-weight: 600; }
+  .onboarding-content .health-metrics-grid > p { padding: 12px 16px; background: #6ea8ff12; border: 1px solid #6ea8ff4d; border-radius: 16px; }
+  .onboarding-content [aria-label='Calculated BMI'] { font: 600 24px/32px var(--display); color: white; }
+  @media (max-width: 1279px) { .history-layout { grid-template-columns: minmax(0, 1fr); } .history-detail-panel { max-width: none; } }
+  @media (max-width: 1199px) { .readiness-card .card-footnote { margin-left: 0; } .journey-summary { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); } .journey-ring { flex-direction: column; align-items: flex-start; } .journey-ring .progress-ring { margin: auto; } }
+  @media (max-width: 1023px) { .settings-section[data-view=profile] .configuration-grid { grid-template-columns: minmax(0, 1fr); } .settings-section[data-view=profile] .personal-card, .settings-section[data-view=profile] .health-card, .settings-section[data-view=profile] .baseline-card { grid-column: 1; grid-row: auto; } .onboarding-layout { grid-template-columns: minmax(0, 1fr); max-width: 760px; padding: 32px 24px; gap: 24px; } .onboarding-sidebar > h3 { display: none; } }
+  @media (max-width: 767px) { main { padding-top: 24px; } .page-heading > div > p:last-child, .section-subtitle { font-size: 14px; line-height: 20px; } .page-heading { margin-bottom: 24px; } .eyebrow { font-size: 10px; letter-spacing: .2em; } .mission-day-badge strong { font-size: 26px; } .readiness-card .card-footnote { margin-left: 0; } .retention-breakdown label, .retention-breakdown label > span { font-size: 12px; } .journey-summary { grid-template-columns: minmax(0, 1fr); } .journey-ring { flex-direction: row; align-items: center; } .journey-route-canvas .route-map { aspect-ratio: 4 / 3; min-height: 300px; } .waypoint-details { position: static; } .chart-grid { grid-template-columns: minmax(0, 1fr); } .chart-description { font-size: 12px; } .history-master, .history-detail-panel { padding: 16px; } .history-filters { display: grid; } .history-filters > input { width: 100%; } .history-filters > label { margin-top: 4px; } .personal-details-body { flex-direction: column; } .profile-fields { width: 100%; } .onboarding-layout { padding: 24px 16px; } .onboarding-content { padding: 24px 20px; } .onboarding-content .page-title { font-size: 24px; line-height: 32px; } .onboarding-sidebar ol { flex-wrap: wrap; } .onboarding-sidebar li { font-size: 11px; padding: 8px; } .arena-stage-card .tracking-viewport[data-idle=true] { min-height: 400px; } .arena-timer { margin-top: 20px; } }
+}
+@layer print { @media print { .settings-section[data-view=profile] .baseline-card, .onboarding-content, .session-metrics > div, .session-flags { color: #111; background: white; border-color: #777; box-shadow: none; backdrop-filter: none; } .session-metrics dd { color: #111; } } }
+@layer figma {
+  .health-card .health-metrics-grid > p { grid-row: 2; }
+  .baseline-card legend > .mission-icon { display: inline-block; width: 36px; height: 36px; padding: 8px; vertical-align: middle; margin-right: 12px; border: 1px solid #ffffff26; background: #ffffff0d; border-radius: 12px; color: #6ea8ff; }
+  .gravity-options [aria-pressed=true]::after { content: ''; width: 12px; height: 7px; border-left: 2px solid var(--amber); border-bottom: 2px solid var(--amber); transform: rotate(-45deg); }
+  @media (min-width: 1024px) and (max-width: 1200px) {
+    .mission-sidebar { padding: 16px; }
+    .nav-caption { margin: 24px 12px 12px; }
+    .mission-sidebar nav a { min-height: 44px; padding-block: 10px; font-size: 14px; }
+    .mission-sidebar .secondary-nav-item a { min-height: 36px; padding-block: 6px; }
+    .mission-sidebar .secondary-nav-item:nth-child(7) { margin-top: 12px; padding-top: 8px; }
+    .sidebar-footer { padding-top: 12px; }
+    .crew-profile { padding: 8px; }
+    .crew-profile strong { font-size: 12px; }
+    .crew-profile small { font-size: 10px; }
+    .crew-avatar { width: 36px; height: 36px; }
+  }
+}
+@layer figma {
+  :where(.glass) { position: relative; }
+  .glass:not(.mission-day-badge, .arena-timer)::after { content: ''; pointer-events: none; position: absolute; left: 18%; right: 18%; bottom: -1px; height: 1px; background: linear-gradient(90deg, transparent, #ffffffcc, transparent); }
+  .arena-readouts > span { display: block; }
+  .arena-readouts output { display: inline; margin-left: 4px; }
+  .routine-settings > label { flex-direction: row-reverse; justify-content: space-between; align-items: center; border: 0; font-weight: 600; }
+  .recalibration-card { margin: 20px 0; padding: 16px; border: 1px solid #ffffff1f; border-radius: 16px; background: #ffffff08; }
+  .recalibration-card p { font-size: 14px; line-height: 20px; margin: 0 0 4px; }
+  .recalibration-card strong { color: white; }
+  .recalibration-card button { display: inline-flex; gap: 8px; align-items: center; border-color: #6ea8ff80; color: #a8caff; margin-top: 12px; }
+  .sync-summary { display: grid; gap: 12px; margin: 20px 0; }
+  .sync-summary > div { border: 1px solid #ffffff1f; background: #ffffff0a; border-radius: 12px; padding: 10px 12px; }
+  .sync-summary dt { color: #c7d0e0; font-size: 12px; }
+  .sync-summary dd { margin: 4px 0; font: 600 18px/28px var(--display); color: white; }
+  .sync-summary > div:last-child dd { font: 600 14px/20px var(--sans); }
+  .sync-summary small { font-size: 12px; color: #c7d0e0; }
+  .onboarding-content .health-metrics-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .onboarding-content .health-metrics-grid > .health-field { grid-column: span 2; }
+  .onboarding-content .health-metrics-grid > [data-field=systolicBpMmHg], .onboarding-content .health-metrics-grid > [data-field=diastolicBpMmHg] { grid-column: span 1; }
+  .onboarding-content .health-metrics-grid > p { grid-column: 1 / -1; grid-row: 2; }
+  @media (max-width: 600px) { .onboarding-content .health-metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .onboarding-content .health-metrics-grid > .health-field { grid-column: 1 / -1; } .onboarding-content .health-metrics-grid > p { grid-row: 3; } }
+}
+@layer print { @media print { .glass::after { display: none; } .sync-summary > div, .recalibration-card { background: white; border-color: #777; } .sync-summary dd { color: #111; } } }
+@font-face { font-family: Orbitron; src: url('/assets/fonts/orbitron-semibold.ttf') format('truetype'); font-style: normal; font-weight: 600; font-display: swap; }
+@font-face { font-family: Orbitron; src: url('/assets/fonts/orbitron-bold.ttf') format('truetype'); font-style: normal; font-weight: 700; font-display: swap; }
+@layer figma {
+  body:has(.mission-shell[data-route=onboarding]) { background: linear-gradient(135deg, #040c1ff2, #08183ad9 50%, #08183a99), url('/assets/onboarding-earth.jpg') center / cover fixed; }
+  body:has(.mission-shell[data-route=onboarding]) .mission-ambient { display: none; }
+  .onboarding-section { --display: Orbitron, 'Plus Jakarta Sans', sans-serif; }
+  .onboarding-sidebar > a strong { font-size: 14px; font-weight: 700; letter-spacing: .25em; }
+  .onboarding-sidebar > .eyebrow, .onboarding-sidebar > h3, .onboarding-sidebar > p:not(.eyebrow) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .onboarding-progress { border-bottom: 6px solid #f6a62355; padding-bottom: 12px; font: 600 14px/20px var(--sans); }
+  .onboarding-identity > input { width: 100%; }
+}
+@layer figma {
+  .mission-topbar { position: sticky; top: 0; z-index: 30; background: #08183acc; }
+}
+@layer figma {
+  .journey-totals { gap: 24px; margin-top: 12px; padding-top: 8px; }
+  .journey-totals > div { display: flex; gap: 8px; align-items: baseline; }
+  .journey-totals dd { font-size: 14px; line-height: 20px; margin: 0; }
+  .journey-totals dt { font-size: 10px; }
+  .journey-route-canvas .route-texture { filter: hue-rotate(-12deg) saturate(1.4) sepia(.35); }
+  .onboarding-layout { align-items: start; }
+  .onboarding-progress { border: 0; padding-bottom: 0; }
+  @media (max-width: 767px) { .journey-totals { flex-wrap: wrap; gap: 12px 24px; } }
+}
+@layer figma {
+  .onboarding-sidebar > a strong { display: block; font: 700 14px/22px var(--display); letter-spacing: .25em; }
+  .onboarding-sidebar > a small { display: block; font: 12px/18px var(--sans); color: #c7d0e0; }
+  .onboarding-sidebar > a { gap: 12px; }
+  .onboarding-sidebar li > div { min-width: 0; }
+  .onboarding-sidebar li small { display: block; font: 12px/18px var(--sans); color: #aeb9cd; margin-top: 2px; }
+  .onboarding-sidebar li > span { flex-shrink: 0; }
+  .onboarding-sidebar > button { align-self: flex-start; border: 0; padding: 0; background: transparent; font-size: 14px; }
+  .onboarding-content .step-track { gap: 6px; margin: 8px 0 32px; }
+  .onboarding-content .step-track > span { height: 6px; border-radius: 8px; background: #ffffff26; }
+  .onboarding-content .step-track > [data-active=true] { background: var(--amber); }
+  .onboarding-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid #ffffff1a; padding-top: 24px; margin-top: 40px; }
+  .onboarding-actions > button:only-child { margin-left: auto; }
+  .onboarding-content button.primary-action, .onboarding-content fieldset > button, .onboarding-content [aria-label='Routine preview'] > button { background: var(--amber); border-color: var(--amber); color: #040c1f; }
+  @media (max-width: 767px) { .onboarding-sidebar li small { display: none; } }
+}

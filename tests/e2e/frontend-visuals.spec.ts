@@ -8,7 +8,7 @@ test('print output keeps routine notifications, schedule labels and chart captio
   await page.emulateMedia({ media: 'print' });
   const samples = [page.getByLabel('Routine update notification', { exact: true }),
     page.getByRole('list', { name: 'Personalized daily schedule', exact: true }).getByRole('listitem').first().locator('label'),
-    page.getByText('STRENGTH RETENTION · %', { exact: true }), page.getByText('EARLIER', { exact: true }).first()];
+    page.getByText('STRENGTH RETENTION · %', { exact: true }), page.getByText('Date (UTC)', { exact: true }).first()];
   for (const sample of samples) {
     await expect(sample).toBeVisible();
     const contrast = await sample.evaluate(element => {
@@ -62,6 +62,7 @@ test('mission layout remains readable at desktop, tablet and phone widths with l
 test('keyboard focus and route artwork remain available when the loaded mission goes offline', async ({ page, context }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
+  await expect(page.getByRole('main')).toBeVisible();
   await page.keyboard.press('Tab');
   const skip = page.getByRole('link', { name: 'Skip to main content', exact: true });
   await expect(skip).toBeFocused();

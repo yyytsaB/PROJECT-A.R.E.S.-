@@ -92,3 +92,13 @@ test('an unanswered permission prompt can switch to simulation or be abandoned w
   await expect(page.getByLabel('Session status', { exact: true })).toHaveText('IDLE');
   await expect(page.getByRole('button', { name: 'Enable camera', exact: true })).toBeEnabled();
 });
+
+test('the session timer remains above the camera panel on phone and desktop layouts', async ({ page }) => {
+  for (const width of [390, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 1080 });
+    await page.goto('/#/arena');
+    const timer = (await page.getByLabel('Workout duration', { exact: true }).locator('..').boundingBox())!;
+    const panel = (await page.getByRole('heading', { name: 'Allow camera access', exact: true }).locator('..').boundingBox())!;
+    expect(timer.y + timer.height, `${width}px timer must not be covered by the camera surface`).toBeLessThanOrEqual(panel.y);
+  }
+});

@@ -168,7 +168,7 @@ function MissionApp() {
       <JourneySection journey={journey} routes={catalog.routes} missionDay={dashboard.missionDay} durationDays={dashboard.missionDurationDays} />
     </section>
     <section className="mission-section medical-section" data-screen="analytics" data-active={navigation.activePage === 'analytics'} aria-labelledby="medical-heading">
-      <p className="eyebrow">04 / LONGITUDINAL PERFORMANCE</p>
+      <p className="eyebrow">Flight Surgeon View</p>
       <h2 className="page-title" id="medical-heading">Medical Telemetry</h2>
       <p className="section-subtitle">Retention scores, training volume and movement symmetry. Built from your local workout history.</p>
       <div className="export-actions">      <button onClick={() => medical.exportFlightSurgeonReport('json')}>Export Flight Surgeon JSON</button>{' '}
@@ -179,22 +179,22 @@ function MissionApp() {
       <aside className="telemetry-notice" aria-label="Prototype telemetry context"><ReferenceIcon name="info" /><div><h3>Prototype telemetry</h3><p className="prototype-note">{prototypeNotice.disclaimer}</p><p className="prototype-note">{prototypeNotice.metricInterpretation}</p></div></aside>
       <div className="telemetry-toolbar"><div><label htmlFor="telemetry-date-window">Telemetry date window</label><select id="telemetry-date-window" value={medical.dateWindowDays} onChange={event => medical.setDateWindowDays(Number(event.target.value) as 7 | 14 | 30)}><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></div><p>Chart windows show rolling 30-day scores. JSON/CSV reports include the full 30-day reporting period.</p></div>
       <dl className="telemetry-summary"><div><dt>{medical.dateWindowDays}-day tonnage:</dt><dd><output aria-label="Visible volume">{medical.visibleVolumeKg.toFixed(0)} kg</output></dd></div><div><dt>Symmetry consistency (30 days):</dt><dd>{medical.symmetryScoreAvg.toFixed(1)}%</dd></div></dl>
-      <div className="chart-grid"><figure><figcaption><span>STRENGTH RETENTION · %</span><strong>{medical.strengthRetentionPct.toFixed(1)}%</strong></figcaption><p className="chart-description">Workout-derived score against your pre-flight baseline</p><TelemetryChart kind="retention" values={medical.retentionSeries.map(point => point.strengthRetentionPct)} /></figure><figure><figcaption><span>RESISTANCE VOLUME · KG</span><strong>{(medical.visibleVolumeKg / 1000).toFixed(1)} t</strong></figcaption><p className="chart-description">Cumulative ARED weight moved per day</p><TelemetryChart kind="volume" values={medical.volumeSeries.map(point => point.volumeKg)} /></figure><figure className="symmetry-card"><figcaption>MOVEMENT SYMMETRY</figcaption><ProgressRing value={medical.symmetryScoreAvg}><strong>{medical.symmetryScoreAvg.toFixed(1)}%</strong><span>30-day average</span></ProgressRing><p>Average recorded movement symmetry over the reporting period.</p></figure></div>
+      <div className="chart-grid"><figure><figcaption><span>STRENGTH RETENTION · %</span><strong>{medical.strengthRetentionPct.toFixed(1)}%</strong></figcaption><p className="chart-description">Workout-derived score against your pre-flight baseline</p><TelemetryChart kind="retention" dates={medical.retentionSeries.map(point => point.dateIso)} values={medical.retentionSeries.map(point => point.strengthRetentionPct)} /></figure><figure><figcaption><span>RESISTANCE VOLUME · KG</span><strong>{(medical.visibleVolumeKg / 1000).toFixed(1)} t</strong></figcaption><p className="chart-description">Cumulative ARED weight moved per day</p><TelemetryChart kind="volume" dates={medical.volumeSeries.map(point => point.dateIso)} values={medical.volumeSeries.map(point => point.volumeKg)} /></figure><figure className="symmetry-card"><figcaption>MOVEMENT SYMMETRY</figcaption><ProgressRing value={medical.symmetryScoreAvg}><strong>{medical.symmetryScoreAvg.toFixed(1)}%</strong><span>30-day average</span></ProgressRing><p>Average recorded movement symmetry over the reporting period.</p></figure></div>
       <div className="table-scroll" tabIndex={0} role="region" aria-label="Medical telemetry table scroll area"><table aria-label="Medical telemetry"><thead><tr><th>Date (UTC)</th><th>Strength retention (%)</th><th>Volume (kg)</th></tr></thead><tbody>{medical.retentionSeries.map((point, index) => <tr key={point.dateIso}><td>{point.dateIso}</td><td>{point.strengthRetentionPct.toFixed(1)}</td><td>{medical.volumeSeries[index].volumeKg.toFixed(0)}</td></tr>)}</tbody></table></div>
       <section className="glass correction-summary"><h3>Recorded correction flags</h3><ul aria-label="Fault counts">{Object.entries(medical.faultCounts).map(([fault, count]) => <li key={fault}><span>{faultAlerts[fault as keyof typeof faultAlerts] ?? fault}</span><strong>{count}</strong></li>)}</ul></section>
     </section>
     <section className="mission-section history-section" data-screen="logs" data-active={navigation.activePage === 'logs'} aria-labelledby="history-heading">
-      <p className="eyebrow">05 / SESSION ARCHIVE</p>
+      <p className="eyebrow">Session Archive</p>
       <h2 className="page-title" id="history-heading">Workout Logs &amp; History</h2>
       <p className="section-subtitle">{history.totalSessions} matching sessions · Select Details to inspect a workout or replay a flagged rep.</p>
-      <div className="history-filters">
-      <label htmlFor="workout-search">Search workouts</label>{' '}<input id="workout-search" type="search" value={history.searchQuery} onChange={e => history.setSearchQuery(e.target.value)} />{' '}
+      <p>GREEN / YELLOW / RED indicate prototype form status, not medical clearance.</p>
+      <div className="history-layout"><div className="glass history-master">      <div className="history-filters">
+      <label className="visually-hidden" htmlFor="workout-search">Search workouts</label>{' '}<input placeholder="Search exercise, date, issue…" id="workout-search" type="search" value={history.searchQuery} onChange={e => history.setSearchQuery(e.target.value)} />{' '}
       <label htmlFor="history-date-range">Workout date range</label>{' '}<select id="history-date-range" value={history.dateRange} onChange={e => history.setDateRange(e.target.value as WorkoutDateRange)}>
         <option value="ALL">All dates</option><option value="LAST_7_DAYS">Last 7 days</option><option value="LAST_14_DAYS">Last 14 days</option><option value="LAST_30_DAYS">Last 30 days</option>
       </select>
       </div>
-      <p>GREEN / YELLOW / RED indicate prototype form status, not medical clearance.</p>
-      <div className="history-layout"><div className="glass history-master"><div className="table-scroll" tabIndex={0} role="region" aria-label="Workout history table scroll area"><table aria-label="Workout history">
+<div className="table-scroll" tabIndex={0} role="region" aria-label="Workout history table scroll area"><table aria-label="Workout history">
         <thead><tr><th>Completed (UTC)</th><th>Exercise</th><th>Duration (MM:SS)</th><th>Status</th><th>Form (%)</th><th>Details / flagged reps</th></tr></thead>
         <tbody>{history.sessions.map(session => <tr key={session.id} data-selected={history.selectedSession?.id === session.id}>
           <td><time dateTime={session.completedAtIso} aria-label={session.completedAtIso}>{session.completedAtIso.slice(0, 10)}<small>{session.completedAtIso.slice(11, 16)} UTC</small></time></td><td>{getExerciseById(session.exerciseId).name}</td><td>{session.formattedDuration}</td><td><span className="form-status" data-status={session.formStatus}>{session.formStatus}</span></td><td>{session.formAccuracyPct.toFixed(1)}</td>
@@ -208,11 +208,16 @@ function MissionApp() {
       </div><aside className="glass history-detail-panel">{!history.selectedSession && <div className="history-placeholder"><MissionIcon name="logs" /><h3>Session Details</h3><p>Select a workout to review session metrics and flagged rep diagnostics.</p></div>}<section aria-label="Session details" hidden={!history.selectedSession}>
         <h3>Session Details</h3>
         {history.selectedSession && <>
-          <p>{history.selectedSession.exerciseId} · {history.selectedSession.completedAtIso} · {formatDurationMmSs(history.selectedSession.durationSec)} · {getSessionFormStatus(history.selectedSession)}</p>
-          <p>Sets: {history.selectedSession.sets}; reps per set: {history.selectedSession.reps}; load: {history.selectedSession.loadKg} kg; volume: {history.selectedSession.resistanceVolumeKg} kg.</p>
-          <p>Form: {history.selectedSession.formAccuracyPct.toFixed(1)}%; symmetry: {history.selectedSession.symmetryScorePct.toFixed(1)}%; distance: {history.selectedSession.cardioDistanceKm} km.</p>
-          <p>Total reps: {history.selectedSession.sets * history.selectedSession.reps}; sync: {mission.state.acknowledgements.some(ack => ack.sessionId === history.selectedSession?.id) ? 'SYNCED' : 'QUEUED_BLACKOUT'}.</p>
-          <p>Flagged issues: {[...new Set(history.selectedSession.snapshots.flatMap(snapshot => snapshot.faultFlags))].map(flag => faultAlerts[flag]).join(', ') || 'None'}</p>
+          <h4 className="history-exercise-title">{getExerciseById(history.selectedSession.exerciseId).name}</h4>
+          <p className="history-session-date">{history.selectedSession.completedAtIso.slice(0, 10)} · {history.selectedSession.completedAtIso.slice(11, 16)} UTC · <span className="form-status" data-status={getSessionFormStatus(history.selectedSession)}>{getSessionFormStatus(history.selectedSession)}</span></p>
+          <dl className="session-metrics">{[
+            ['Reps', history.selectedSession.sets * history.selectedSession.reps], ['Sets', history.selectedSession.sets], ['Load', `${history.selectedSession.loadKg} kg`],
+            ['Duration', formatDurationMmSs(history.selectedSession.durationSec)], ['Accuracy', `${history.selectedSession.formAccuracyPct.toFixed(1)}%`], ['Symmetry', `${history.selectedSession.symmetryScorePct.toFixed(1)}%`],
+          ].map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+          <p className="session-volume">Logged load: {history.selectedSession.loadKg} kg; volume: {history.selectedSession.resistanceVolumeKg} kg · Distance: {history.selectedSession.cardioDistanceKm} km · Sync: {mission.state.acknowledgements.some(ack => ack.sessionId === history.selectedSession?.id) ? 'SYNCED' : 'QUEUED_BLACKOUT'}</p>
+          <h4 className="session-flags-title">Form issues flagged ({history.selectedSession.snapshots.length})</h4>
+          <p className="session-flags">Flagged issues: {[...new Set(history.selectedSession.snapshots.flatMap(snapshot => snapshot.faultFlags))].map(flag => faultAlerts[flag]).join(', ') || 'None'}</p>
+          <h4 className="session-replay-title">Kinematic snapshot replay</h4>
           {history.selectedSession.snapshots.map(snapshot => <button key={snapshot.repNumber} onClick={() => history.selectSnapshotForReplay(snapshot)}>Replay detail rep {snapshot.repNumber}</button>)}
         </>}
         <canvas ref={history.replayCanvasRef} aria-label="Saved snapshot replay" width={640} height={480} hidden={!history.selectedSnapshot}>Saved flagged rep skeletal replay.</canvas>
@@ -220,44 +225,44 @@ function MissionApp() {
       </section></aside></div>
     </section>
     <section className="mission-section settings-section" data-screen="settings" data-view={navigation.activePage} data-active={navigation.activePage === 'settings' || navigation.activePage === 'profile'} aria-labelledby={navigation.activePage === 'profile' ? 'profile-heading' : 'settings-heading'}>
-      <p className="eyebrow">06 / CREW CONFIGURATION</p>
+      <p className="eyebrow">{navigation.activePage === 'profile' ? 'Crew Member' : 'Configuration'}</p>
       <h2 className="page-title settings-only" id="settings-heading">Profile &amp; Mission Settings</h2>
       <h2 className="page-title profile-only" id="profile-heading">Astronaut Profile</h2>
-      <p className="section-subtitle">Your crew profile, gravity scenario, personalized routine and onboard data.</p>
+      <p className="section-subtitle">{navigation.activePage === 'profile' ? 'Your personal details, health metrics and Earth baselines' : 'Gravity environment, routine behaviour and onboard data'}</p>
       <div className="configuration-actions"><button onClick={settings.applyProfile}>Save / Apply</button><p aria-label="Profile confirmation" role="status">{settings.profileConfirmationMessage}</p></div>
       <div className="configuration-grid">
-        <section className="glass profile-only personal-card" aria-labelledby="personal-details-heading"><h3 id="personal-details-heading">Personal Details</h3><p className="section-subtitle">Your local crew identity and body weight.</p><div className="profile-fields">
-      <label htmlFor="body-weight">Body weight (kg)</label>{' '}<input id="body-weight" type="number" min="0.1" step="0.1" value={settings.profileFieldValue('bodyWeightKg')} aria-invalid={Boolean(settings.fieldErrors.bodyWeightKg)} aria-describedby="body-weight-error" onChange={e => settings.setProfileField('bodyWeightKg', e.target.value)} />
-      <p id="body-weight-error" role={settings.fieldErrors.bodyWeightKg ? 'alert' : undefined}>{settings.fieldErrors.bodyWeightKg}</p>
+        <section className="glass profile-only personal-card" aria-labelledby="personal-details-heading"><h3 className="section-card-heading" id="personal-details-heading"><MissionIcon name="profile" />Personal Details</h3><p className="section-subtitle">Your local crew identity and body weight.</p><div className="personal-details-body"><div className="profile-portrait" aria-hidden="true"><MissionIcon name="profile" /></div><div className="profile-fields">
       <label htmlFor="astronaut-name">Astronaut name</label>{' '}<input id="astronaut-name" value={settings.profileFieldValue('name')} aria-invalid={Boolean(settings.fieldErrors.name)} aria-describedby="astronaut-name-error" onChange={e => settings.setProfileField('name', e.target.value)} />
       <p id="astronaut-name-error" role={settings.fieldErrors.name ? 'alert' : undefined}>{settings.fieldErrors.name}</p>
-        </div></section>
-        <section className="glass profile-only health-card" aria-labelledby="health-metrics-heading"><h3 id="health-metrics-heading">Update Health Metrics</h3><p className="section-subtitle">Update your pre-flight context for routine recalibration.</p>
+      <label htmlFor="body-weight">Body weight (kg)</label>{' '}<input id="body-weight" type="number" min="0.1" step="0.1" value={settings.profileFieldValue('bodyWeightKg')} aria-invalid={Boolean(settings.fieldErrors.bodyWeightKg)} aria-describedby="body-weight-error" onChange={e => settings.setProfileField('bodyWeightKg', e.target.value)} />
+      <p id="body-weight-error" role={settings.fieldErrors.bodyWeightKg ? 'alert' : undefined}>{settings.fieldErrors.bodyWeightKg}</p>
+        </div></div></section>
+        <section className="glass profile-only health-card" aria-labelledby="health-metrics-heading"><h3 className="section-card-heading" id="health-metrics-heading"><MissionIcon name="analytics" />Update Health Metrics</h3><p className="section-subtitle">Update your pre-flight context for routine recalibration.</p>
         <div className="health-metrics-grid"><HealthMetricFields prefix="settings" fieldValue={settings.profileFieldValue} setField={settings.setProfileField} errors={settings.fieldErrors} bmi={settings.bmi} includeWeight={false} /></div>
         <label htmlFor="settings-injury-limitations">Injury or physical limitation</label>{' '}<select id="settings-injury-limitations" value={settings.astronautProfile.injuryLimitations} onChange={event => settings.setInjuryLimitation(event.target.value as InjuryLimitation)}>{Object.entries(routineRules.limitations).map(([id, rule]) => <option key={id} value={id}>{rule.label}</option>)}</select>{' '}
         <label htmlFor="settings-injuryNotes">Limitation notes (optional)</label>{' '}<input id="settings-injuryNotes" value={settings.profileFieldValue('injuryNotes')} onChange={event => settings.setProfileField('injuryNotes', event.target.value)} />{' '}
         </section>
-        <section className="glass settings-only gravity-card" aria-labelledby="gravity-settings-heading"><h3 id="gravity-settings-heading">Gravity Environment</h3><p className="section-subtitle">Choose the scenario for your next session.</p><div className="gravity-options">{catalog.gravityProfiles.map(gravity => <button key={gravity.id} aria-pressed={settings.gravityProfile === gravity.id} onClick={() => settings.setGravityProfile(gravity.id)}><MissionIcon name="journey" /><strong>{gravity.gravityG}G</strong><span>{gravity.name}</span></button>)}</div>
+        <section className="glass settings-only gravity-card" aria-labelledby="gravity-settings-heading"><h3 className="section-card-heading" id="gravity-settings-heading"><MissionIcon name="globe" />Gravity Environment</h3><p className="section-subtitle">Choose the scenario for your next session.</p><div className="gravity-options">{catalog.gravityProfiles.map(gravity => <button key={gravity.id} aria-pressed={settings.gravityProfile === gravity.id} onClick={() => settings.setGravityProfile(gravity.id)}><MissionIcon name="journey" /><strong>{gravity.gravityG}G</strong><span>{gravity.name}</span></button>)}</div>
       <label htmlFor="gravity-profile">Gravity profile</label>{' '}<select id="gravity-profile" value={settings.gravityProfile} onChange={e => settings.setGravityProfile(e.target.value as GravityProfileId)}>{catalog.gravityProfiles.map(g => <option key={g.id} value={g.id}>{g.name} ({g.gravityG}g)</option>)}</select>
         <label htmlFor="settings-mission-type">Mission type</label>{' '}<select id="settings-mission-type" value={settings.astronautProfile.missionType} onChange={event => settings.setMissionType(event.target.value as MissionType)}>{Object.entries(routineRules.missions).map(([id, mission]) => <option key={id} value={id}>{mission.label}</option>)}</select>{' '}
         <label htmlFor="settings-missionDurationDays">Mission duration (days)</label>{' '}<input id="settings-missionDurationDays" type="number" min="1" step="1" value={settings.profileFieldValue('missionDurationDays')} onChange={event => settings.setProfileField('missionDurationDays', event.target.value)} aria-invalid={Boolean(settings.fieldErrors.missionDurationDays)} aria-describedby="settings-mission-duration-error" />
         <p id="settings-mission-duration-error" role={settings.fieldErrors.missionDurationDays ? 'alert' : undefined}>{settings.fieldErrors.missionDurationDays}</p>
         </section>
-        <section className="glass settings-only routine-settings" aria-labelledby="routine-settings-heading"><h3 id="routine-settings-heading">Routine Personalization</h3><p>Keep your program aligned with your saved baselines and recorded progress.</p><p className="prototype-note">Rule-based prototype prescriptions, not official medical standards.</p>
-        <button onClick={settings.recalibrateRoutine}>Recalibrate Routine</button>{' '}
+        <section className="glass settings-only routine-settings" aria-labelledby="routine-settings-heading"><h3 className="section-card-heading" id="routine-settings-heading"><ReferenceIcon name="sparkles" />Routine Personalization</h3><p>Keep your program aligned with your saved baselines and recorded progress.</p><p className="prototype-note">Rule-based prototype prescriptions, not official medical standards.</p>
         <label><input type="checkbox" aria-label="Auto-adjust routine based on progress" checked={settings.astronautProfile.autoAdjustRoutine} onChange={event => settings.setAutoAdjustRoutine(event.target.checked)} /> Auto-adjust routine based on progress</label>
+        <div className="recalibration-card"><p><strong>Recalibrate Routine</strong></p><p>Regenerate your program using your current profile, Earth baselines and recorded progress.</p><button onClick={settings.recalibrateRoutine}><ReferenceIcon name="sparkles" />Recalibrate Routine</button></div>
 <button onClick={() => navigation.navigateToPage('profile')}>Update profile &amp; health metrics</button></section>
-        <div className="profile-only baseline-card">      <fieldset><legend>Earth 1RM baselines (kg)</legend>{Object.keys(settings.astronautProfile.earthBaseline1RM).map(key => {
+        <div className="profile-only baseline-card">      <fieldset><legend><MissionIcon name="arena" />Earth 1RM baselines (kg)</legend>{Object.keys(settings.astronautProfile.earthBaseline1RM).map(key => {
         const id = key as ResistanceExerciseId;
-        return <div key={id}><label htmlFor={`baseline-${id}`}>{id} <input id={`baseline-${id}`} aria-label={`${id} Earth baseline (kg)`} aria-invalid={Boolean(settings.fieldErrors[id])} aria-describedby={`baseline-${id}-error`} type="number" min="0.1" step="any" value={settings.profileFieldValue(id)} onChange={e => settings.setProfileField(id, e.target.value)} /></label><p id={`baseline-${id}-error`} role={settings.fieldErrors[id] ? 'alert' : undefined}>{settings.fieldErrors[id]}</p></div>;
+        return <div key={id}><label htmlFor={`baseline-${id}`}>{getExerciseById(id).name} <input id={`baseline-${id}`} aria-label={`${id} Earth baseline (kg)`} aria-invalid={Boolean(settings.fieldErrors[id])} aria-describedby={`baseline-${id}-error`} type="number" min="0.1" step="any" value={settings.profileFieldValue(id)} onChange={e => settings.setProfileField(id, e.target.value)} /></label><p id={`baseline-${id}-error`} role={settings.fieldErrors[id] ? 'alert' : undefined}>{settings.fieldErrors[id]}</p></div>;
       })}</fieldset>
 <p className="prototype-note">Earth baselines are self-reported inputs for prototype load recommendations.</p></div>
-        <section className="glass settings-only sync-settings" aria-labelledby="data-sync-heading"><h3 id="data-sync-heading">Data &amp; Communications</h3><p className="section-subtitle">Local storage and simulated communications windows.</p>
+        <section className="glass settings-only sync-settings" aria-labelledby="data-sync-heading"><h3 className="section-card-heading" id="data-sync-heading"><MissionIcon name="storage" />Data &amp; Communications</h3><p className="section-subtitle">Local storage and simulated communications windows.</p>
       <button onClick={settings.toggleCommsWindow}>{settings.commsStatus === 'WINDOW_OPEN' ? 'Close comms window' : 'Open comms window'}</button>{' '}
       <button disabled={mission.syncing || settings.commsStatus !== 'WINDOW_OPEN'} onClick={() => void settings.flushSyncQueueNow()}>Flush sync queue now</button>{' '}
       <output aria-label="Sync activity">{mission.syncing ? 'Syncing' : 'Idle'}</output>
       {mission.syncError && <p role="status">{mission.syncError}</p>}
-      <p>Last sync: {mission.state.lastSyncedAtIso ?? 'Never'}</p>
+      <dl className="sync-summary"><div><dt>Local data cache</dt><dd>{(mission.localCacheBytes / 1000).toFixed(1)} KB</dd><small>Serialized mission data; not disk quota</small></div><div><dt>Sync queue</dt><dd>{mission.state.syncQueue.length} pending</dd><small>{(mission.queuedPayloadBytes / 1000).toFixed(1)} KB summary payload</small></div><div><dt>Last sync</dt><dd>{mission.state.lastSyncedAtIso ?? 'Never'}</dd></div></dl>
       <p className="prototype-note">{prototypeNotice.commsScenario}</p>
       <button onClick={() => { arena.selectExercise(arena.state.exerciseId as ResistanceExerciseId); resetDisplay(); settings.seed30DayDemoData(); }}>Seed 30-Day Mars Demo Data</button>{' '}
       <button onClick={settings.clearLocalCache}>Clear Local Data</button>

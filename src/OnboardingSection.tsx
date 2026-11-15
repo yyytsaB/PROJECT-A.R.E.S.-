@@ -11,8 +11,8 @@ export function RoutinePrescription({ item }: { item: PersonalizedRoutineItem })
 export function OnboardingSection({ onSkip }: { onSkip?: () => void }) {
   const onboarding = useMissionOnboarding(), catalog = loadMissionCatalog();
   return <section className="mission-section onboarding-section" aria-labelledby="onboarding-heading">
-    <div className="onboarding-layout"><aside className="onboarding-sidebar"><a href="#/dashboard" onClick={onSkip}><img src="/assets/ares-mark.svg" alt="A.R.E.S. mission emblem" width="72" height="72" /><strong>A.R.E.S.</strong></a><p className="eyebrow">YOUR MISSION STARTS HERE</p><h3>Built for the journey ahead.</h3><p>Personalize your exercise program for a new world.</p><ol>{['Your biometrics', 'Earth baselines', 'Mission parameters'].map((label, index) => <li key={label} data-active={onboarding.step === index + 1} data-complete={onboarding.step > index + 1}><span>{index + 1}</span>{label}</li>)}</ol><button onClick={onSkip}>Return to dashboard</button><small>SPACE APPS 2026 · TEAM PROTOTYPE</small></aside><div className="onboarding-content">
-    <p className="eyebrow">PRE-FLIGHT / PERSONALIZE YOUR MISSION</p>
+    <div className="onboarding-layout"><aside className="onboarding-sidebar"><a href="#/dashboard" onClick={onSkip}><img src="/assets/ares-mark.svg" alt="A.R.E.S. mission emblem" width="72" height="72" /><span><strong>PROJECT A.R.E.S.</strong><small>Astronaut Resistance &amp; Exercise System</small></span></a><p className="eyebrow">YOUR MISSION STARTS HERE</p><h3>Built for the journey ahead.</h3><p>Personalize your exercise program for a new world.</p><ol>{['Your biometrics', 'Earth baselines', 'Mission parameters'].map((label, index) => <li key={label} data-active={onboarding.step === index + 1} data-complete={onboarding.step > index + 1}><span>{index + 1}</span><div>{label}<small>{['Height, weight and pre-flight vitals', 'Earth 1RM baselines and injury history', 'Mission type, duration and gravity'][index]}</small></div></li>)}</ol><button onClick={onSkip}>Return to dashboard</button><small>SPACE APPS 2026 · TEAM PROTOTYPE</small></aside><div className="onboarding-content">
+    <p className="eyebrow">Pre-space onboarding</p>
     <h2 className="page-title" id="onboarding-heading">Mission Onboarding — Set Up Your Profile</h2>
     <p>Rule-based prototype suggestions for review. Biometrics are recorded context; this flow provides no diagnosis or medical clearance.</p>
     <p className="onboarding-progress"><output aria-label="Onboarding progress">Step {onboarding.step} of 3</output></p>
@@ -50,7 +50,7 @@ export function OnboardingSection({ onSkip }: { onSkip?: () => void }) {
       <ol>{onboarding.preview.items.map(item => <li key={item.exerciseId}>{item.name} — <RoutinePrescription item={item} /><p>{item.rationale}</p></li>)}</ol>
       <button disabled={Boolean(onboarding.confirmation)} onClick={onboarding.confirmRoutine}>Confirm &amp; Apply Routine</button>
     </section>}
-    <p>{onboarding.step > 1 && <button onClick={onboarding.previousStep}>Previous step</button>}{' '}{onboarding.step < 3 && <button onClick={onboarding.nextStep}>Next step</button>}</p>
+    <p className="onboarding-actions">{onboarding.step > 1 && <button onClick={onboarding.previousStep}>Previous step</button>}{' '}{onboarding.step < 3 && <button className="primary-action" onClick={onboarding.nextStep}>Next step</button>}</p>
     <p aria-label="Onboarding confirmation" role="status">{onboarding.confirmation}</p>
     </div></div>
   </section>;
