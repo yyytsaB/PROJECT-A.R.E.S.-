@@ -120,8 +120,11 @@ export async function createPoseSource(options: PoseSourceOptions): Promise<Pose
       read(timestampMs) {
         if (closed || !landmarker || video.readyState < 2 || video.videoWidth <= 0 || video.videoHeight <= 0 || video.currentTime === lastVideoTime || timestampMs <= lastTimestampMs) return null;
         lastVideoTime = video.currentTime; lastTimestampMs = timestampMs;
-        const points = landmarker.detectForVideo(video, timestampMs).landmarks[0];
+        const detection = landmarker.detectForVideo(video, timestampMs);
+        const points = detection.landmarks[0];
+        const world = detection.worldLandmarks?.[0];
         return { width: video.videoWidth, height: video.videoHeight, timestampMs,
+          ...(points?.length === 33 && world?.length === 33 ? { worldLandmarks: world.map(p => ({ x: p.x, y: p.y, z: p.z })) } : {}),
           landmarks: points?.length === 33
             ? points.map(p => ({ x: p.x, y: p.y, z: p.z, visibility: p.visibility }))
             : Array.from({ length: 33 }, () => ({ x: 0, y: 0, z: 0, visibility: 0 })) };

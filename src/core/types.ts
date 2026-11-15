@@ -2,6 +2,12 @@ export interface Point3D { readonly x: number; readonly y: number; readonly z: n
 export interface PoseLandmark33 extends Point3D { readonly visibility: number }
 export interface RawPoseFrame {
   readonly landmarks: readonly PoseLandmark33[];
+  /**
+   * Optional metric 3D landmarks (MediaPipe world landmarks, hip-centred). When present they are used for joint
+   * angles because image-space depth is the least reliable coordinate; `landmarks` stays the source for drawing,
+   * visibility and replay snapshots.
+   */
+  readonly worldLandmarks?: readonly Point3D[];
   readonly width: number;
   readonly height: number;
   readonly timestampMs: number;

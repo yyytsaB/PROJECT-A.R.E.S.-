@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { computeJointAngleDeg, describeSnapshotDiagnostic, normalizePose33 } from './kinematicMath';
+import { analyzeExerciseFrame, computeJointAngleDeg, describeSnapshotDiagnostic, normalizePose33 } from './kinematicMath';
 import { getExerciseById } from '../catalog/missionCatalog';
 import { buildPoseFrame } from './poseFixtures';
 import type { FormFaultFlag, RawPoseFrame, ResistanceExerciseId } from '../types';
@@ -87,4 +87,17 @@ test('analyzes flexion and extension ROM, bilateral symmetry, trunk lean, and vi
   const collapsed = { ...leaned, landmarks: leaned.landmarks.map((p, i) => i === 27 ? leaned.landmarks[25] : p) };
   expect(analyzeExerciseFrame(normalizePose33(collapsed), squat)).toMatchObject({ isVisible: false, faultFlags: ['LOW_VISIBILITY'] });
   expect(() => analyzeExerciseFrame(normalizePose33(leaned), getExerciseById('ROWING'))).toThrow(RangeError);
+});
+
+test('prefers metric world landmarks over image-space depth for joint angles', () => {
+  const squat = getExerciseById('SQUAT');
+  const frame = buildPoseFrame(squat, { angleDeg: 120 });
+  const aspect = frame.width / frame.height;
+  const world = frame.landmarks.map(p => ({ x: p.x * aspect, y: p.y, z: p.z * aspect }));
+  // Corrupt image depth at the ankles, as a noisy estimate would.
+  const noisy = { ...frame, landmarks: frame.landmarks.map((p, i) => i === 27 || i === 28 ? { ...p, z: 0.3 } : p) };
+  expect(analyzeExerciseFrame(normalizePose33(noisy), squat).primaryAngleDeg).not.toBeCloseTo(120, 0);
+  expect(analyzeExerciseFrame(normalizePose33({ ...noisy, worldLandmarks: world }), squat).primaryAngleDeg).toBeCloseTo(120, 5);
+  // Incomplete world data falls back to the image landmarks.
+  expect(analyzeExerciseFrame(normalizePose33({ ...frame, worldLandmarks: world.slice(0, 10) }), squat).primaryAngleDeg).toBeCloseTo(120, 5);
 });

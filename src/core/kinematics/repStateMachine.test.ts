@@ -185,3 +185,49 @@ test('abandoning a rep in progress keeps completed reps and requires a fresh sta
   for (const frame of buildRepTrajectory(exercise, 'GOOD', 2000)) next = advanceRepState(next, frame, exercise).state;
   expect(next.repCount).toBe(2);
 });
+
+// Live-camera realism: the pose model on a low-end laptop updates about 7 times per second, and a straight
+// limb rarely reads as exactly straight.
+const LIVE_FRAME_MS = 130;
+const runAngles = (exerciseId: 'SQUAT' | 'DEADLIFT' | 'OVERHEAD_PRESS' | 'BICEP_CURL', angles: readonly number[], startMs = 0) => {
+  const exercise = getExerciseById(exerciseId);
+  let state = createInitialRepState(exerciseId);
+  for (const [i, angleDeg] of angles.entries()) state = advanceRepState(state, buildPoseFrame(exercise, { angleDeg, timestampMs: startMs + i * LIVE_FRAME_MS }), exercise).state;
+  return state;
+};
+
+test('counts full-depth reps when standing reads a few degrees short of straight and the turnaround is quick', () => {
+  const squat = [158, 162, 156, 140, 115, 96, 93, 108, 130, 150, 157, 159];
+  const state = runAngles('SQUAT', [...squat, ...squat, ...squat]);
+  expect(state).toMatchObject({ repCount: 3, faultedRepCount: 0, formAccuracyPct: 100 });
+});
+
+test('counts every overhead press and curl rep at a live frame rate without a perfect return', () => {
+  // Press: the bar comes back to about 95 degrees of elbow flexion rather than the configured 75.
+  const press = [92, 96, 110, 135, 158, 163, 150, 125, 104, 95, 93];
+  expect(runAngles('OVERHEAD_PRESS', [...press, ...press, ...press])).toMatchObject({ repCount: 3, faultedRepCount: 0 });
+  // Curl: the arm lowers to about 140 degrees instead of locking out at 160.
+  const curl = [142, 138, 115, 85, 58, 52, 70, 100, 128, 140, 143];
+  expect(runAngles('BICEP_CURL', [...curl, ...curl, ...curl])).toMatchObject({ repCount: 3, faultedRepCount: 0 });
+});
+
+test('pose jitter around the start position never produces a rep', () => {
+  let seed = 7;
+  const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (const id of ['SQUAT', 'DEADLIFT', 'OVERHEAD_PRESS', 'BICEP_CURL'] as const) {
+    const { startAngleDeg } = getExerciseById(id);
+    const angles = Array.from({ length: 300 }, () => startAngleDeg + (random() - 0.5) * 30);
+    expect(runAngles(id, angles).repCount, id).toBe(0);
+  }
+});
+
+test('a half-hearted dip that returns to standing does not count, and the next real rep still does', () => {
+  const state = runAngles('SQUAT', [168, 165, 150, 140, 138, 150, 165, 168, 150, 120, 96, 94, 120, 150, 166, 168]);
+  expect(state).toMatchObject({ repCount: 1, faultedRepCount: 0 });
+});
+
+test('a shallow but real rep still counts and is flagged', () => {
+  const state = runAngles('SQUAT', [168, 165, 145, 128, 124, 126, 145, 165, 168]);
+  expect(state).toMatchObject({ repCount: 1, faultedRepCount: 1 });
+  expect(state.snapshots[0].faultFlags).toContain('DEPTH_INSUFFICIENT');
+});
