@@ -22,7 +22,7 @@ export function useAppNavigation() {
     return () => window.removeEventListener('hashchange', update);
   }, []);
   useEffect(() => {
-    document.title = `${pages.find(page => page.id === activePage)!.label} — A.R.E.S.`;
+    document.title = `${pages.find(page => page.id === activePage)!.label} — ARES`;
     window.scrollTo(0, 0);
     if (mounted.current) document.querySelector<HTMLElement>('main')?.focus({ preventScroll: true });
     mounted.current = true;

@@ -2,7 +2,8 @@
 
 These local assets belong to the prototype interface. They are not official agency marks or scientific terrain products.
 
-- `ares-mark.svg`: team mockup logo, embedded as a self-contained SVG image and also used as the favicon.
+- `ares-mark.svg`: team mockup logo, embedded as a self-contained SVG image in the app chrome.
+- `favicon-32.png`, `favicon-192.png`, `/favicon.ico` and `/apple-touch-icon.png`: browser and home-screen icons, resized from the team's square ARES logo.
 - `mission-ambient.png`: transparent light overlay exported from the team mockup; used behind the glass cards.
 - `fonts/plus-jakarta-sans-latin.woff2`: Plus Jakarta Sans Latin variable font from the Google Fonts stylesheet used by the mockup.
 - `fonts/jetbrains-mono-latin.woff2`: JetBrains Mono Latin variable font from that stylesheet.
@@ -12,7 +13,7 @@ These local assets belong to the prototype interface. They are not official agen
 - `olympus-mons-route.svg`: schematic game expedition illustration.
 - `mission-badge.svg`: shared milestone illustration; unlocked/locked styling is applied by the UI.
 
-Teammate artwork can replace these files at the same paths. Keep each SVG's viewBox, local references and descriptive image alt text in the screen components. Keep the route captions identifying schematic, non-terrain-derived artwork. If filenames change, update the asset mapping in `src/components/MissionVisuals.tsx` and the favicon/badge preload in `index.html`.
+Teammate artwork can replace these files at the same paths. Keep each SVG's viewBox, local references and descriptive image alt text in the screen components. Keep the route captions identifying schematic, non-terrain-derived artwork. If filenames change, update the asset mapping in `src/components/MissionVisuals.tsx` and the favicon links and badge preloads in `index.html`.
 
 Both route images load at startup so switching routes on an already loaded mission works after disconnecting. No image service, remote font, or additional dependency is required.
 

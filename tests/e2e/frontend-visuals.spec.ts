@@ -30,7 +30,7 @@ test('mission layout remains readable at desktop, tablet and phone widths with l
   await page.goto('/');
   for (const width of [1440, 1024, 768, 390]) {
     await page.setViewportSize({ width, height: 1000 });
-    await expect(page.getByRole('heading', { level: 1, name: 'Project A.R.E.S. Command Center' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Project ARES Command Center' })).toBeVisible();
     if (width < 1024) {
       await page.getByRole('button', { name: 'Open navigation menu', exact: true }).click();
       await expect(page.getByRole('navigation', { name: 'Mission sections' })).toBeVisible();
@@ -41,7 +41,7 @@ test('mission layout remains readable at desktop, tablet and phone widths with l
       const box = element.getBoundingClientRect(); return box.x >= 0 && box.right <= innerWidth && box.height >= 40;
     })).toBe(true);
   }
-  await expect(page.getByRole('img', { name: 'A.R.E.S. mission emblem', exact: true })).toBeVisible();
+  await expect(page.getByRole('img', { name: 'ARES mission emblem', exact: true })).toBeVisible();
   expect(await page.locator('body').evaluate(element => getComputedStyle(element).colorScheme)).toBe('dark');
   for (const image of await page.locator('img').all()) {
     expect(await image.getAttribute('alt')).toBeTruthy();

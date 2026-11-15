@@ -58,7 +58,7 @@ for (const offline of [false, true]) {
         observer.observe(element, { childList: true, subtree: true, characterData: true });
       }));
       await button('Generate My Routine').click();
-      expect(await seen).toBe('A.R.E.S. is building your personalized program…');
+      expect(await seen).toBe('ARES is building your personalized program…');
       const preview = wizard.getByRole('region', { name: 'Routine preview', exact: true });
       await expect(preview.getByRole('listitem')).toHaveCount(7);
       await expect(preview).toContainText('4×12 @ 68 kg');

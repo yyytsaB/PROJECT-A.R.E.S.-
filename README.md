@@ -1,4 +1,4 @@
-# PROJECT A.R.E.S.
+# PROJECT ARES
 
 **Astronaut Resistance & Exercise System** is a browser-based NASA Space Apps prototype for exercise coaching during long-duration spaceflight. It addresses the Human Research Program problem of maintaining muscle, bone, and exercise performance when real-time support from Earth is unavailable.
 

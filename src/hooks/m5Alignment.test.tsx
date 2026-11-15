@@ -195,13 +195,13 @@ test('shows sample schedule times, persists completion per mission day and launc
 
 test('selects accessible sections with matching page titles and a focusable skip target', async () => {
   await act(() => root.render(<App />));
-  expect(document.title).toBe('Dashboard — A.R.E.S.');
+  expect(document.title).toBe('Dashboard — ARES');
   const navigation = host.querySelector('nav[aria-label="Mission sections"]');
   expect(navigation).not.toBeNull();
   for (const name of ['Workout Arena', 'Journey', 'Analytics', 'Logs', 'Settings', 'Dashboard']) {
     const link = [...navigation!.querySelectorAll('a')].find(anchor => (anchor.getAttribute('aria-label') ?? anchor.textContent) === name)!;
     await act(async () => { link.click(); });
-    expect(document.title).toBe(`${name} — A.R.E.S.`);
+    expect(document.title).toBe(`${name} — ARES`);
     expect(link.getAttribute('aria-current')).toBe('page');
     expect(navigation!.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
   }
@@ -214,17 +214,17 @@ test('selects accessible sections with matching page titles and a focusable skip
 test('aligns titles and active navigation with direct section links and browser hash changes', async () => {
   window.history.replaceState(null, '', '#history-heading');
   await act(() => root.render(<App />));
-  expect(document.title).toBe('Logs — A.R.E.S.');
+  expect(document.title).toBe('Logs — ARES');
   expect(host.querySelector('nav [aria-current="page"]')?.textContent).toBe('Logs');
   await act(() => {
     window.history.replaceState(null, '', '#settings-heading');
     window.dispatchEvent(new HashChangeEvent('hashchange'));
   });
-  expect(document.title).toBe('Settings — A.R.E.S.');
+  expect(document.title).toBe('Settings — ARES');
   expect(host.querySelector('nav [aria-current="page"]')?.textContent).toBe('Settings');
   await act(() => {
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
     window.dispatchEvent(new HashChangeEvent('hashchange'));
   });
-  expect(document.title).toBe('Dashboard — A.R.E.S.');
+  expect(document.title).toBe('Dashboard — ARES');
 });

@@ -5,7 +5,7 @@ test('crew can read the local catalog without external services', async ({ page,
   page.on('pageerror', e => errors.push(e.message));
   await context.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
   await page.goto('/#/sources');
-  await expect(page.getByRole('heading', { level: 1, name: 'Project A.R.E.S. Command Center' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Project ARES Command Center' })).toBeVisible();
   const exercises = page.getByRole('list', { name: 'ARED resistance exercises' });
   await expect(exercises.getByRole('listitem')).toHaveCount(4);
   await expect(exercises.getByRole('listitem')).toHaveText(['Squat', 'Deadlift', 'Overhead Press', 'Bicep Curl']);

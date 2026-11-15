@@ -7,7 +7,7 @@ test('reviews and applies an offline prototype routine, then controls automatic 
   await context.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
   await page.goto('/');
   await page.getByRole('navigation', { name: 'Mission sections' }).getByRole('link', { name: 'Onboarding', exact: true }).click();
-  await expect(page).toHaveTitle('Onboarding — A.R.E.S.');
+  await expect(page).toHaveTitle('Onboarding — ARES');
   const wizard = page.getByRole('region', { name: 'Mission Onboarding — Set Up Your Profile', exact: true });
   await expect(wizard.getByLabel('Onboarding progress', { exact: true })).toHaveText('Step 1 of 3');
   await wizard.getByLabel('Onboarding astronaut name', { exact: true }).fill('Commander M6');
