@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './demoFixture';
 
 test('the analytics table header stays opaque over scrolled rows and the symmetry card shows real per-exercise data', async ({ page }) => {
   await page.goto('/#/analytics');

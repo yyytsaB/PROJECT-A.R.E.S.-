@@ -1,5 +1,5 @@
 import { navigate } from './navigation';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './demoFixture';
 
 test('mission launch opens the live working arena and keeps navigation context in sync', async ({ page }) => {
   await page.goto('/');

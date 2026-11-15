@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './demoFixture';
 
 test('each mission URL opens one screen and browser history restores the previous screen', async ({ page }) => {
   await page.goto('/#/logs');

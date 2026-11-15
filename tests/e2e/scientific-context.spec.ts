@@ -1,5 +1,5 @@
 import { navigate } from './navigation';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './demoFixture';
 import type { Download } from '@playwright/test';
 
 async function readDownload(download: Download): Promise<string> {

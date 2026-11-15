@@ -1,5 +1,5 @@
 import { navigate, openCardio } from './navigation';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './demoFixture';
 
 test('mission screens share saved workouts, settings, queue acknowledgements, history replay and offline exports', async ({ page, context }) => {
   await context.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());

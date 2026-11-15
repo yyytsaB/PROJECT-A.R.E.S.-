@@ -14,6 +14,8 @@ import journeyPresentation from '../content/journeyPresentation.json';
 import { buildFlightSurgeonReport, calculateBmi, computeExpeditionProgress, computeMedicalTelemetry, computeSessionRecord, describeGravityScenario, formatDurationMmSs, generatePersonalizedRoutine, getSessionFormStatus, measureMissionPayloads } from '../core/telemetry/telemetryEngine';
 import type { AstronautProfile, CompletedWorkoutInput, CommsLinkStatus, ExerciseId, KinematicSnapshot, MissionStoreState, MissionType, InjuryLimitation, PersonalizedRoutinePlan, PlanetaryRouteId, ResistanceExerciseId, StorageLike, TelemetrySyncClient, WorkoutDateRange } from '../core/types';
 
+/** Test-only switch: browser suites written against the populated demo set it to keep seeding on first load. */
+declare global { interface Window { __ARES_TEST_SEED_DEMO__?: boolean } }
 interface ProviderOptions { children: ReactNode; storage?: StorageLike; syncClient?: TelemetrySyncClient; now?: () => string }
 /** A milestone newly unlocked by one accepted, persisted workout. Presentation only; it never decides whether a badge is earned. */
 export interface MilestoneCelebrationEvent { readonly key: string; readonly milestoneId: string; readonly routeId: PlanetaryRouteId }
@@ -39,10 +41,14 @@ function useMissionController(options: ProviderOptions) {
   const client = useRef(options.syncClient ?? createSupabaseSyncAdapter()).current;
   const initializeRoutine = (state: MissionStoreState) => persistMissionStore({ ...state,
     personalizedRoutine: state.personalizedRoutine ?? generatePersonalizedRoutine(state.profile, state.sessions, now()) }, storage);
-  const [state, setState] = useState(() => {
+  // A first visit starts an empty mission (onboarding comes first); demo data is only seeded on request from Settings.
+  const [{ isFirstVisit, seedDemo }] = useState(() => {
     const missing = storage.getItem(MISSION_STORAGE_KEY) === null;
-    return initializeRoutine(missing ? seedDemoMissionState(now(), storage) : loadMissionStore(storage, now()));
+    const seedDemo = missing && typeof window !== 'undefined' && window.__ARES_TEST_SEED_DEMO__ === true;
+    return { isFirstVisit: missing && !seedDemo, seedDemo };
   });
+  const [state, setState] = useState(() => initializeRoutine(seedDemo ? seedDemoMissionState(now(), storage)
+    : isFirstVisit ? clearMissionStore() : loadMissionStore(storage, now())));
   const current = useRef(state);
   const generation = useRef(0);
   const profileRevision = useRef(0);
@@ -120,7 +126,7 @@ function useMissionController(options: ProviderOptions) {
     publish({ ...current.current, scheduleCompletion: { ...current.current.scheduleCompletion, [day]: { ...current.current.scheduleCompletion[day], [exerciseId]: completed } } });
   }
   useEffect(() => { if (!syncing && !syncError) void flushSyncQueueNow(); }, [state.commsStatus, state.syncQueue.length, syncing, syncError]);
-  return { state, ...measureMissionPayloads(state), nowIso: now(), missionRevision: generation.current, profileRevision: profileRevision.current, syncing, syncError, workoutError, saveWorkout, updateProfile, recalibrateRoutine, celebrations, dismissCelebration: (key: string) => setCelebrations(queue => queue.filter(item => item.key !== key)), applyPersonalizedRoutine, setCommsStatus, flushSyncQueueNow, setScheduleCompletion,
+  return { state, ...measureMissionPayloads(state), isFirstVisit, nowIso: now(), missionRevision: generation.current, profileRevision: profileRevision.current, syncing, syncError, workoutError, saveWorkout, updateProfile, recalibrateRoutine, celebrations, dismissCelebration: (key: string) => setCelebrations(queue => queue.filter(item => item.key !== key)), applyPersonalizedRoutine, setCommsStatus, flushSyncQueueNow, setScheduleCompletion,
     toggleCommsWindow: () => setCommsStatus(current.current.commsStatus === 'WINDOW_OPEN' ? 'BLACKOUT_24MIN_DELAY' : 'WINDOW_OPEN'),
     seed30DayDemoData: () => replaceMission(true), clearLocalCache: () => replaceMission(false) };
 }

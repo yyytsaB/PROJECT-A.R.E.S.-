@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './demoFixture';
 
 test('Arena opens with the reference permission panel and camera denial keeps simulation available', async ({ page }) => {
   await page.addInitScript(() => {

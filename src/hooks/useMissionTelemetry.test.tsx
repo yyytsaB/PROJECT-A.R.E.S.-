@@ -4,6 +4,7 @@ import { expect, test } from 'vitest';
 import { createSafeStorage } from '../adapters/telemetryStorageAdapter';
 import { MissionTelemetryProvider, useDashboardSummary, useMissionTelemetry, useMissionProfile } from './useMissionTelemetry';
 import type { CompletedWorkoutInput } from '../core/types';
+import { seedDemoMissionState } from '../core/storage/telemetryStore';
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 
@@ -49,6 +50,7 @@ test('invalid or overflowing workout totals show a recoverable error and preserv
 test('settings persist representable positive metrics and keep an overflowing BMI draft out of the store', async () => {
   const host = document.createElement('div'); document.body.append(host);
   const root = createRoot(host), storage = createSafeStorage();
+  seedDemoMissionState('2026-11-14T12:00:00.000Z', storage);
   let mission!: ReturnType<typeof useMissionTelemetry>, settings!: ReturnType<typeof useMissionProfile>;
   function Harness() { mission = useMissionTelemetry(); settings = useMissionProfile(); return null; }
   try {

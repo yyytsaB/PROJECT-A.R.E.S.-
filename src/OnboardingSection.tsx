@@ -52,6 +52,7 @@ export function OnboardingSection({ onSkip }: { onSkip?: () => void }) {
     </section>}
     <p className="onboarding-actions">{onboarding.step > 1 && <button className="back-action" onClick={onboarding.previousStep}>Previous step</button>}{' '}{onboarding.step < 3 && <button className="primary-action" onClick={onboarding.nextStep}>Next step</button>}</p>
     <p aria-label="Onboarding confirmation" role="status">{onboarding.confirmation}</p>
+    {onboarding.confirmation && <p className="onboarding-actions"><button className="primary-action" onClick={onSkip}>Continue to dashboard</button></p>}
     </div></div>
   </section>;
 }
