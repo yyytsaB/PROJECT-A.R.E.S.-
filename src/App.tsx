@@ -106,7 +106,7 @@ function MissionApp() {
     <main ref={mainRef} id="main-content" tabIndex={-1}>
       <p className="global-save-error" role="alert" aria-label="Workout save error">{mission.workoutError}</p>
     <div className="app-title visually-hidden"><h1>Project ARES Command Center</h1></div>
-    <div className="page-heading" data-screen="dashboard" data-active={navigation.activePage === 'dashboard'}><div><p className="eyebrow">Project ARES · Command Center</p><h2 className="page-title">Good Morning, <span>{settings.astronautProfile.name.split(' ')[0]}.</span></h2><p>Your physical readiness at a glance</p></div><div className="mission-day-badge glass"><span>Mission Day</span><strong>{dashboard.missionDay}<small>/ {dashboard.missionDurationDays}</small></strong></div></div>
+    <div className="page-heading" data-screen="dashboard" data-active={navigation.activePage === 'dashboard'}><div><h2 className="page-title">Good Morning, <span>{settings.astronautProfile.name.split(' ')[0]}.</span></h2><p>Your physical readiness at a glance</p></div><div className="mission-day-badge glass"><span>Mission Day</span><strong>{dashboard.missionDay}<small>/ {dashboard.missionDurationDays}</small></strong></div></div>
     <section className="mission-section command-section" data-screen="dashboard" data-active={navigation.activePage === 'dashboard'} aria-labelledby="command-heading">
       <h2 id="command-heading" className="visually-hidden">Command Center</h2>
       <p className="success-message routine-notice" role="status" aria-label="Routine update notification">{dashboard.routineNotification}</p>
@@ -145,11 +145,11 @@ function MissionApp() {
     </section>
     </div>
     <section className="mission-section arena-section" data-screen="arena" data-active={navigation.activePage === 'arena'} aria-labelledby="arena-heading">
-      <p className="eyebrow">Live Form Coach</p>
+      
       <h2 className="page-title" id="arena-heading">AI Workout Arena</h2>
       <p className="section-subtitle">Real-time pose tracking with joint-angle and range-of-motion feedback</p>
       <div className="arena-timer glass"><ReferenceIcon name="timer" />Duration: <output aria-label="Workout duration">{formatDurationMmSs(arena.elapsedSeconds)}</output></div>
-      <div className="arena-layout"><div className="glass arena-stage-card">
+      <div className="arena-layout"><div className="arena-main"><div className="glass arena-stage-card">
       <div className="tracking-stage">
       <div className="tracking-label"><span className="system-dot" />{arena.mode === 'SIMULATED' ? 'SIMULATED POSE FEED' : arena.mode === 'LIVE' ? 'CAMERA POSE FEED' : 'POSE TRACKING STANDBY'}<span>33 landmarks · processed locally</span></div>
       <div className="tracking-viewport" data-idle={!['READY', 'RUNNING', 'PAUSED'].includes(arena.sessionStatus)}><video ref={arena.videoRef} aria-label="Live camera preview" width={640} height={480} muted playsInline
@@ -179,17 +179,17 @@ function MissionApp() {
         <label><input type="checkbox" aria-label="Visual overlay" checked={arena.visualOverlayEnabled} onChange={e => arena.setVisualOverlayEnabled(e.target.checked)} /> Visual overlay</label>
       </fieldset>
       <p><output aria-label="Voice Coach status" aria-live="polite">{arena.voiceCoachStatus}</output></p>
-      </div><div className="arena-controls"><section className="glass exercise-settings"><div className="exercise-heading"><h3>Exercise</h3><label className="visually-hidden" htmlFor="arena-exercise">Exercise</label><select id="arena-exercise" value={arena.state.exerciseId} onChange={event => selectArenaExercise(event.target.value as ResistanceExerciseId)}>{catalog.exercises.filter(exercise => exercise.kind === 'RESISTANCE').map(exercise => <option key={exercise.id} value={exercise.id}>{exercise.name}</option>)}</select></div><p>Select a movement to coach</p>
-      <div className="exercise-choices" role="radiogroup" aria-label="Quick exercise selection">{catalog.exercises.filter(exercise => exercise.kind === 'RESISTANCE').map(exercise => <label key={exercise.id} className="exercise-choice"><input type="radio" name="arena-exercise-choice" value={exercise.id} checked={arena.state.exerciseId === exercise.id} onChange={() => selectArenaExercise(exercise.id)} /><span>{exercise.name}</span></label>)}</div>
-      <p className="exercise-target">Configured target angle: {arenaExercise.kind === 'RESISTANCE' ? arenaExercise.targetAngleDeg : '—'}°</p>
-      <label htmlFor="ared-load">ARED load (kg)</label><input id="ared-load" type="number" min="0" step="1" disabled={!arena.canConfigureLoad} value={loadKg} onChange={event => { const value = Number(event.target.value); if (Number.isFinite(value) && value >= 0) setLoadKg(value); }} />
-</section>{!(arena.mode === 'LIVE' && ['STARTING', 'READY', 'RUNNING', 'PAUSED'].includes(arena.sessionStatus)) && arenaExercise.kind === 'RESISTANCE' && <ValidRepGuide exerciseId={arenaExercise.id} animate={navigation.activePage === 'arena'} />}<section className="glass form-feedback-card"><h3>Form feedback</h3>
+      </div><section className="glass form-feedback-card"><h3>Form feedback</h3>
       <div className="feedback-banner" data-tone={arena.activeFaultAlerts.length ? 'warning' : arena.formFeedback ? 'good' : 'neutral'}><ReferenceIcon name="shield-check" /><div><p className="success-message" aria-label="Form feedback" role="status">{arena.formFeedback}</p>{!arena.formFeedback && <strong>{arena.activeFaultAlerts.length ? 'Correction needed' : arena.sessionStatus === 'PAUSED' ? 'Session paused' : arena.sessionStatus === 'RUNNING' ? 'Waiting for movement' : arena.sessionStatus === 'STARTING' ? 'Preparing feed' : arena.sessionStatus === 'READY' ? 'Feed ready' : arena.sessionStatus === 'COMPLETED' ? 'Session complete' : arena.sessionStatus === 'ERROR' ? 'Feed unavailable' : 'Ready to begin'}</strong>}<p>{arena.activeFaultAlerts.length ? 'Review the correction alerts below.' : arena.sessionStatus === 'IDLE' ? 'Enable camera or simulation to begin.' : arena.sessionStatus === 'READY' ? 'Start the workout when you are ready.' : 'Form scores are based on completed reps.'}</p></div></div>
       <dl className="form-score-grid"><div><dt>Reps</dt><dd><output key={arena.state.repCount} className={arena.state.repCount ? 'rep-count-pop' : undefined} aria-label="Completed reps">{arena.state.repCount}</output></dd></div><div><dt>Accuracy</dt><dd><output aria-label="Form accuracy">{arena.state.repCount ? `${arena.state.formAccuracyPct.toFixed(0)}%` : '—'}</output></dd></div><div><dt>Flagged reps</dt><dd><output aria-label="Flagged rep count">{arena.state.faultedRepCount}</output></dd></div></dl>
       <p className="arena-readouts"><span>Session: <output aria-label="Session status">{arena.sessionStatus}</output></span><span>Phase: <output aria-label="Rep phase">{arena.state.phase}</output></span><span>Peak ROM: <output aria-label="Peak ROM">{Math.round(arena.maxRomPct)}%</output></span></p>
       <h4 className="correction-heading">Correction alerts this set</h4><ul aria-label="Form alerts" aria-live="polite">{arena.activeFaultAlerts.map(alert => <li key={alert}>{alert}</li>)}</ul>{!arena.activeFaultAlerts.length && <p className="no-corrections">No alerts yet.</p>}
       <p className="prototype-note">{arena.state.repCount ? `${arena.state.formAccuracyPct.toFixed(0)}% form accuracy across completed reps` : 'No completed reps yet. Form accuracy is available after your first rep.'}</p>
-</section></div></div>
+</section></div><div className="arena-controls"><section className="glass exercise-settings"><div className="exercise-heading"><h3>Exercise</h3><label className="visually-hidden" htmlFor="arena-exercise">Exercise</label><select id="arena-exercise" value={arena.state.exerciseId} onChange={event => selectArenaExercise(event.target.value as ResistanceExerciseId)}>{catalog.exercises.filter(exercise => exercise.kind === 'RESISTANCE').map(exercise => <option key={exercise.id} value={exercise.id}>{exercise.name}</option>)}</select></div><p>Select a movement to coach</p>
+      <div className="exercise-choices" role="radiogroup" aria-label="Quick exercise selection">{catalog.exercises.filter(exercise => exercise.kind === 'RESISTANCE').map(exercise => <label key={exercise.id} className="exercise-choice"><input type="radio" name="arena-exercise-choice" value={exercise.id} checked={arena.state.exerciseId === exercise.id} onChange={() => selectArenaExercise(exercise.id)} /><span>{exercise.name}</span></label>)}</div>
+      <p className="exercise-target">Configured target angle: {arenaExercise.kind === 'RESISTANCE' ? arenaExercise.targetAngleDeg : '—'}°</p>
+      <label htmlFor="ared-load">ARED load (kg)</label><input id="ared-load" type="number" min="0" step="1" disabled={!arena.canConfigureLoad} value={loadKg} onChange={event => { const value = Number(event.target.value); if (Number.isFinite(value) && value >= 0) setLoadKg(value); }} />
+</section>{!(arena.mode === 'LIVE' && ['STARTING', 'READY', 'RUNNING', 'PAUSED'].includes(arena.sessionStatus)) && arenaExercise.kind === 'RESISTANCE' && <ValidRepGuide exerciseId={arenaExercise.id} animate={navigation.activePage === 'arena'} />}</div></div>
       {summary && <p aria-label="Completed workout summary">Session complete: {summary.repCount} reps; {summary.faultedRepCount} flagged; {Math.round(summary.formAccuracyPct)}% form accuracy.</p>}
       <details className="cardio-disclosure"><summary>Log a cardio session</summary>      <form className="cardio-form" onSubmit={event => {
         event.preventDefault(); const distance = Number(cardioDistance);
@@ -206,7 +206,7 @@ function MissionApp() {
       <JourneySection journey={journey} routes={catalog.routes} missionDay={dashboard.missionDay} durationDays={dashboard.missionDurationDays} />
     </section>
     <section className="mission-section medical-section" data-screen="analytics" data-active={navigation.activePage === 'analytics'} aria-labelledby="medical-heading">
-      <p className="eyebrow">Flight Surgeon View</p>
+      
       <h2 className="page-title" id="medical-heading">Medical Telemetry</h2>
       <p className="section-subtitle">Retention scores, training volume and movement symmetry. Built from your local workout history.</p>
       <div className="export-actions">      <button onClick={() => medical.exportFlightSurgeonReport('json')}>Export Flight Surgeon JSON</button>{' '}
@@ -225,7 +225,7 @@ function MissionApp() {
       <section className="glass correction-summary"><h3>Recorded correction flags</h3><ul aria-label="Fault counts">{Object.entries(medical.faultCounts).map(([fault, count]) => <li key={fault}><span>{faultAlerts[fault as keyof typeof faultAlerts] ?? fault}</span><strong>{count}</strong></li>)}</ul></section>
     </section>
     <section className="mission-section history-section" data-screen="logs" data-active={navigation.activePage === 'logs'} aria-labelledby="history-heading">
-      <p className="eyebrow">Session Archive</p>
+      
       <h2 className="page-title" id="history-heading">Workout Logs &amp; History</h2>
       <p className="section-subtitle">{history.totalSessions} matching sessions · Select Details to inspect a workout or replay a flagged rep.</p>
       <p className="status-legend">Good / Review / Flagged (GREEN / YELLOW / RED) indicate prototype form status, not medical clearance.</p>
@@ -273,7 +273,7 @@ function MissionApp() {
       </section></aside></div>
     </section>
     <section className="mission-section settings-section" data-screen="settings" data-view={navigation.activePage} data-active={navigation.activePage === 'settings' || navigation.activePage === 'profile'} aria-labelledby={navigation.activePage === 'profile' ? 'profile-heading' : 'settings-heading'}>
-      <p className="eyebrow">{navigation.activePage === 'profile' ? 'Crew Member' : 'Configuration'}</p>
+      
       <h2 className="page-title settings-only" id="settings-heading">Profile &amp; Mission Settings</h2>
       <h2 className="page-title profile-only" id="profile-heading">Astronaut Profile</h2>
       <p className="section-subtitle">{navigation.activePage === 'profile' ? 'Your personal details, health metrics and Earth baselines' : 'Gravity environment, routine behaviour and onboard data'}</p>
@@ -324,7 +324,7 @@ function MissionApp() {
       </div>
     </section>
     <section className="mission-section replay-section" data-screen="arena" data-active={navigation.activePage === 'arena'} aria-labelledby="replay-heading">
-      <p className="eyebrow">MOVEMENT REVIEW</p>
+      
       <h2 id="replay-heading">Kinematic Snapshot Replay</h2>
       <ul aria-label="Flagged reps">{arena.state.snapshots.map(snapshot => <li key={snapshot.repNumber}>
         <button onClick={() => setSelectedSnapshot(snapshot)}>Replay rep {snapshot.repNumber}</button>
@@ -333,7 +333,7 @@ function MissionApp() {
       <SnapshotDiagnostic snapshot={selectedSnapshot} label="Current snapshot diagnostic" />
     </section>
     <section className="mission-section sources-section" data-screen="sources" data-active={navigation.activePage === 'sources'} aria-labelledby="science-sources-heading">
-      <p className="eyebrow">RESEARCH &amp; REFERENCES</p>
+      
       <h2 id="science-sources-heading">NASA Data &amp; Space Agency Partner Sources</h2>
       <p>NASA resources inform the exercise problem and catalog geography. Research references and planned data integrations are identified below.</p>
       <p>CSA, ESA, and JAXA are listed among the <a href="https://www.spaceappschallenge.org/blog/explore-the-next-frontier-at-the-2026-nasa-space-apps-challenge/">2026 NASA Space Apps Space Agency Partners</a>.</p>
