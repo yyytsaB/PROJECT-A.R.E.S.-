@@ -2,10 +2,28 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, test } from 'vitest';
 import { createSafeStorage } from '../adapters/telemetryStorageAdapter';
-import { MissionTelemetryProvider, useMissionTelemetry, useMissionProfile } from './useMissionTelemetry';
+import { MissionTelemetryProvider, useDashboardSummary, useMissionTelemetry, useMissionProfile } from './useMissionTelemetry';
 import type { CompletedWorkoutInput } from '../core/types';
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+
+test('dashboard progress follows the saved mission duration and current-day completion without a fixed demo timeline', async () => {
+  const host = document.createElement('div'); document.body.append(host);
+  const root = createRoot(host);
+  let mission!: ReturnType<typeof useMissionTelemetry>, dashboard!: ReturnType<typeof useDashboardSummary>;
+  function Harness() { mission = useMissionTelemetry(); dashboard = useDashboardSummary(); return null; }
+  try {
+    await act(() => root.render(<MissionTelemetryProvider storage={createSafeStorage()} now={() => '2026-11-15T12:00:00.000Z'}><Harness /></MissionTelemetryProvider>));
+    await act(() => { mission.clearLocalCache(); mission.updateProfile({ missionDurationDays: 120 }); });
+    await act(() => mission.saveWorkout({ id: 'mission-day-one', exerciseId: 'SQUAT', completedAtIso: '2026-11-06T12:00:00.000Z',
+      durationSec: 60, sets: 1, reps: 10, loadKg: 40, cardioDistanceKm: 0, formAccuracyPct: 100, symmetryScorePct: 100, snapshots: [] }));
+    expect(dashboard).toMatchObject({ missionDay: 10, missionDurationDays: 120, missionProgressPct: 10 / 120 * 100, completedExerciseCount: 0 });
+    await act(() => mission.setScheduleCompletion('SQUAT', true));
+    expect(dashboard).toMatchObject({ completedExerciseCount: 1 });
+    await act(() => mission.updateProfile({ missionDurationDays: 5 }));
+    expect(dashboard).toMatchObject({ missionDay: 10, missionDurationDays: 5, missionProgressPct: 100 });
+  } finally { await act(() => root.unmount()); host.remove(); }
+});
 
 test('invalid or overflowing workout totals show a recoverable error and preserve saved history', async () => {
   const host = document.createElement('div'); document.body.append(host);

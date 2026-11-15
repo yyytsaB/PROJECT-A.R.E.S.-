@@ -131,7 +131,10 @@ export function useDashboardSummary(quickLaunchExercise?: (id: ResistanceExercis
   const todaySchedule = loadMissionCatalog().exercises.map(exercise => ({ ...exercise, completed: completed[exercise.id] ?? false, prescription: personalizedRoutine.items.find(item => item.exerciseId === exercise.id) }));
   const resistanceSchedule = todaySchedule.filter(exercise => exercise.kind === 'RESISTANCE');
   const next = resistanceSchedule.find(exercise => !exercise.completed) ?? resistanceSchedule[0];
-  return { missionDay: Math.floor((Date.parse(mission.nowIso) - earliest) / 86400000) + 1, strengthRetentionPct: telemetry.strengthRetentionPct,
+  const missionDay = Math.floor((Date.parse(mission.nowIso) - earliest) / 86400000) + 1;
+  const missionDurationDays = withProfileDefaults(mission.state.profile).missionDurationDays;
+  return { missionDay, missionDurationDays, missionProgressPct: Math.min(100, missionDay / missionDurationDays * 100),
+    completedExerciseCount: todaySchedule.filter(exercise => exercise.completed).length, strengthRetentionPct: telemetry.strengthRetentionPct,
     gravityScenarioDescription: describeGravityScenario(telemetry.strengthRetentionPct, getGravityProfileById(mission.state.profile.gravityProfileId)),
     todaySchedule, personalizedRoutine, routineNotification: mission.state.routineNotification ?? '', setScheduleCompletion: mission.setScheduleCompletion, initiateTodaysSession: () => { if (next) quickLaunchExercise?.(next.id); },
     statusIndicators: { isOfflineFirst: true, cameraReady, commsLinkStatus: mission.state.commsStatus, queuedSyncCount: mission.state.syncQueue.length }, quickLaunchExercise };

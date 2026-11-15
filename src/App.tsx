@@ -41,7 +41,7 @@ function MissionApp() {
       durationSec, sets: 1, reps: state.repCount, loadKg, cardioDistanceKm: 0, formAccuracyPct: state.formAccuracyPct,
       symmetryScorePct: state.peakAnalysis?.symmetryScorePct ?? 100, snapshots: state.snapshots });
   } });
-  const dashboard = useDashboardSummary(id => { arena.selectExercise(id); setLoadKg(getExerciseById(id).defaultLoadKg); resetDisplay(); void arena.start('SIMULATED'); }, arena.mode === 'LIVE' && arena.isRunning);
+  const dashboard = useDashboardSummary(id => { arena.selectExercise(id); setLoadKg(getExerciseById(id).defaultLoadKg); resetDisplay(); navigation.navigateToPage('arena'); void arena.start('SIMULATED'); }, arena.mode === 'LIVE' && arena.isRunning);
   const journey = useExpeditionJourney();
   const medical = useMedicalTelemetry();
   const history = useWorkoutHistory();
@@ -61,31 +61,68 @@ function MissionApp() {
     <a className="skip-link" href="#main-content" onClick={() => mainRef.current?.focus()}>Skip to main content</a>
     <div className="mission-shell">
     <aside className="mission-sidebar">
-      <div className="mission-brand"><img src="/assets/ares-mark.svg" alt="A.R.E.S. mission emblem" width="44" height="44" /><div><strong>A.R.E.S.</strong><span>CREW PERFORMANCE SYSTEM</span></div></div>
-      <p className="nav-caption">MISSION WORKSPACE</p>
+      <div className="mission-brand"><img src="/assets/ares-mark.svg" alt="A.R.E.S. mission emblem" width="56" height="56" /><div><strong>A.R.E.S.</strong><span>Resistance &amp; Exercise</span></div></div>
+      <p className="nav-caption">MISSION CONTROL</p>
       <nav aria-label="Mission sections"><ul>{navigation.pages.map(page => <li key={page.id}>
         <a href={`#${page.headingId}`} aria-current={navigation.activePage === page.id ? 'page' : undefined} onClick={() => navigation.setActivePage(page.id)}><MissionIcon name={page.id} />{page.label}</a>
       </li>)}</ul></nav>
-      <div className="sidebar-footer"><span className="system-dot" /> LOCAL SYSTEM ACTIVE<p>Built for the journey.<br />Ready for the next horizon.</p><small>SPACE APPS 2026 · PROTOTYPE</small></div>
+      <div className="sidebar-footer"><a className="crew-profile" href="#settings-heading" onClick={() => navigation.setActivePage('settings')}><span className="crew-avatar" aria-hidden="true">{settings.astronautProfile.name.slice(0, 1).toUpperCase()}</span><span><strong>{settings.astronautProfile.name}</strong><small><span className="system-dot" />Local crew profile</small></span><MissionIcon name="settings" /></a><small>SPACE APPS 2026 · TEAM PROTOTYPE</small></div>
     </aside>
     <div className="mission-workspace">
-    <header className="mission-topbar"><span>MISSION OPERATIONS <span className="topbar-divider">/</span> CREW HEALTH &amp; PERFORMANCE</span><span className="connection-chip" data-open={settings.commsStatus === 'WINDOW_OPEN'}><span className="system-dot" />{settings.commsStatus === 'WINDOW_OPEN' ? 'COMMS WINDOW OPEN' : '24-MIN COMMS BLACKOUT'}</span></header>
+    <header className="mission-topbar">
+      <label className="section-jump"><MissionIcon name="dashboard" /><span className="visually-hidden">Jump to mission section</span><select aria-label="Jump to mission section" value={navigation.activePage} onChange={event => {
+        const page = navigation.pages.find(item => item.id === event.target.value);
+        if (page) navigation.navigateToPage(page.id);
+      }}>{navigation.pages.map(page => <option key={page.id} value={page.id}>{page.label}</option>)}</select></label>
+      <div className="topbar-actions"><span className="connection-chip" data-open={settings.commsStatus === 'WINDOW_OPEN'}><span className="system-dot" />{settings.commsStatus === 'WINDOW_OPEN' ? 'COMMS WINDOW OPEN' : '24-MIN COMMS BLACKOUT'}</span>
+      <a className="queue-shortcut" href="#settings-heading" onClick={() => navigation.setActivePage('settings')} aria-label={`Open sync settings, ${mission.state.syncQueue.length} summaries pending`}><MissionIcon name="sync" /><span>{mission.state.syncQueue.length}</span></a>
+      <a className="topbar-start" href="#arena-heading" onClick={() => navigation.setActivePage('arena')}><MissionIcon name="play" /><span>Start session</span></a></div>
+    </header>
     <main ref={mainRef} id="main-content" tabIndex={-1}>
-    <div className="page-heading"><p className="eyebrow">TRAIN WITH PURPOSE. GO FURTHER.</p>
+    <div className="page-heading"><div><p className="eyebrow">PROJECT A.R.E.S. · MISSION OPERATIONS</p>
     <h1>Project A.R.E.S. Command Center</h1>
-    <p>Your mission. Your movement. Every rep brings the next horizon closer.</p></div>
+    <p>Your physical readiness at a glance. Every session moves the mission forward.</p></div><span className="prototype-chip">TEAM PROTOTYPE</span></div>
     <section className="mission-section command-section" aria-labelledby="command-heading">
-      <div className="section-heading"><p className="eyebrow">01 / MISSION OVERVIEW</p>
+      <div className="section-heading"><p className="eyebrow">YOUR MISSION AT A GLANCE</p>
       <h2 id="command-heading">Command Center</h2>
       </div>
       <div className="dashboard-grid">
       <div className="readiness-card">
-      <span className="card-kicker">EARTH-BASELINE STRENGTH RETENTION</span>
+      <span className="card-kicker">Strength Retention Score</span>
       <p>Mission day: {dashboard.missionDay}. Offline-first storage active.</p>
       <ProgressRing value={medical.strengthRetentionPct}><span className="ring-kicker">Strength retention:</span><output aria-label="Strength retention">{medical.strengthRetentionPct.toFixed(1)}%</output><span className="ring-footnote">ROLLING 30 DAYS</span></ProgressRing>
       <p><output aria-label="Gravity scenario comparison">{dashboard.gravityScenarioDescription}</output></p>
       <p className="prototype-note">Team-defined prototype goals; not NASA standards or clinical clearance.</p>
       <p className="prototype-note">{prototypeNotice.metricInterpretation}</p>
+      </div>
+      <div className="mission-progress-card">
+        <span className="card-kicker">Mission Progress</span><p>{routineRules.missions[settings.astronautProfile.missionType].label} · {catalog.gravityProfiles.find(gravity => gravity.id === settings.gravityProfile)?.name}</p>
+        <p className="mission-day-value"><strong>{dashboard.missionDay}</strong><span>/ {dashboard.missionDurationDays} days</span></p>
+        <progress aria-label="Mission duration progress" max={100} value={dashboard.missionProgressPct} />
+        <p>{dashboard.missionProgressPct.toFixed(1)}% of planned duration · Mission day is derived from locally recorded history.</p>
+        <figure className="mission-route-preview"><RouteArtwork activeRoute={journey.activeRoute} routes={catalog.routes} preview /><figcaption>{journey.activeRoute.name} <span>{journey.cumulativeDistanceKm.toFixed(1)} km traversed</span></figcaption></figure>
+        <a className="text-action" href="#journey-heading" onClick={() => navigation.setActivePage('journey')}>Explore your expedition <span aria-hidden="true">↗</span></a>
+      </div></div>
+      <dl className="system-status-strip" aria-label="Mission system indicators">
+        <div><MissionIcon name="storage" /><dt>LOCAL STORAGE</dt><dd>Offline-first · {(mission.localCacheBytes / 1000).toFixed(1)} KB cached</dd></div>
+        <div><MissionIcon name="camera" /><dt>CAMERA FEED</dt><dd>{dashboard.statusIndicators.cameraReady ? 'Live tracking active' : arena.mode === 'SIMULATED' && arena.isRunning ? 'Simulator active · no camera' : arena.sessionStatus === 'PAUSED' ? 'Tracking paused' : arena.sessionStatus === 'STARTING' ? 'Starting tracking' : arena.sessionStatus === 'IDLE' ? 'Not started' : 'Inactive'}</dd></div>
+        <div><MissionIcon name="sync" /><dt>COMMS QUEUE</dt><dd>{mission.state.syncQueue.length} summaries pending · {settings.commsStatus === 'WINDOW_OPEN' ? 'Window open' : 'Blackout scenario'}</dd></div>
+      </dl>
+      <div className="command-lower-grid"><div className="schedule-card">
+      <div className="schedule-heading"><div><span className="card-kicker">YOUR NEXT OBJECTIVE</span>
+      <h3>Today’s exercise schedule</h3>
+      <p aria-label="Personalized routine label">{dashboard.personalizedRoutine.summaryLabel}</p></div>
+      <button className="primary-action" disabled={arena.sessionStatus === 'STARTING'} onClick={dashboard.initiateTodaysSession}>INITIATE TODAY'S SESSION</button></div>
+      <p className="prototype-note">{dashboard.personalizedRoutine.disclaimer}</p>
+      <p className="prototype-note">Prototype targets are for review; ARED load remains manually configurable in the Workout Arena.</p>
+      <p className="success-message" role="status" aria-label="Routine update notification">{dashboard.routineNotification}</p>
+      <p className="schedule-meta">{dashboard.completedExerciseCount} of {dashboard.todaySchedule.length} complete · Sample schedule for the UTC mission day; times are demo settings.</p>
+      <ul className="daily-schedule" aria-label="Personalized daily schedule">{dashboard.todaySchedule.map(exercise => <li key={exercise.id} data-completed={exercise.completed}>
+        <time dateTime={exercise.scheduledTime}>{exercise.scheduledTime}</time>{' '}
+        <label><input type="checkbox" aria-label={`Mark ${exercise.name} complete`} checked={exercise.completed} onChange={e => dashboard.setScheduleCompletion(exercise.id, e.target.checked)} />{exercise.name}</label>{' '}
+        {exercise.kind === 'RESISTANCE' && <button onClick={() => dashboard.quickLaunchExercise?.(exercise.id)}>Quick launch {exercise.name}</button>}
+        {exercise.prescription && <p><RoutinePrescription item={exercise.prescription} /> — {exercise.prescription.rationale}</p>}
+      </li>)}</ul>
       </div>
       <div className="comms-card">
       <span className="card-kicker">COMMUNICATIONS &amp; LOCAL STORAGE</span>
@@ -95,22 +132,9 @@ function MissionApp() {
       <p>Saved sessions: <output aria-label="Saved session count">{mission.state.sessions.length}</output>. Acknowledged: <output aria-label="Acknowledged session count">{mission.state.acknowledgements.length}</output></p>
       <p role="alert" aria-label="Workout save error">{mission.workoutError}</p>
       <p className="prototype-note">{prototypeNotice.dataNotice}</p>
-      <figure className="mission-route-preview"><RouteArtwork activeRoute={journey.activeRoute} routes={catalog.routes} preview /><figcaption>{journey.activeRoute.name} <span>{journey.cumulativeDistanceKm.toFixed(1)} km traversed</span></figcaption></figure>
+      <div className="local-data-note"><MissionIcon name="storage" /><p>Workouts save to this browser first. Comms acknowledgements are a local demo unless a sync backend is configured.</p></div>
+      <a className="text-action" href="#settings-heading" onClick={() => navigation.setActivePage('settings')}>Manage data &amp; sync <span aria-hidden="true">↗</span></a>
       </div></div>
-      <div className="schedule-heading"><div><span className="card-kicker">YOUR NEXT OBJECTIVE</span>
-      <h3>Today’s exercise schedule</h3>
-      <p aria-label="Personalized routine label">{dashboard.personalizedRoutine.summaryLabel}</p></div>
-      <button className="primary-action" disabled={arena.sessionStatus === 'STARTING'} onClick={dashboard.initiateTodaysSession}>INITIATE TODAY'S SESSION</button></div>
-      <p className="prototype-note">{dashboard.personalizedRoutine.disclaimer}</p>
-      <p className="prototype-note">Prototype targets are for review; ARED load remains manually configurable in the Workout Arena.</p>
-      <p className="success-message" role="status" aria-label="Routine update notification">{dashboard.routineNotification}</p>
-      <p>Sample schedule for the UTC mission day; times are demo settings.</p>
-      <ul className="daily-schedule" aria-label="Personalized daily schedule">{dashboard.todaySchedule.map(exercise => <li key={exercise.id} data-completed={exercise.completed}>
-        <time dateTime={exercise.scheduledTime}>{exercise.scheduledTime}</time>{' '}
-        <label><input type="checkbox" aria-label={`Mark ${exercise.name} complete`} checked={exercise.completed} onChange={e => dashboard.setScheduleCompletion(exercise.id, e.target.checked)} />{exercise.name}</label>{' '}
-        {exercise.kind === 'RESISTANCE' && <button onClick={() => dashboard.quickLaunchExercise?.(exercise.id)}>Quick launch {exercise.name}</button>}
-        {exercise.prescription && <p><RoutinePrescription item={exercise.prescription} /> — {exercise.prescription.rationale}</p>}
-      </li>)}</ul>
       <form className="cardio-form" onSubmit={event => {
         event.preventDefault(); const distance = Number(cardioDistance);
         if (!Number.isFinite(distance) || distance <= 0) return;
@@ -140,6 +164,8 @@ function MissionApp() {
     <section className="mission-section arena-section" aria-labelledby="arena-heading">
       <p className="eyebrow">02 / MOVEMENT INTELLIGENCE</p>
       <h2 id="arena-heading">AI Workout Arena</h2>
+      <p className="section-subtitle">Real-time pose coaching. Camera-free simulation when you need it.</p>
+      <div className="arena-layout"><div className="arena-controls">
       <fieldset className="cue-controls"><legend>Audio/Visual Cues</legend>
         <label><input type="checkbox" aria-label="Voice Coach" checked={arena.voiceEnabled} onChange={e => arena.setVoiceEnabled(e.target.checked)} /> Voice Coach</label>{' '}
         <label><input type="checkbox" aria-label="Visual overlay" checked={arena.visualOverlayEnabled} onChange={e => arena.setVisualOverlayEnabled(e.target.checked)} /> Visual overlay</label>
@@ -173,16 +199,22 @@ function MissionApp() {
       {arena.errorMessage && <p role="alert">{arena.errorMessage}</p>}
       <ul aria-label="Form alerts" aria-live="polite">{arena.activeFaultAlerts.map(alert => <li key={alert}>{alert}</li>)}</ul>
       <p className="success-message" aria-label="Form feedback" role="status">{arena.formFeedback}</p>
+      <p className="prototype-note">{arena.state.repCount ? `${arena.state.formAccuracyPct.toFixed(0)}% form accuracy across completed reps` : 'No completed reps yet. Form accuracy is available after your first rep.'}</p>
+      </div>
       <div className="tracking-stage">
+      <div className="tracking-label"><span className="system-dot" />{arena.mode === 'SIMULATED' ? 'SIMULATED POSE FEED' : arena.mode === 'LIVE' ? 'CAMERA POSE FEED' : 'POSE TRACKING STANDBY'}<span>33 landmarks · processed locally</span></div>
       <video ref={arena.videoRef} aria-label="Live camera preview" width={640} height={480} muted playsInline
         hidden={arena.mode !== 'LIVE' || !['STARTING', 'RUNNING', 'PAUSED'].includes(arena.sessionStatus)} />
       <canvas ref={arena.canvasRef} aria-label="Live skeletal pose" width={640} height={480} hidden={!arena.visualOverlayEnabled}>Live pose wireframe and joint angle display.</canvas>
+      {arena.sessionStatus === 'IDLE' && <div className="tracking-placeholder"><MissionIcon name="camera" /><strong>Your next session starts here</strong><p>Start your webcam, or choose the simulator.<br />No webcam video is recorded.</p></div>}
+      </div>
       </div>
       {summary && <p aria-label="Completed workout summary">Session complete: {summary.repCount} reps; {summary.faultedRepCount} flagged; {Math.round(summary.formAccuracyPct)}% form accuracy.</p>}
     </section>
     <section className="mission-section journey-section" aria-labelledby="journey-heading">
       <p className="eyebrow">03 / EXPEDITION PROGRESS</p>
       <h2 id="journey-heading">Expedition Journey</h2>
+      <p className="section-subtitle">Every logged kilometre and form-qualified rep advances your virtual expedition.</p>
       <figure className="route-illustration"><RouteArtwork activeRoute={journey.activeRoute} routes={catalog.routes} /><figcaption>{journey.activeRoute.name} · {journey.activeRoute.totalDistanceKm.toLocaleString()} km game expedition · Schematic illustration</figcaption></figure>
       <label htmlFor="active-route">Active route</label>{' '}<select id="active-route" value={journey.activeRoute.id} onChange={e => journey.selectRoute(e.target.value as PlanetaryRouteId)}>{catalog.routes.map(route => <option key={route.id} value={route.id}>{route.name}</option>)}</select>
       <p>Distance: <output aria-label="Expedition distance">{journey.cumulativeDistanceKm.toFixed(2)} km</output>. Progress: {journey.progressPct.toFixed(3)}%</p>
@@ -195,6 +227,7 @@ function MissionApp() {
     <section className="mission-section medical-section" aria-labelledby="medical-heading">
       <p className="eyebrow">04 / LONGITUDINAL PERFORMANCE</p>
       <h2 id="medical-heading">Medical Telemetry</h2>
+      <p className="section-subtitle">Retention scores, training volume and movement symmetry. Built from your local workout history.</p>
       <p className="prototype-note">{prototypeNotice.disclaimer}</p>
       <p className="prototype-note">{prototypeNotice.metricInterpretation}</p>
       <label htmlFor="telemetry-date-window">Telemetry date window</label>{' '}<select id="telemetry-date-window" value={medical.dateWindowDays} onChange={e => medical.setDateWindowDays(Number(e.target.value) as 7 | 14 | 30)}><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option></select>
@@ -211,10 +244,13 @@ function MissionApp() {
     <section className="mission-section history-section" aria-labelledby="history-heading">
       <p className="eyebrow">05 / SESSION ARCHIVE</p>
       <h2 id="history-heading">Workout Logs &amp; History</h2>
+      <p className="section-subtitle">{history.totalSessions} matching sessions · Select Details to inspect a workout or replay a flagged rep.</p>
+      <div className="history-filters">
       <label htmlFor="workout-search">Search workouts</label>{' '}<input id="workout-search" type="search" value={history.searchQuery} onChange={e => history.setSearchQuery(e.target.value)} />{' '}
       <label htmlFor="history-date-range">Workout date range</label>{' '}<select id="history-date-range" value={history.dateRange} onChange={e => history.setDateRange(e.target.value as WorkoutDateRange)}>
         <option value="ALL">All dates</option><option value="LAST_7_DAYS">Last 7 days</option><option value="LAST_14_DAYS">Last 14 days</option><option value="LAST_30_DAYS">Last 30 days</option>
       </select>
+      </div>
       <p>GREEN / YELLOW / RED indicate prototype form status, not medical clearance.</p>
       <div className="table-scroll" tabIndex={0} role="region" aria-label="Workout history table scroll area"><table aria-label="Workout history">
         <thead><tr><th>Completed (UTC)</th><th>Exercise</th><th>Duration (MM:SS)</th><th>Status</th><th>Reps</th><th>Volume (kg)</th><th>Form (%)</th><th>Sync</th><th>Details / flagged reps</th></tr></thead>
@@ -244,11 +280,14 @@ function MissionApp() {
     <section className="mission-section settings-section" aria-labelledby="settings-heading">
       <p className="eyebrow">06 / CREW CONFIGURATION</p>
       <h2 id="settings-heading">Profile &amp; Mission Settings</h2>
+      <p className="section-subtitle">Your crew profile, gravity scenario, personalized routine and onboard data.</p>
+      <div className="profile-fields">
       <label htmlFor="body-weight">Body weight (kg)</label>{' '}<input id="body-weight" type="number" min="0.1" step="0.1" value={settings.profileFieldValue('bodyWeightKg')} aria-invalid={Boolean(settings.fieldErrors.bodyWeightKg)} aria-describedby="body-weight-error" onChange={e => settings.setProfileField('bodyWeightKg', e.target.value)} />
       <p id="body-weight-error" role={settings.fieldErrors.bodyWeightKg ? 'alert' : undefined}>{settings.fieldErrors.bodyWeightKg}</p>
       <label htmlFor="astronaut-name">Astronaut name</label>{' '}<input id="astronaut-name" value={settings.profileFieldValue('name')} aria-invalid={Boolean(settings.fieldErrors.name)} aria-describedby="astronaut-name-error" onChange={e => settings.setProfileField('name', e.target.value)} />
       <p id="astronaut-name-error" role={settings.fieldErrors.name ? 'alert' : undefined}>{settings.fieldErrors.name}</p>
       <label htmlFor="gravity-profile">Gravity profile</label>{' '}<select id="gravity-profile" value={settings.gravityProfile} onChange={e => settings.setGravityProfile(e.target.value as GravityProfileId)}>{catalog.gravityProfiles.map(g => <option key={g.id} value={g.id}>{g.name} ({g.gravityG}g)</option>)}</select>
+      </div>
       <section aria-labelledby="health-metrics-heading">
         <h3 id="health-metrics-heading">Update Health Metrics</h3>
         <HealthMetricFields prefix="settings" fieldValue={settings.profileFieldValue} setField={settings.setProfileField} errors={settings.fieldErrors} bmi={settings.bmi} includeWeight={false} />

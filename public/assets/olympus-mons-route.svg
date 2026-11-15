@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" fill="none">
   <defs><radialGradient id="ground"><stop stop-color="#4b3834"/><stop offset="1" stop-color="#151e2c"/></radialGradient><pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M60 0H0v60" stroke="#4c5260" stroke-width=".5"/></pattern></defs>
-  <path fill="url(#ground)" d="M0 0h900v360H0z"/><path fill="url(#grid)" d="M0 0h900v360H0z"/>
+  <path fill="url(#ground)" opacity=".35" d="M0 0h900v360H0z"/><path fill="url(#grid)" d="M0 0h900v360H0z"/>
   <g stroke="#9f7860" opacity=".6"><ellipse cx="485" cy="180" rx="286" ry="150"/><ellipse cx="485" cy="180" rx="250" ry="130"/><ellipse cx="485" cy="180" rx="214" ry="110"/><ellipse cx="485" cy="180" rx="178" ry="90"/><ellipse cx="485" cy="180" rx="142" ry="70"/><ellipse cx="485" cy="180" rx="105" ry="50"/><ellipse cx="485" cy="180" rx="67" ry="30"/><ellipse cx="485" cy="180" rx="28" ry="13"/></g>
   <path d="M170 266c98 32 112-30 178-29s19-94 85-80 35 34 61 20" stroke="#f6bc69" stroke-width="2.5" stroke-dasharray="6 7"/>
   <g fill="#172633" stroke="#f6bc69" stroke-width="3"><circle cx="170" cy="266" r="7"/><circle cx="348" cy="237" r="6"/><circle cx="433" cy="157" r="6"/><circle cx="494" cy="177" r="7"/></g>
-  <g fill="#c1c9d1" font-family="monospace" font-size="11" letter-spacing="2"><text x="28" y="34">OM / VIRTUAL EXPEDITION</text><text x="28" y="334">SCHEMATIC · NOT TO SCALE</text><text x="126" y="294">BASE</text><text x="510" y="181">CALDERA</text></g>
+  <g fill="#fff1db" font-family="monospace" font-size="11" letter-spacing="2"><text x="28" y="34">OM / VIRTUAL EXPEDITION</text><text x="28" y="334">SCHEMATIC · NOT TO SCALE</text><text x="126" y="294">BASE</text><text x="510" y="181">CALDERA</text></g>
 </svg>

@@ -1,4 +1,4 @@
-@layer reset, base, layout, components, responsive, print;
+@layer reset, base, layout, components, responsive, figma, print;
 
 @layer reset {
   *, *::before, *::after { box-sizing: border-box; }
