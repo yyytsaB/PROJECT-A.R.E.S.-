@@ -36,7 +36,7 @@ export function MissionChrome({ navigation, name, pendingCount, commsOpen, notif
   const navigationList = <nav aria-label="Mission sections"><p className="nav-caption">Mission control</p><ul>{navigation.pages.map((page, index) => <li key={page.id} className={index > 5 ? 'secondary-nav-item' : undefined}>
     <a href={`#/${page.id}`} aria-label={page.label} aria-current={navigation.activePage === page.id ? 'page' : undefined} onClick={event => { event.preventDefault(); go(page.id); }}><MissionIcon name={page.id} /><span>{page.id === 'arena' ? 'Arena' : page.label}</span></a>
   </li>)}</ul></nav>;
-  const crew = <button className="crew-profile" onClick={() => go('profile')} aria-label={`View profile for ${name}`}><span className="crew-avatar" aria-hidden="true">{initials}</span><span><strong>{name}</strong><small><span className="system-dot" />On mission · local profile</small></span><MissionIcon name="chevron" /></button>;
+  const crew = <button className="crew-profile" onClick={() => go('profile')} aria-label={`View profile for ${name}`}><span className="crew-avatar" aria-hidden="true">{initials}</span><span><strong>{name}</strong><small><span className="system-dot" />On mission · local</small></span><MissionIcon name="chevron" /></button>;
   return <>
     <div className="mission-ambient" aria-hidden="true"><div><img src="/assets/mission-ambient.png" alt="Decorative mission light overlay" /><img src="/assets/mission-ambient.png" alt="Decorative mission light overlay" /></div></div>
     <div className="mission-shell" data-route={navigation.activePage} style={{ '--presentation-scale': presentationScale } as CSSProperties}>

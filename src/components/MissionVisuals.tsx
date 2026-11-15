@@ -53,18 +53,29 @@ export function ProgressRing({ value, children }: { value: number; children: Rea
   </div>;
 }
 
-export function TelemetryChart({ values, dates = [], kind }: { values: readonly number[]; dates?: readonly string[]; kind: 'retention' | 'volume' }) {
-  const max = Math.max(kind === 'retention' ? 100 : 1, ...values);
-  const left = 62, right = 980, top = 22, bottom = 244;
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const shortDate = (iso: string) => `${MONTHS[Number(iso.slice(5, 7)) - 1] ?? iso.slice(5, 7)} ${Number(iso.slice(8, 10))}`;
+/** Round an axis maximum up to 1, 2 or 5 × 10ⁿ so tick labels stay readable. */
+const niceCeil = (value: number) => { const step = 10 ** Math.floor(Math.log10(Math.max(1, value))); return [1, 2, 5, 10].map(m => m * step).find(m => m >= value) ?? value; };
+
+export function TelemetryChart({ values, dates = [], kind, goalPct }: { values: readonly number[]; dates?: readonly string[]; kind: 'retention' | 'volume'; goalPct?: number }) {
+  const width = kind === 'volume' ? 600 : 1000;
+  const reference = kind === 'retention' ? [...values, goalPct ?? 100] : values;
+  const min = kind === 'retention' ? Math.max(0, Math.floor((Math.min(100, ...reference) - 5) / 5) * 5) : 0;
+  const max = kind === 'retention' ? Math.max(100, Math.ceil(Math.max(...values, 0) / 5) * 5) : niceCeil(Math.max(1, ...values));
+  const left = kind === 'volume' ? 58 : 62, right = width - 16, top = 22, bottom = 244;
   const x = (index: number) => kind === 'volume' ? left + (index + .5) / Math.max(1, values.length) * (right - left) : left + index / Math.max(1, values.length - 1) * (right - left);
-  const y = (value: number) => bottom - value / max * (bottom - top);
+  const y = (value: number) => bottom - (Math.max(min, value) - min) / Math.max(1, max - min) * (bottom - top);
   const points = values.map((value, index) => `${x(index)},${y(value)}`).join(' ');
-  const ticks = [0, .25, .5, .75, 1];
-  return <svg className={`telemetry-chart ${kind}`} viewBox="0 0 1000 300" aria-hidden="true" focusable="false">
+  const tickStep = kind === 'retention' ? (max - min > 40 ? 20 : 5) : max / 4;
+  const ticks = Array.from({ length: Math.floor((max - min) / tickStep) + 1 }, (_, index) => min + index * tickStep);
+  const slot = (right - left) / Math.max(1, values.length);
+  return <svg className={`telemetry-chart ${kind}`} viewBox={`0 0 ${width} 300`} aria-hidden="true" focusable="false">
     <defs><linearGradient id={`telemetry-fill-${kind}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f6a623" stopOpacity=".35" /><stop offset="100%" stopColor="#f6a623" stopOpacity="0" /></linearGradient></defs>
-    {ticks.map(tick => <g key={tick}><line x1={left} x2={right} y1={y(tick * max)} y2={y(tick * max)} className="chart-gridline" /><text x={left - 10} y={y(tick * max) + 4} textAnchor="end">{kind === 'retention' ? `${tick * 100}%` : Math.round(tick * max).toLocaleString()}</text></g>)}
-    {kind === 'retention' ? <><polygon points={`${left},${bottom} ${points} ${right},${bottom}`} fill={`url(#telemetry-fill-${kind})`} /><polyline points={points} className="chart-line" /></> : values.map((value, index) => <rect key={index} x={left + index * (right - left) / Math.max(1, values.length)} y={y(value)} width={Math.max(1, (right - left) / Math.max(1, values.length) - 6)} height={bottom - y(value)} rx="3" className="chart-bar" />)}
-    {dates.map((date, index) => index % Math.max(1, Math.ceil(dates.length / 6)) === 0 || index === dates.length - 1 ? <text key={date} x={x(index)} y="267" textAnchor={index === 0 ? 'start' : index === dates.length - 1 ? 'end' : 'middle'}>{date.slice(5)}</text> : null)}
-    <text x="520" y="292" textAnchor="middle">Date (UTC)</text><text transform="translate(16 135) rotate(-90)" textAnchor="middle">{kind === 'retention' ? 'Retention %' : 'Volume kg'}</text>
+    {ticks.map(tick => <g key={tick}><line x1={left} x2={right} y1={y(tick)} y2={y(tick)} className="chart-gridline" /><text x={left - 10} y={y(tick) + 4} textAnchor="end">{kind === 'retention' ? `${Math.round(tick)}%` : tick >= 1000 ? `${(tick / 1000).toLocaleString()}k` : Math.round(tick).toLocaleString()}</text></g>)}
+    {kind === 'retention' && <><line x1={left} x2={right} y1={y(100)} y2={y(100)} className="chart-reference baseline" />{goalPct !== undefined && <line x1={left} x2={right} y1={y(goalPct)} y2={y(goalPct)} className="chart-reference goal" />}</>}
+    {kind === 'retention' ? <><polygon points={`${left},${bottom} ${points} ${right},${bottom}`} fill={`url(#telemetry-fill-${kind})`} /><polyline points={points} className="chart-line" /></> : values.map((value, index) => <rect key={index} x={left + index * slot + slot * .18} y={y(value)} width={Math.max(1, slot * .64)} height={bottom - y(value)} rx="3" className="chart-bar" />)}
+    {dates.map((date, index) => index % Math.max(1, Math.ceil(dates.length / (kind === 'volume' ? 5 : 7))) === 0 || index === dates.length - 1 ? <text key={date} x={x(index)} y="267" textAnchor={index === 0 ? 'start' : index === dates.length - 1 ? 'end' : 'middle'}>{shortDate(date)}</text> : null)}
+    <text x={(left + right) / 2} y="292" textAnchor="middle">Date (UTC)</text><text transform="translate(16 135) rotate(-90)" textAnchor="middle">{kind === 'retention' ? 'Retention %' : 'Volume kg'}</text>
   </svg>;
 }

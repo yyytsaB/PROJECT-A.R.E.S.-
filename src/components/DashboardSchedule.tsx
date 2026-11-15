@@ -3,7 +3,7 @@ import type { useDashboardSummary } from '../hooks/useMissionTelemetry';
 import { RoutinePrescription } from '../OnboardingSection';
 import weeklyTemplate from '../content/weeklyTemplate.json';
 
-function ReferenceIcon({ name }: { name: 'calendar-days' | 'sparkles' | 'dumbbell' | 'footprints' | 'bike' | 'info' }) {
+function ReferenceIcon({ name }: { name: 'calendar-days' | 'sparkles' | 'dumbbell' | 'footprints' | 'bike' | 'waves' | 'info' }) {
   return <img className="reference-icon" src={`/assets/icons/${name}.svg`} alt={`${name.replace('-', ' ')} icon`} aria-hidden="true" width="20" height="20" />;
 }
 
@@ -19,7 +19,7 @@ export function DashboardSchedule({ dashboard }: { dashboard: ReturnType<typeof 
     </div><button className="view-week" onClick={() => setWeekOpen(true)}><ReferenceIcon name="calendar-days" />View week</button></div>
     <ul className="daily-schedule" aria-label="Personalized daily schedule">{dashboard.todaySchedule.map(exercise => <li key={exercise.id} data-completed={exercise.completed}>
       <label><input type="checkbox" aria-label={`Mark ${exercise.name} complete`} checked={exercise.completed} onChange={event => dashboard.setScheduleCompletion(exercise.id, event.target.checked)} /><span className="visually-hidden">{exercise.name}</span></label>
-      <span className="exercise-icon" aria-hidden="true">{exercise.kind === 'RESISTANCE' ? <ReferenceIcon name="dumbbell" /> : exercise.id === 'TREADMILL' ? <ReferenceIcon name="footprints" /> : exercise.id === 'CYCLE_ERGOMETER' ? <ReferenceIcon name="bike" /> : 'R'}</span>
+      <span className="exercise-icon" aria-hidden="true">{exercise.kind === 'RESISTANCE' ? <ReferenceIcon name="dumbbell" /> : exercise.id === 'TREADMILL' ? <ReferenceIcon name="footprints" /> : exercise.id === 'CYCLE_ERGOMETER' ? <ReferenceIcon name="bike" /> : <ReferenceIcon name="waves" />}</span>
       <div className="schedule-copy">{exercise.kind === 'RESISTANCE' ? <button className="exercise-quick-launch" aria-label={`Quick launch ${exercise.name}`} onClick={() => dashboard.quickLaunchExercise?.(exercise.id)}><span>{exercise.name}</span>{exercise.prescription && <small><RoutinePrescription item={exercise.prescription} /></small>}</button> : <strong>{exercise.name}</strong>}
         {exercise.kind !== 'RESISTANCE' && exercise.prescription && <p><RoutinePrescription item={exercise.prescription} /></p>}
       </div>

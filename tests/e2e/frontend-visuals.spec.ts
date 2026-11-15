@@ -8,7 +8,7 @@ test('print output keeps routine notifications, schedule labels and chart captio
   await page.emulateMedia({ media: 'print' });
   const samples = [page.getByLabel('Routine update notification', { exact: true }),
     page.getByRole('list', { name: 'Personalized daily schedule', exact: true }).getByRole('listitem').first().locator('label'),
-    page.getByText('STRENGTH RETENTION · %', { exact: true }), page.getByText('Date (UTC)', { exact: true }).first()];
+    page.getByText('30-Day Strength Retention · %', { exact: true }), page.getByText('Date (UTC)', { exact: true }).first()];
   for (const sample of samples) {
     await expect(sample).toBeVisible();
     const contrast = await sample.evaluate(element => {
