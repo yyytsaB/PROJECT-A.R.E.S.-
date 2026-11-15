@@ -13,11 +13,11 @@ export function TeamSection({ active }: { active: boolean }) {
   return <section className="mission-section team-section" data-screen="team" data-active={active} aria-labelledby="team-heading">
     <p className="eyebrow">THE CREW BEHIND ARES</p>
     <h2 className="page-title" id="team-heading">Meet the Team</h2>
-    <p className="team-intro">{team.teamName} built this prototype for the NASA Space Apps Challenge.</p>
+    <p className="team-intro">We are {team.teamName}. We built ARES for the NASA Space Apps Challenge.</p>
     <div className="team-layout">
       <figure className="team-photo">
         <img src={team.photo.src} alt={team.photo.alt} width={team.photo.width} height={team.photo.height} decoding="async" />
-        <figcaption>{team.teamName}</figcaption>
+        <figcaption>Team {team.teamName}</figcaption>
       </figure>
       <div className="team-side">
         <section className="team-card" aria-labelledby="team-members-heading">

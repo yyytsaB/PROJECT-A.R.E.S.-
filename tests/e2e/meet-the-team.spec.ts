@@ -11,7 +11,7 @@ for (const width of [1440, 768, 375]) {
     await expect(page).toHaveTitle('Meet the Team — ARES');
     const section = page.getByRole('region', { name: 'Meet the Team', exact: true });
     await expect(section.getByRole('heading', { level: 2, name: 'Meet the Team' })).toBeVisible();
-    const photo = section.getByRole('img', { name: 'Group photo of the six ARES team members standing together in a classroom' });
+    const photo = section.getByRole('img', { name: 'Group photo of the six Space Sheeps team members standing together in a classroom' });
     await expect(photo).toBeVisible();
     await expect.poll(() => photo.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth)).toBeGreaterThan(0);
     const roster = section.getByRole('region', { name: 'Team members', exact: true }).getByRole('listitem');
@@ -21,7 +21,11 @@ for (const width of [1440, 768, 375]) {
     await expect(deck).toHaveAttribute('href', 'https://www.figma.com/make/Ztf5NQe7wMI5HFzqa6cWUO/PROJECT-ARES?p=f&fullscreen=1');
     await expect(deck).toHaveAttribute('target', '_blank');
     await expect(deck).toHaveAttribute('rel', /noopener/);
-    await expect(section.getByRole('note')).toContainText('being edited');
+    await expect(section).toContainText('We are Space Sheeps.');
+    const video = section.locator('video');
+    await expect(video).toHaveAttribute('aria-label', 'Space Sheeps 30-second team presentation');
+    await expect(video).toHaveAttribute('controls', '');
+    await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.readyState >= 1 ? element.duration : 0)).toBeGreaterThan(28);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await section.screenshot({ path: `test-results/meet-the-team-${width}.png` });
   });
