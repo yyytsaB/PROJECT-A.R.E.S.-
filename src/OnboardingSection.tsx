@@ -8,11 +8,12 @@ export function RoutinePrescription({ item }: { item: PersonalizedRoutineItem })
   return <span>{item.kind === 'RESISTANCE' ? `${item.targetSets}×${item.targetReps} @ ${item.recommendedLoadKg} kg` : `${item.targetCardioKm} km`}</span>;
 }
 
-export function OnboardingSection() {
+export function OnboardingSection({ onSkip }: { onSkip?: () => void }) {
   const onboarding = useMissionOnboarding(), catalog = loadMissionCatalog();
   return <section className="mission-section onboarding-section" aria-labelledby="onboarding-heading">
+    <div className="onboarding-layout"><aside className="onboarding-sidebar"><a href="#/dashboard" onClick={onSkip}><img src="/assets/ares-mark.svg" alt="A.R.E.S. mission emblem" width="72" height="72" /><strong>A.R.E.S.</strong></a><p className="eyebrow">YOUR MISSION STARTS HERE</p><h3>Built for the journey ahead.</h3><p>Personalize your exercise program for a new world.</p><ol>{['Your biometrics', 'Earth baselines', 'Mission parameters'].map((label, index) => <li key={label} data-active={onboarding.step === index + 1} data-complete={onboarding.step > index + 1}><span>{index + 1}</span>{label}</li>)}</ol><button onClick={onSkip}>Return to dashboard</button><small>SPACE APPS 2026 · TEAM PROTOTYPE</small></aside><div className="onboarding-content">
     <p className="eyebrow">PRE-FLIGHT / PERSONALIZE YOUR MISSION</p>
-    <h2 id="onboarding-heading">Mission Onboarding — Set Up Your Profile</h2>
+    <h2 className="page-title" id="onboarding-heading">Mission Onboarding — Set Up Your Profile</h2>
     <p>Rule-based prototype suggestions for review. Biometrics are recorded context; this flow provides no diagnosis or medical clearance.</p>
     <p className="onboarding-progress"><output aria-label="Onboarding progress">Step {onboarding.step} of 3</output></p>
     <div className="step-track" aria-hidden="true">{[1, 2, 3].map(step => <span key={step} data-active={step <= onboarding.step} />)}</div>
@@ -22,7 +23,7 @@ export function OnboardingSection() {
         <label htmlFor="onboarding-name">Onboarding astronaut name</label>{' '}<input id="onboarding-name" value={onboarding.fieldValue('name')} onChange={event => onboarding.setField('name', event.target.value)} aria-invalid={Boolean(onboarding.errors.name)} aria-describedby="onboarding-name-error" />
         <p id="onboarding-name-error" role={onboarding.errors.name ? 'alert' : undefined}>{onboarding.errors.name}</p>
         </div>
-        <HealthMetricFields prefix="onboarding" fieldValue={onboarding.fieldValue} setField={onboarding.setField} errors={onboarding.errors} bmi={onboarding.bmi} />
+        <div className="health-metrics-grid"><HealthMetricFields prefix="onboarding" fieldValue={onboarding.fieldValue} setField={onboarding.setField} errors={onboarding.errors} bmi={onboarding.bmi} /></div>
       </fieldset>}
       {onboarding.step === 2 && <fieldset><legend>Earth 1RM Baselines &amp; Physical Limitations</legend>
         {catalog.exercises.filter(exercise => exercise.kind === 'RESISTANCE').map(exercise => <div key={exercise.id}>
@@ -51,5 +52,6 @@ export function OnboardingSection() {
     </section>}
     <p>{onboarding.step > 1 && <button onClick={onboarding.previousStep}>Previous step</button>}{' '}{onboarding.step < 3 && <button onClick={onboarding.nextStep}>Next step</button>}</p>
     <p aria-label="Onboarding confirmation" role="status">{onboarding.confirmation}</p>
+    </div></div>
   </section>;
 }

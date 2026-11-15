@@ -33,7 +33,7 @@ The production browser suite starts `vite preview` against the existing `dist/` 
 - Build command: `npm run build`.
 - Published directory: `dist`.
 - Runtime: Node 22.12+ or Node 24. Netlify is configured for Node 22.
-- Framework: Vite; this prototype uses a single root page.
+- Framework: Vite; one HTML entry point serves separate hash-routed screens (for example `/#/logs`), without a routing rewrite.
 - Deploy the entire build, including `mediapipe/` and hashed `assets/` files.
 - Serve `.wasm` files as `application/wasm`. The model must return its binary file, not an HTML fallback page.
 - Keep the same origin for JS, model, and WASM assets. No runtime CDN or backend credentials are required.
@@ -46,7 +46,7 @@ After publishing, verify the real HTTPS URL in a clean browser, repeat all three
 ## Repository & recorded hosting target
 
 - **GitHub Repository (`origin`):** `https://github.com/yyytsaB/PROJECT-A.R.E.S.-Nasa-Space-Apps-.git`
-- **Recorded Vercel target:** `https://project-ares-nasa.vercel.app/`. Its current content could not be inspected during this audit. Verify the deployed commit and actual browser behavior before submission.
+- **Recorded Vercel target:** `https://project-ares-nasa.vercel.app/`. Main publishes automatically to this target. Check the Vercel commit status and actual HTTPS screen routes after each release; see `FIGMA_INTEGRATION.md` for the current frontend verification.
 
 Offline-first means a loaded app can continue local workflows after disconnecting. Local model/WASM assets remove CDN dependencies, but there is no service worker or guaranteed uncached offline start/reload. Voice Coach needs an installed local-service voice. The comms toggle is manual; it does not implement a 24-minute delay or NASA connectivity.
 

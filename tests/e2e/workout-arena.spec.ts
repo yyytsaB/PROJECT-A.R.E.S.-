@@ -4,7 +4,7 @@ test('completes simulated workouts, pauses, and replays flagged reps without ext
   const errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
   await context.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
-  await page.goto('/');
+  await page.goto('/#/arena');
   await expect(page.getByRole('heading', { name: 'AI Workout Arena' })).toBeVisible();
   for (const id of ['SQUAT', 'DEADLIFT', 'OVERHEAD_PRESS', 'BICEP_CURL']) {
     await page.getByRole('combobox', { name: 'Exercise', exact: true }).selectOption(id);
@@ -36,7 +36,7 @@ test('camera denial offers a one-click simulator fallback', async ({ page }) => 
   await page.addInitScript(() => {
     navigator.mediaDevices.getUserMedia = async () => { throw new DOMException('Permission denied', 'NotAllowedError'); };
   });
-  await page.goto('/');
+  await page.goto('/#/arena');
   await page.getByRole('button', { name: 'Start webcam', exact: true }).click();
   await expect(page.getByRole('alert')).toHaveText('Camera unavailable. Use a simulated rep to continue.');
   await page.getByRole('button', { name: 'Simulate Good Rep', exact: true }).click();
@@ -44,7 +44,7 @@ test('camera denial offers a one-click simulator fallback', async ({ page }) => 
 });
 
 test('injected 33-point frames pass through the real rep engine and snapshot replay', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/#/arena');
   await page.evaluate(async () => {
     const path = '/src/adapters/poseCameraAdapter.ts';
     const { generateSimulatedRepFrames } = await import(path);
@@ -63,7 +63,7 @@ test('initializes the real MediaPipe runtime and model using local assets and re
   page.on('request', request => requests.push(request.url()));
   await context.grantPermissions(['camera']);
   await context.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
-  await page.goto('/');
+  await page.goto('/#/arena');
   expect(requests.some(url => url.includes('tasks-vision') || url.includes('.wasm') || url.includes('.task'))).toBe(false);
   await page.getByRole('button', { name: 'Start webcam', exact: true }).click();
   await expect(page.getByLabel('Session status')).toHaveText('RUNNING', { timeout: 30000 });

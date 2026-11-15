@@ -1,3 +1,4 @@
+import { navigate as goTo, openCardio } from './navigation';
 import { expect, test } from '@playwright/test';
 
 test('reviews and applies an offline prototype routine, then controls automatic and manual recalibration', async ({ page, context }) => {
@@ -32,22 +33,33 @@ test('reviews and applies an offline prototype routine, then controls automatic 
   await expect(page.getByLabel('Body weight (kg)', { exact: true })).toHaveValue('81');
   const schedule = page.getByRole('list', { name: 'Personalized daily schedule', exact: true });
   await expect(page.getByLabel('Personalized routine label', { exact: true })).toHaveText('Personalized for you — Adapted to your progress');
+  await goTo(page, 'Settings');
   const auto = page.getByRole('checkbox', { name: 'Auto-adjust routine based on progress', exact: true });
   await auto.uncheck();
+  await goTo(page, 'Dashboard');
   const frozen = await schedule.innerText();
+  await openCardio(page);
   await page.getByLabel('Cardio distance (km)', { exact: true }).fill('7');
   await page.getByRole('button', { name: 'Log cardio session', exact: true }).click();
+  await goTo(page, 'Dashboard');
   await expect(schedule).toHaveText(frozen, { useInnerText: true });
+  await goTo(page, 'Settings');
   await page.getByRole('button', { name: 'Recalibrate Routine', exact: true }).click();
   await expect(page.getByLabel('Routine update notification', { exact: true })).toHaveText('Your routine has been updated based on your recent progress.');
+  await goTo(page, 'Dashboard');
   await expect(schedule).toContainText('6 km');
+  await goTo(page, 'Settings');
   await auto.check();
+  await openCardio(page);
   await page.getByLabel('Cardio distance (km)', { exact: true }).fill('8');
   await page.getByRole('button', { name: 'Log cardio session', exact: true }).click();
+  await goTo(page, 'Dashboard');
   await expect(schedule).toContainText('6.8 km');
   await page.reload();
   await expect(page.getByLabel('Astronaut name', { exact: true })).toHaveValue('Commander M6');
+  await goTo(page, 'Settings');
   await expect(page.getByRole('checkbox', { name: 'Auto-adjust routine based on progress', exact: true })).toBeChecked();
+  await goTo(page, 'Dashboard');
   await expect(page.getByRole('list', { name: 'Personalized daily schedule', exact: true })).toContainText('6.8 km');
   expect(errors).toEqual([]);
 });

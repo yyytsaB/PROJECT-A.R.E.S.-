@@ -1,7 +1,9 @@
+import { navigate } from './navigation';
 import { expect, test } from '@playwright/test';
 
 test('print output keeps routine notifications, schedule labels and chart captions readable', async ({ page }) => {
   await page.goto('/');
+  await navigate(page, 'Settings');
   await page.getByRole('button', { name: 'Recalibrate Routine', exact: true }).click();
   await page.emulateMedia({ media: 'print' });
   const samples = [page.getByLabel('Routine update notification', { exact: true }),
@@ -29,7 +31,11 @@ test('mission layout remains readable at desktop, tablet and phone widths with l
   for (const width of [1440, 1024, 768, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     await expect(page.getByRole('heading', { level: 1, name: 'Project A.R.E.S. Command Center' })).toBeVisible();
-    await expect(page.getByRole('navigation', { name: 'Mission sections' })).toBeVisible();
+    if (width < 1024) {
+      await page.getByRole('button', { name: 'Open navigation menu', exact: true }).click();
+      await expect(page.getByRole('navigation', { name: 'Mission sections' })).toBeVisible();
+      await page.keyboard.press('Escape');
+    } else await expect(page.getByRole('navigation', { name: 'Mission sections' })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     expect(await page.getByRole('button', { name: "INITIATE TODAY'S SESSION", exact: true }).evaluate(element => {
       const box = element.getBoundingClientRect(); return box.x >= 0 && box.right <= innerWidth && box.height >= 40;
@@ -41,8 +47,10 @@ test('mission layout remains readable at desktop, tablet and phone widths with l
     expect(await image.getAttribute('alt')).toBeTruthy();
     expect(await image.getAttribute('src')).toMatch(/^\/assets\//);
   }
+  await navigate(page, 'Journey');
   await page.getByLabel('Active route', { exact: true }).selectOption('OLYMPUS_MONS');
   await expect(page.getByRole('img', { name: 'Olympus Mons virtual game route illustration, not terrain-derived or to scale' })).toBeVisible();
+  await navigate(page, 'Workout Arena');
   await page.getByRole('button', { name: 'Simulate Good Rep', exact: true }).click();
   await expect(page.getByLabel('Completed reps', { exact: true })).toHaveText('1');
   expect(await page.getByLabel('Live skeletal pose', { exact: true }).evaluate((canvas: HTMLCanvasElement) => {
@@ -63,6 +71,7 @@ test('keyboard focus and route artwork remain available when the loaded mission 
   await expect(page.getByRole('main')).toBeFocused();
   await page.locator('img').evaluateAll(images => Promise.all(images.map(image => (image as HTMLImageElement).decode())));
   await context.setOffline(true);
+  await navigate(page, 'Journey');
   await page.getByLabel('Active route', { exact: true }).selectOption('OLYMPUS_MONS');
   const artwork = page.getByRole('img', { name: 'Olympus Mons virtual game route illustration, not terrain-derived or to scale' });
   await expect(artwork).toBeVisible();

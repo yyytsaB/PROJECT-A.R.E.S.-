@@ -1,3 +1,4 @@
+import { navigate } from './navigation';
 import { expect, test } from '@playwright/test';
 import type { Download } from '@playwright/test';
 
@@ -14,6 +15,7 @@ test('prototype context stays visible and accompanies offline report downloads a
   await page.locator('img').evaluateAll(images => Promise.all(images.map(image => (image as HTMLImageElement).decode())));
   await context.setOffline(true);
   await expect(page.getByText('Team-defined prototype goals; not NASA standards or clinical clearance.', { exact: true })).toBeVisible();
+  await navigate(page, 'Analytics');
   const notice = 'Team-defined prototype telemetry for demonstration and review; not clinically validated, NASA-approved, or medical clearance.';
   await expect(page.getByText(notice, { exact: true })).toBeVisible();
   for (const format of ['JSON', 'CSV']) {
