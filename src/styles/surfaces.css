@@ -1,0 +1,91 @@
+/*
+ * One surface level. Top-level panels keep the glass surface; anything inside a panel is separated by spacing and
+ * hairline dividers instead of its own bordered, filled box (boxes inside boxes read as template output and add
+ * visual noise without adding hierarchy). Loaded last in the figma layer so it settles earlier box styles.
+ */
+@layer figma {
+  :root { --hairline: #ffffff1a; }
+
+  /* Arena: feedback sits under the camera feed, so both columns carry content and the feed has no dead space below. */
+  .arena-main { grid-column: 1; grid-row: 1; display: grid; gap: 24px; align-content: start; min-width: 0; }
+  .arena-main > .arena-stage-card { grid-column: auto; grid-row: auto; }
+  .arena-stage-card .cue-controls { margin-top: 16px; padding: 14px 0 0; border: 0; border-top: 1px solid var(--hairline); border-radius: 0; background: none; }
+  .form-feedback-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 32px; align-items: start; }
+  .form-feedback-card > * { grid-column: 1 / -1; }
+  .form-feedback-card > h3 { margin-bottom: 0; }
+  .form-feedback-card > .feedback-banner { grid-column: 1; margin: 16px 0 0; }
+  .form-feedback-card > .form-score-grid { grid-column: 2; margin: 16px 0 0; }
+  .form-score-grid { gap: 0; }
+  .form-score-grid > div { padding: 6px 16px; border: 0; border-radius: 0; background: none; text-align: left; }
+  .form-score-grid > div + div { border-left: 1px solid var(--hairline); }
+  .form-score-grid dt { letter-spacing: .3px; }
+  .form-score-grid dd { font-size: 26px; line-height: 36px; }
+  .form-feedback-card .arena-readouts { margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--hairline); }
+  .form-feedback-card > .correction-heading { margin: 20px 0 8px; }
+  /* Page headings no longer carry an eyebrow, so the timer aligns with the title itself. */
+  .arena-section > .arena-timer { top: 0; }
+  /* Single column: feed, then exercise choice (picked before starting), then feedback. */
+  @media (max-width: 1199px) {
+    .arena-main { display: contents; }
+    .arena-main > .arena-stage-card, .arena-controls, .arena-main > .form-feedback-card { grid-column: 1; grid-row: auto; }
+    .arena-main > .arena-stage-card { order: 1; } .arena-controls { order: 2; align-items: start; } .arena-main > .form-feedback-card { order: 3; }
+  }
+  @media (max-width: 767px) {
+    .form-feedback-card > .feedback-banner, .form-feedback-card > .form-score-grid { grid-column: 1 / -1; }
+    .form-score-grid > div { padding-inline: 10px; }
+  }
+
+  /* Dashboard */
+  .next-objective { margin-top: 20px; padding: 16px 0 0; border: 0; border-top: 1px solid var(--hairline); border-radius: 0; background: none; }
+  .system-status-strip { gap: 0; border: 1px solid #ffffff1f; border-radius: 16px; background: #08183a25; }
+  .system-status-strip > div { border: 0; border-radius: 0; background: none; }
+  .system-status-strip > div + div { border-left: 1px solid var(--hairline); }
+  .daily-schedule { gap: 0; }
+  .daily-schedule > li { border: 0; border-radius: 0; background: none; box-shadow: none; }
+  .daily-schedule > li + li { border-top: 1px solid var(--hairline); }
+  .daily-schedule > li[data-completed=true] { background: none; }
+  .daily-schedule > li[data-completed=true] .schedule-copy > strong { color: #c7d0e0; }
+  .ready-metrics { gap: 0; }
+  .ready-metrics > div { min-height: 0; padding: 12px 8px; border: 0; border-radius: 0; background: none; }
+  .ready-metrics > div + div { border-left: 1px solid var(--hairline); }
+  @media (max-width: 767px) {
+    .system-status-strip > div + div { border-left: 0; border-top: 1px solid var(--hairline); }
+  }
+
+  /* Analytics: actions get their own row under the heading instead of crowding it. */
+  .medical-section > .page-title { padding-right: 0; }
+  .medical-section .export-actions { position: static; max-width: none; margin: 16px 0 0; }
+  .medical-section .export-actions > button { min-height: 40px; padding-inline: 16px; font-size: 12px; }
+  .medical-section .export-actions > p:not(:empty) { position: static; width: auto; }
+  .telemetry-notice { border-left-width: 1px; }
+  .telemetry-summary { gap: 0; border: 1px solid #ffffff1f; border-radius: 16px; background: #ffffff06; }
+  .telemetry-summary > div { border: 0; border-radius: 0; background: none; }
+  .telemetry-summary > div + div { border-left: 1px solid var(--hairline); }
+  .chart-grid { align-items: start; }
+  /* Symmetry and form accuracy sit side by side, so the card's height tracks the volume chart beside it. */
+  .symmetry-card .symmetry-rings { flex-wrap: nowrap; gap: 16px; }
+  .symmetry-card .symmetry-rings .progress-ring { width: min(132px, 44%); margin: 16px 0 8px; }
+  .volume-stats { gap: 0; margin: 16px 0 8px; border-block: 1px solid var(--hairline); }
+  .volume-stats > div { padding: 10px 14px; border: 0; border-radius: 0; background: none; }
+  .volume-stats > div:first-child { padding-left: 0; }
+  .volume-stats > div + div { border-left: 1px solid var(--hairline); }
+  .correction-summary ul { gap: 0; }
+  .correction-summary li { padding: 4px 16px; border: 0; border-radius: 0; background: none; }
+  .correction-summary li:first-child { padding-left: 0; }
+  .correction-summary li + li { border-left: 1px solid var(--hairline); }
+  th { text-transform: none; letter-spacing: 0; font-size: 12px; }
+  .history-master th { font-size: 12px; }
+  @media (max-width: 767px) {
+    .telemetry-summary { grid-template-columns: minmax(0, 1fr); }
+    .telemetry-summary > div + div { border-left: 0; border-top: 1px solid var(--hairline); }
+    .correction-summary ul { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 12px; }
+    .correction-summary li:nth-child(odd) { padding-left: 0; border-left: 0; }
+  }
+
+  /* Settings */
+  .recalibration-card { margin: 20px 0; padding: 16px 0 0; border: 0; border-top: 1px solid var(--hairline); border-radius: 0; background: none; }
+  .sync-summary { gap: 0; }
+  .sync-summary > div { padding: 12px 0; border: 0; border-radius: 0; background: none; }
+  .sync-summary > div + div { border-top: 1px solid var(--hairline); }
+  @media (min-width: 768px) { .settings-section .gravity-options { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+}

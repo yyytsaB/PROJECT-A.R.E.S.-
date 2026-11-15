@@ -11,7 +11,7 @@ const initialsOf = (name: string) => { const parts = name.split(/\s+/).filter(pa
 
 export function TeamSection({ active }: { active: boolean }) {
   return <section className="mission-section team-section" data-screen="team" data-active={active} aria-labelledby="team-heading">
-    <p className="eyebrow">THE CREW BEHIND ARES</p>
+    
     <h2 className="page-title" id="team-heading">Meet the Team</h2>
     <p className="team-intro">We are {team.teamName}. We built ARES for the NASA Space Apps Challenge.</p>
     <div className="team-layout">
