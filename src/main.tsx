@@ -8,3 +8,4 @@ createRoot(document.getElementById('root')!).render(<App />);
 import './styles/mockup-source.css';
 import './styles/integration-polish.css';
 import './styles/camera-milestones.css';
+import './styles/milestone-celebration.css';
