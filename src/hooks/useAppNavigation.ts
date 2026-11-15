@@ -19,5 +19,10 @@ export function useAppNavigation() {
     return () => window.removeEventListener('hashchange', update);
   }, []);
   useEffect(() => { document.title = `${pages.find(page => page.id === activePage)!.label} — A.R.E.S.`; }, [activePage]);
-  return { pages, activePage, setActivePage };
+  function navigateToPage(id: (typeof pages)[number]['id']) {
+    const page = pages.find(page => page.id === id)!;
+    setActivePage(id);
+    window.location.hash = page.headingId;
+  }
+  return { pages, activePage, setActivePage, navigateToPage };
 }

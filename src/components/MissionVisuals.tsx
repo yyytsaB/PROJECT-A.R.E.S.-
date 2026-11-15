@@ -5,7 +5,7 @@ const routeArtwork: Record<PlanetaryRouteId, string> = { VALLES_MARINERIS: '/ass
 
 /** Mount both small schematics eagerly so route switching needs no new request after disconnecting. */
 export function RouteArtwork({ activeRoute, routes, preview = false }: { activeRoute: PlanetaryRoute; routes: readonly PlanetaryRoute[]; preview?: boolean }) {
-  return <>{routes.map(route => <img key={route.id} src={routeArtwork[route.id]} alt={`${route.name} virtual ${preview ? 'expedition schematic, not to scale' : 'game route illustration, not terrain-derived or to scale'}`} width="900" height="360" hidden={route.id !== activeRoute.id} />)}</>;
+  return <div className="route-map"><img className="route-texture" src="/assets/mars-surface.jpg" alt="Red rock texture from the mission mockup; decorative illustration, not Mars terrain data" width="1600" height="1600" />{routes.map(route => <img className="route-schematic" key={route.id} src={routeArtwork[route.id]} alt={`${route.name} virtual ${preview ? 'expedition schematic, not to scale' : 'game route illustration, not terrain-derived or to scale'}`} width="900" height="360" hidden={route.id !== activeRoute.id} />)}</div>;
 }
 
 const iconPaths: Record<string, string> = {
@@ -16,6 +16,10 @@ const iconPaths: Record<string, string> = {
   logs: 'M6 3h12v18H6zM9 7h6m-6 5h6m-6 5h4',
   settings: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2',
   onboarding: 'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM4 21v-3a6 6 0 0 1 6-5h4a6 6 0 0 1 6 5v3',
+  sync: 'M20 7a8 8 0 0 0-14-2L3 8m0-5v5h5M4 17a8 8 0 0 0 14 2l3-3m0 5v-5h-5',
+  camera: 'M8 5l2-2h4l2 2h5v15H3V5Zm8 7a4 4 0 1 0-8 0 4 4 0 0 0 8 0Z',
+  storage: 'M4 6c0-4 16-4 16 0s-16 4-16 0Zm0 0v6c0 4 16 4 16 0V6M4 12v6c0 4 16 4 16 0v-6',
+  play: 'm8 4 12 8-12 8Z',
 };
 
 export function MissionIcon({ name }: { name: string }) {
