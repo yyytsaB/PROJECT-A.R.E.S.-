@@ -32,7 +32,7 @@ export function MissionChrome({ navigation, name, pendingCount, commsOpen, notif
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
   };
-  const brand = <><img src="/assets/ares-mark.svg" alt="A.R.E.S. mission emblem" width="56" height="56" /><span><strong>A.R.E.S.</strong><small>Resistance &amp; Exercise</small></span></>;
+  const brand = <><img src="/assets/ares-mark.svg" alt="ARES mission emblem" width="56" height="56" /><span><strong>ARES</strong><small>Resistance &amp; Exercise</small></span></>;
   const navigationList = <nav aria-label="Mission sections"><p className="nav-caption">Mission control</p><ul>{navigation.pages.map((page, index) => <li key={page.id} className={index > 5 ? 'secondary-nav-item' : undefined}>
     <a href={`#/${page.id}`} aria-label={page.label} aria-current={navigation.activePage === page.id ? 'page' : undefined} onClick={event => { event.preventDefault(); go(page.id); }}><MissionIcon name={page.id} /><span>{page.id === 'arena' ? 'Arena' : page.label}</span></a>
   </li>)}</ul></nav>;

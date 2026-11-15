@@ -4,7 +4,7 @@ import App from './App';
 
 test('renders the accessible Command Center catalog summary with local visual assets', () => {
   const html = renderToStaticMarkup(<App />);
-  expect(html).toContain('<h1>Project A.R.E.S. Command Center</h1>');
+  expect(html).toContain('<h1>Project ARES Command Center</h1>');
   expect(html).toContain('aria-label="ARED resistance exercises"');
   for (const name of ['Squat', 'Deadlift', 'Overhead Press', 'Bicep Curl', 'Valles Marineris', 'Olympus Mons']) {
     expect(html).toContain(name);
@@ -12,7 +12,7 @@ test('renders the accessible Command Center catalog summary with local visual as
   expect(html).toContain('4000 km');
   expect(html).toContain('600 km');
   expect(html).toContain('src="/assets/ares-mark.svg"');
-  expect(html).toContain('alt="A.R.E.S. mission emblem"');
+  expect(html).toContain('alt="ARES mission emblem"');
 });
 
 test('publishes accessible official NASA and 2026 partner citations with accurate resource usage', () => {

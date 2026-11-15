@@ -109,7 +109,7 @@ test('reviews a validated three-step onboarding draft with visible processing be
   expect(output('Onboarding progress')).toBe('Step 3 of 3');
   await select('onboarding-mission-type', 'LUNAR_ARTEMIS_30D'); await select('onboarding-gravity-profile', 'MOON_016G');
   await click('Generate My Routine');
-  expect(output('Onboarding processing')).toBe('A.R.E.S. is building your personalized program…');
+  expect(output('Onboarding processing')).toBe('ARES is building your personalized program…');
   await act(() => vi.advanceTimersByTime(149));
   expect(host.textContent).not.toContain('Confirm & Apply Routine');
   await act(() => vi.advanceTimersByTime(1));
