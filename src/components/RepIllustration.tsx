@@ -7,8 +7,8 @@ import type { FormFaultFlag, ResistanceExerciseId } from '../core/types';
  * Only the recorded exercise and fault flags come from the session; the motion itself is a drawing,
  * so it is always labelled "Illustrated". The saved peak pose remains available as the real replay.
  */
-type Pt = [number, number];
-const CONNECTIONS: readonly (readonly [number, number])[] = [
+export type Pt = [number, number];
+export const CONNECTIONS: readonly (readonly [number, number])[] = [
   [0, 1], [1, 2], [2, 3], [3, 7], [0, 4], [4, 5], [5, 6], [6, 8], [9, 10],
   [11, 12], [11, 13], [13, 15], [15, 17], [15, 19], [15, 21], [17, 19],
   [12, 14], [14, 16], [16, 18], [16, 20], [16, 22], [18, 20],
@@ -25,10 +25,10 @@ const BASE: readonly Pt[] = [
   [86.5, 83], [73.5, 83], [89, 84.5], [71, 84.5],
 ];
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-const CYCLE_MS = 2600;
-const easeCycle = (x: number) => (1 - Math.cos(2 * Math.PI * x)) / 2;
+export const CYCLE_MS = 2600;
+export const easeCycle = (x: number) => (1 - Math.cos(2 * Math.PI * x)) / 2;
 
-function posePoints(exercise: ResistanceExerciseId, t: number, lean: number): Pt[] {
+export function posePoints(exercise: ResistanceExerciseId, t: number, lean: number): Pt[] {
   const p = BASE.map(([x, y]) => [x, y] as Pt);
   const upper = Array.from({ length: 23 }, (_, i) => i);
   const move = (indices: number[], dx: number, dy: number) => indices.forEach(i => { p[i][0] += dx; p[i][1] += dy; });
@@ -74,7 +74,7 @@ function faultJoints(exerciseId: ResistanceExerciseId, flags: readonly FormFault
   return joints;
 }
 
-const prefersReducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+export const prefersReducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 interface Props { exerciseId: ResistanceExerciseId; repNumber: number; faultFlags: readonly FormFaultFlag[]; faultLabel: string }
 export function RepIllustration({ exerciseId, repNumber, faultFlags, faultLabel }: Props) {
