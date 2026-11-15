@@ -10,3 +10,4 @@ import './styles/integration-polish.css';
 import './styles/camera-milestones.css';
 import './styles/milestone-celebration.css';
 import './styles/team.css';
+import './styles/valid-rep-guide.css';
