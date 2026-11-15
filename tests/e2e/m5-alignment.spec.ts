@@ -72,6 +72,10 @@ test('aligns the six sections through an accessible offline mission workflow', a
   await page.goForward();
   await expect(page).toHaveTitle('Settings — ARES');
   await page.goto('/');
+  // Local data was cleared earlier, which starts over: landing opens onboarding until it is completed or skipped.
+  await expect(page).toHaveTitle('Onboarding — ARES');
+  await page.getByRole('button', { name: 'Return to dashboard', exact: true }).click();
+  await expect(page).toHaveTitle('Dashboard — ARES');
   await page.getByRole('navigation', { name: 'Mission sections' }).getByRole('link', { name: 'Settings', exact: true }).click();
   await page.goBack();
   await expect(page).toHaveTitle('Dashboard — ARES');
