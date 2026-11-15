@@ -144,3 +144,28 @@ test('flags improper attempts, emits crew alerts, and captures compact detached 
     expect(state.snapshots).toHaveLength(1);
   }
 });
+
+test('a rep interrupted by leaving view or a long gap is abandoned instead of completed from stale landmarks', () => {
+  for (const id of ['SQUAT', 'DEADLIFT', 'OVERHEAD_PRESS', 'BICEP_CURL'] as const) {
+    const exercise = getExerciseById(id);
+    const rep = buildRepTrajectory(exercise);
+    const rest = (timestampMs: number) => ({ ...rep[11], timestampMs });
+    const hidden = (timestampMs: number) => ({ ...rep[11], timestampMs, landmarks: rep[11].landmarks.map(p => ({ ...p, visibility: 0 })) });
+    // Descend partway, leave the frame for about a second, then re-enter standing.
+    let state = createInitialRepState(id);
+    for (const frame of rep.slice(0, 5)) state = advanceRepState(state, frame, exercise).state;
+    expect(state.phase).toBe('ECCENTRIC');
+    for (let t = 200; t <= 1200; t += 33) state = advanceRepState(state, hidden(t), exercise).state;
+    for (let t = 1233; t <= 1400; t += 33) state = advanceRepState(state, rest(t), exercise).state;
+    expect(state.repCount, `${id} leave/re-enter`).toBe(0);
+    expect(state.phase).toBe('IDLE');
+    // A paused session resumes with a time gap and no intermediate frames.
+    state = createInitialRepState(id);
+    for (const frame of rep.slice(0, 7)) state = advanceRepState(state, frame, exercise).state;
+    for (let t = 5000; t <= 5200; t += 33) state = advanceRepState(state, rest(t), exercise).state;
+    expect(state.repCount, `${id} resume gap`).toBe(0);
+    // A complete, continuously observed rep still counts once afterwards.
+    for (const frame of buildRepTrajectory(exercise, 'GOOD', 6000)) state = advanceRepState(state, frame, exercise).state;
+    expect(state.repCount, `${id} continuous rep`).toBe(1);
+  }
+});

@@ -45,7 +45,8 @@ for (const unavailable of ['camera', 'model', 'wasm'] as const) {
     if (unavailable === 'wasm') await page.route('**/mediapipe/wasm/**', route => route.abort());
     await page.goto('/#/arena');
     await page.getByRole('button', { name: 'Start webcam', exact: true }).click();
-    await expect(page.getByRole('alert')).toContainText('Use a simulated rep', { timeout: 15000 });
+    await expect(page.getByRole('alert')).toContainText(unavailable === 'camera' ? 'Camera permission was blocked.' : 'the local pose model could not load', { timeout: 15000 });
+    await expect(page.getByRole('alert')).toContainText('use a simulated rep to continue');
     for (const [i, name] of ['Simulate Good Rep', 'Simulate Shallow Rep', 'Simulate Spine Fault'].entries()) {
       const button = page.getByRole('button', { name, exact: true });
       await button.focus(); await page.keyboard.press('Enter');

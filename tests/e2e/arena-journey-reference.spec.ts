@@ -8,7 +8,7 @@ test('Arena opens with the reference permission panel and camera denial keeps si
   await expect(page.getByRole('heading', { name: 'Allow camera access', exact: true })).toBeVisible();
   await expect(page.getByLabel('Session status', { exact: true })).toHaveText('IDLE');
   await page.getByRole('button', { name: 'Enable camera', exact: true }).click();
-  await expect(page.getByRole('alert')).toHaveText('Camera unavailable. Use a simulated rep to continue.');
+  await expect(page.getByRole('alert')).toContainText('Camera permission was blocked.');
   await expect(page.getByRole('button', { name: 'Use simulation feed', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'Use simulation feed', exact: true }).click();
   await expect(page.getByLabel('Session status', { exact: true })).toHaveText('READY');

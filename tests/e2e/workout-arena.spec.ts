@@ -38,7 +38,7 @@ test('camera denial offers a one-click simulator fallback', async ({ page }) => 
   });
   await page.goto('/#/arena');
   await page.getByRole('button', { name: 'Start webcam', exact: true }).click();
-  await expect(page.getByRole('alert')).toHaveText('Camera unavailable. Use a simulated rep to continue.');
+  await expect(page.getByRole('alert')).toContainText('Camera permission was blocked.');
   await page.getByRole('button', { name: 'Simulate Good Rep', exact: true }).click();
   await expect(page.getByLabel('Completed reps')).toHaveText('1');
 });

@@ -10,6 +10,9 @@ function buildSnapshot(frame: RawPoseFrame, analysis: KinematicFrameAnalysis, re
   };
 }
 
+/** Longest gap between visible frames that still counts as one continuous observation (occlusion, pause, hidden tab). */
+export const MAX_OBSERVATION_GAP_MS = 750;
+
 export function createInitialRepState(exerciseId: ExerciseId): RepMachineState {
   return {
     exerciseId, phase: 'IDLE', repCount: 0, faultedRepCount: 0, formAccuracyPct: 100,
@@ -36,6 +39,10 @@ export function advanceRepState(state: RepMachineState, frame: RawPoseFrame | nu
   const range = Math.abs(exercise.targetAngleDeg - exercise.startAngleDeg);
   const buffer = exercise.hysteresisDeg;
   let next = { ...state, lastTimestampMs: frame.timestampMs };
+  // Unobserved motion cannot complete or start a rep: abandon progress and require a fresh start position.
+  if (state.lastTimestampMs !== null && frame.timestampMs - state.lastTimestampMs > MAX_OBSERVATION_GAP_MS) {
+    next = { ...createInitialRepState(state.exerciseId), repCount: state.repCount, faultedRepCount: state.faultedRepCount, formAccuracyPct: state.formAccuracyPct, snapshots: state.snapshots, lastTimestampMs: frame.timestampMs };
+  }
   if (next.phase === 'COMPLETED') {
     if (progress <= buffer + 1e-8) return result(next, analysis);
     next = { ...createInitialRepState(state.exerciseId), repCount: state.repCount, faultedRepCount: state.faultedRepCount, formAccuracyPct: state.formAccuracyPct, snapshots: state.snapshots, isArmed: true, lastTimestampMs: frame.timestampMs };

@@ -74,3 +74,53 @@ test('simulates all four exercises deterministically and opens a lazy, local, sa
   expect(video.srcObject).toBeNull();
   expect(live.read(4000)).toBeNull();
 });
+
+test('classifies camera setup failures from the platform error instead of reporting one generic cause', async () => {
+  const video = { srcObject: null, play: vi.fn(async () => {}), pause: vi.fn() } as unknown as HTMLVideoElement;
+  const failWith = (name: string) => vi.stubGlobal('navigator', { mediaDevices: { getUserMedia: vi.fn().mockRejectedValue(new DOMException('platform message', name)) } });
+  for (const [name, kind] of [['NotAllowedError', 'PERMISSION_DENIED'], ['SecurityError', 'PERMISSION_DENIED'], ['NotFoundError', 'NO_CAMERA'], ['OverconstrainedError', 'NO_CAMERA'],
+    ['NotReadableError', 'CAMERA_BUSY'], ['AbortError', 'CAMERA_BUSY'], ['TypeError', 'UNKNOWN']] as const) {
+    failWith(name);
+    await expect(createPoseSource({ mode: 'LIVE', video }), name).rejects.toMatchObject({ name: 'CameraSetupError', kind });
+  }
+  vi.stubGlobal('navigator', {});
+  vi.stubGlobal('isSecureContext', false);
+  await expect(createPoseSource({ mode: 'LIVE', video })).rejects.toMatchObject({ kind: 'INSECURE_CONTEXT' });
+  vi.stubGlobal('isSecureContext', true);
+  await expect(createPoseSource({ mode: 'LIVE', video })).rejects.toMatchObject({ kind: 'UNSUPPORTED' });
+  const stop = vi.fn();
+  vi.stubGlobal('navigator', { mediaDevices: { getUserMedia: vi.fn(async () => ({ getTracks: () => [{ stop, addEventListener: vi.fn() }] })) } });
+  sdk.create.mockRejectedValueOnce(new Error('wasm fetch failed'));
+  await expect(createPoseSource({ mode: 'LIVE', video })).rejects.toMatchObject({ kind: 'MODEL_FAILED' });
+  expect(stop).toHaveBeenCalledOnce();
+});
+
+test('reports honest preparation stages and a mid-session camera interruption once', async () => {
+  const listeners: Record<string, () => void> = {};
+  const track = { stop: vi.fn(), addEventListener: vi.fn((type: string, listener: () => void) => { listeners[type] = listener; }), removeEventListener: vi.fn() };
+  vi.stubGlobal('navigator', { mediaDevices: { getUserMedia: vi.fn(async () => ({ getTracks: () => [track] })) } });
+  sdk.create.mockResolvedValue({ detectForVideo: sdk.detect, close: sdk.close });
+  const video = { srcObject: null, play: vi.fn(async () => {}), pause: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn() } as unknown as HTMLVideoElement;
+  const stages: string[] = [], interruptions: string[] = [];
+  const source = await createPoseSource({ mode: 'LIVE', video, onStage: stage => stages.push(stage), onInterrupted: reason => interruptions.push(reason) });
+  expect(stages).toEqual(['PERMISSION', 'VIDEO', 'MODEL']);
+  listeners.ended(); listeners.ended();
+  expect(interruptions).toEqual(['TRACK_ENDED']);
+  source.close();
+  expect(track.removeEventListener).toHaveBeenCalledWith('ended', expect.any(Function));
+});
+
+test('simulated playback stays one continuous observation even when the scheduler stalls between frames', async () => {
+  const exercise = getExerciseById('SQUAT');
+  const source = await createPoseSource({ mode: 'SIMULATED', frames: generateSimulatedRepFrames('SQUAT', 'GOOD') });
+  let state = createInitialRepState('SQUAT'), tick = 1000, previous = -Infinity;
+  for (let i = 0; i < 12; i++) {
+    tick += i === 5 ? 2500 : 34; // a 2.5 s main-thread stall mid-rep
+    const frame = source.read(tick)!;
+    expect(frame.timestampMs).toBeGreaterThan(previous);
+    expect(frame.timestampMs - (previous === -Infinity ? frame.timestampMs : previous)).toBeLessThanOrEqual(34);
+    previous = frame.timestampMs;
+    state = advanceRepState(state, frame, exercise).state;
+  }
+  expect(state.repCount).toBe(1);
+});

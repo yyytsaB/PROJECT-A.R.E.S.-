@@ -27,6 +27,6 @@ function inspect(path, core) {
   visit(source);
 }
 coreFiles.forEach(path => inspect(path, true));
-['src/App.tsx', 'src/OnboardingSection.tsx', 'src/HealthMetricFields.tsx', 'src/components/MissionVisuals.tsx', 'src/components/MissionChrome.tsx', 'src/components/SessionLaunchDock.tsx', 'src/components/DashboardSchedule.tsx', 'src/components/JourneySection.tsx', 'src/components/ReferenceIcon.tsx'].forEach(path => inspect(path, false));
+['src/App.tsx', 'src/OnboardingSection.tsx', 'src/HealthMetricFields.tsx', 'src/components/MissionVisuals.tsx', 'src/components/MissionChrome.tsx', 'src/components/SessionLaunchDock.tsx', 'src/components/DashboardSchedule.tsx', 'src/components/JourneySection.tsx', 'src/components/ReferenceIcon.tsx', 'src/components/MilestoneCelebration.tsx'].forEach(path => inspect(path, false));
 if (errors.length) { errors.forEach(error => console.error(error)); process.exitCode = 1; }
 else console.log(`Architecture lint passed (${coreFiles.length} pure core files; frontend hook boundary checked).`);
