@@ -104,3 +104,13 @@ test('a rejected aggregate workout save is visible on the current screen and pre
   await expect(error).toBeVisible();
   await expect(page.getByLabel('Saved session count', { exact: true })).toHaveText('61');
 });
+test('history search accepts displayed exercise names and existing catalog IDs', async ({ page }) => {
+  await page.goto('/#/logs');
+  const search = page.getByRole('searchbox', { name: 'Search workouts', exact: true });
+  const table = page.getByRole('table', { name: 'Workout history', exact: true });
+  for (const [query, name] of [['Overhead Press', 'Overhead Press'], ['OVERHEAD_PRESS', 'Overhead Press'], ['Cycle Ergometer', 'Cycle Ergometer'], ['CYCLE_ERGOMETER', 'Cycle Ergometer']]) {
+    await search.fill(query);
+    await expect(table.locator('tbody tr').first()).toBeVisible();
+    await expect(table.locator('tbody tr').first().getByRole('cell', { name, exact: true })).toBeVisible();
+  }
+});
