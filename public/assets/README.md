@@ -17,3 +17,5 @@ Teammate artwork can replace these files at the same paths. Keep each SVG's view
 Both route images load at startup so switching routes on an already loaded mission works after disconnecting. No image service, remote font, or additional dependency is required.
 
 The logo and texture were exported from the [team's mission mockup](https://www.figma.com/make/Ztf5NQe7wMI5HFzqa6cWUO/Design-NASA-Fitness-Mission-App). The texture was identified there as Unsplash image `photo-1650208312823-4a676f114aff`. Original route geometry and milestone distances remain schematic catalog data. The reference fonts are bundled locally and preloaded in `index.html`; no font CDN is contacted at runtime. Preserve font provenance when replacing these files.
+
+`icons/{sparkles,calendar-days,dumbbell,footprints,bike,info}.svg` preserve the native SVG paths observed in the team's Dashboard preview, with local blue/amber/muted strokes. The launch chevron uses the same observed SVG path inline. These assets support the reference schedule; the additional Rowing catalog entry uses a neutral initial rather than invented reference artwork.

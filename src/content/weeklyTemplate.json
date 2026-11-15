@@ -1,0 +1,37 @@
+[
+  {
+    "day": "MON",
+    "focus": "Lower body + intervals",
+    "load": "High"
+  },
+  {
+    "day": "TUE",
+    "focus": "Upper body + cycle",
+    "load": "Medium"
+  },
+  {
+    "day": "WED",
+    "focus": "Active recovery",
+    "load": "Low"
+  },
+  {
+    "day": "THU",
+    "focus": "Full body ARED",
+    "load": "High"
+  },
+  {
+    "day": "FRI",
+    "focus": "Treadmill + mobility",
+    "load": "Medium"
+  },
+  {
+    "day": "SAT",
+    "focus": "Posterior chain",
+    "load": "High"
+  },
+  {
+    "day": "SUN",
+    "focus": "Rest + health check",
+    "load": "Low"
+  }
+]
