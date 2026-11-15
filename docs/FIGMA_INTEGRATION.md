@@ -35,7 +35,7 @@ The app reflows at narrow widths rather than scaling a fixed desktop canvas. Con
 | Unit and Chromium browser tests | 80 passed across 13 files |
 | Strict TypeScript / architecture lint | Passed |
 | Production build | Passed |
-| Full Playwright E2E suite | 32 passed, including online/offline six-flow rehearsals |
+| Full Playwright E2E suite | 37 passed, including online/offline six-flow rehearsals |
 | Production bundle browser tests | 5 passed, including real model initialization with a fake camera and matching video/canvas bounds |
 | Responsive checks | All nine screens at 320/768/1440px; additional dashboard checks at 375/390/1024/1280px |
 | Local typography/glass | Font availability, no remote asset requests, translucent fill and 16px blur verified in Chromium |
@@ -46,3 +46,19 @@ The initial page-isolation, drawer focus, video-overlay alignment and current-pa
 A loaded app supports local workflows after disconnecting. There is no service worker or guaranteed uncached offline start/reload. Production camera checks use a fake camera; real-device framing, lighting and installed speaker/voice availability still need the team's stage rehearsal.
 
 See `DESIGN_SYSTEM.md` and `public/assets/README.md` for the visual contracts and asset provenance. Vercel publishes main to the recorded production target; deployment status and the actual HTTPS pages must be verified after merging.
+
+## Dashboard reference correction — 15 November 2026
+
+The supplied schedule/Ready screenshot and rendered team Figma preview were rechecked before this revision. The Dashboard launch action is a separate strong-glass panel: at first it is pinned to the lower right, aligned with the Ready column, with a 24px viewport inset (16px on phones, respecting safe areas). Once its reserved location immediately below Ready enters view, it resumes normal flow and scrolls away. It appears only on the Dashboard. Resize/font changes remeasure its position; its real height reserves space to prevent a jump. Keyboard scrolling leaves room for the panel and print omits it.
+
+Measured corrections include 18px/700 panel headings, page-title tracking of −0.025em, 15px/600 schedule titles, 14px JetBrains Mono times, rounded checkbox outlines, 36px blue icon tiles, the adaptation pill and info disclosures, 166px metric tiles, and the launch title's 18px Conthrax with 0.14em tracking. Fractional retention figures use smaller decimal text so the actual score fits inside the ring. Shared heading corrections apply across the existing screens.
+
+The six schedule/calendar/info icons and launch chevron are native SVG shapes observed in the reference, bundled locally. Rowing is not a reference row; its tile uses a neutral R initial. Today's seven catalog exercises, demo times, real prescriptions and completion/launch behavior remain authoritative. No reference exercise load, workout duration or fictional health measurement was substituted.
+
+View week opens the reference's seven-day microcycle as an explicitly illustrative template, not a personalized weekly prescription. Its content is stored in `src/content/weeklyTemplate.json`. The native modal mounts when opened, closes on Escape and restores focus. Existing clear-data confirmation behavior is preserved.
+
+Ready now follows the reference's Readiness / Sleep / Resting HR tile layout. Readiness and sleep show unavailable markers because the app does not record them; resting heart rate comes from the saved profile, not a live sensor. The profile link remains available below the detached launch action.
+
+All nine screens were inspected after the shared typography change. Intentional differences from the reference remain: original accessible headings and controls; the working seven-exercise catalog; 7/14/30-day reporting; real queue/storage figures; schematic route maps; prototype scoring and medical disclaimers; no unsupported body-region/clinical-floor, sleep or comms-latency claims; and no profile-photo upload feature. These are not claimed as full feature or pixel parity.
+
+Regression coverage adds desktop/tablet/phone pin-and-release geometry, page isolation, week-dialog keyboard focus, saved-profile heart-rate accuracy, unavailable measurements and offline week access. The new launch and week-control assertions failed before implementation. An existing unit test also caught a dialog-order regression; mounting the week dialog only while open fixed it without weakening the existing assertion.

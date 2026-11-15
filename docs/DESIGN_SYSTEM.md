@@ -26,10 +26,12 @@ Dashboard, Arena, Journey, Analytics, Logs, Settings, Profile, Onboarding and So
 
 The desktop shell uses a glass sidebar, topbar search, real queue/status indicators, notifications and crew profile. Below 1024px, navigation uses a native drawer with cyclic keyboard focus and Escape dismissal. Mobile layouts stack cards and retain local table scrolling. The three-step onboarding flow has its own branded rail and form layout.
 
-Dashboard uses paired hero cards above status indicators, then the schedule and strong glass launch card. Arena puts the stage and session controls on the left and exercise/feedback cards on the right. Journey places route statistics above the map. Analytics pairs volume and symmetry below retention. Logs pairs the table with its selected detail panel. Settings and Profile have distinct card layouts.
+Dashboard uses paired hero cards above status indicators, then the schedule and Ready card, with a separate strong glass launch panel beneath Ready. The panel stays at the viewport lower right until that reserved position is reached, then scrolls away. Arena puts the stage and session controls on the left and exercise/feedback cards on the right. Journey places route statistics above the map. Analytics pairs volume and symmetry below retention. Logs pairs the table with its selected detail panel. Settings and Profile have distinct card layouts.
 
 ## Integrity and accessibility
 
 Actual local state drives every indicator. Synthetic history and prototype scores remain identified. Preserve existing labels, IDs, media, outputs, dialogs and accessible control names. Business calculations belong in the existing core and hooks; chrome contains presentation and interaction state only.
 
 All assets and fonts are local and replaceable. Routes remain schematic game expeditions. Keep the team-defined goal and heuristic-score disclaimers, accessible reports and print readability. No clinical claims, new physiological model, remote font dependency or new UI package is part of this visual integration.
+
+Dashboard reference measurements: panel headings 18px/700/28px; schedule titles 15px/600; times 14px/600 JetBrains Mono; launch title 18px/700/28px Conthrax with 0.14em tracking. Ready has three 166px-tall translucent tiles. Missing readiness/sleep data is displayed as unavailable; profile heart rate is explicitly identified as saved context. The local weekly template is illustrative. Semantic control names and the actual catalog/prescriptions remain stable.
