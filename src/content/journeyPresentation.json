@@ -1,0 +1,28 @@
+{
+  "waypointPositions": [
+    {
+      "x": 84,
+      "y": 73
+    },
+    {
+      "x": 48,
+      "y": 51
+    },
+    {
+      "x": 15,
+      "y": 24
+    }
+  ],
+  "badgeAssets": {
+    "FIRST_TRAVERSE": "/assets/badges/first-traverse.svg",
+    "CANYON_MIDPOINT": "/assets/badges/canyon-midpoint.svg",
+    "CANYON_COMPLETE": "/assets/badges/canyon-complete.svg",
+    "BASE_CAMP": "/assets/badges/base-camp.svg",
+    "UPPER_SLOPE": "/assets/badges/upper-slope.svg",
+    "CALDERA": "/assets/badges/caldera.svg"
+  },
+  "startPosition": {
+    "x": 92,
+    "y": 85
+  }
+}

@@ -17,6 +17,9 @@ test('the static bundle serves every local runtime asset and initializes the rea
   await expect(sources).toBeVisible();
   await expect(sources.getByRole('link', { name: 'NASA Open Science Data Repository (OSDR)', exact: true })).toHaveAttribute('href', 'https://science.nasa.gov/biological-physical/data/osdr/');
   await page.getByRole('navigation', { name: 'Mission sections' }).getByRole('link', { name: 'Workout Arena', exact: true }).click();
+  await page.getByRole('button', { name: 'Enable camera', exact: true }).click();
+  await expect(page.getByLabel('Session status')).toHaveText('READY', { timeout: 30000 });
+  await expect(page.getByLabel('Workout duration', { exact: true })).toHaveText('00:00');
   await page.getByRole('button', { name: 'Start webcam', exact: true }).click();
   await expect(page.getByLabel('Session status')).toHaveText('RUNNING', { timeout: 30000 });
   const videoBox = await page.getByLabel('Live camera preview', { exact: true }).boundingBox();

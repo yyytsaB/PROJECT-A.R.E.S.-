@@ -35,7 +35,7 @@ The app reflows at narrow widths rather than scaling a fixed desktop canvas. Con
 | Unit and Chromium browser tests | 80 passed across 13 files |
 | Strict TypeScript / architecture lint | Passed |
 | Production build | Passed |
-| Full Playwright E2E suite | 37 passed, including online/offline six-flow rehearsals |
+| Full Playwright E2E suite | 42 passed, including online/offline six-flow rehearsals |
 | Production bundle browser tests | 5 passed, including real model initialization with a fake camera and matching video/canvas bounds |
 | Responsive checks | All nine screens at 320/768/1440px; additional dashboard checks at 375/390/1024/1280px |
 | Local typography/glass | Font availability, no remote asset requests, translucent fill and 16px blur verified in Chromium |
@@ -62,3 +62,5 @@ Ready now follows the reference's Readiness / Sleep / Resting HR tile layout. Re
 All nine screens were inspected after the shared typography change. Intentional differences from the reference remain: original accessible headings and controls; the working seven-exercise catalog; 7/14/30-day reporting; real queue/storage figures; schematic route maps; prototype scoring and medical disclaimers; no unsupported body-region/clinical-floor, sleep or comms-latency claims; and no profile-photo upload feature. These are not claimed as full feature or pixel parity.
 
 Regression coverage adds desktop/tablet/phone pin-and-release geometry, page isolation, week-dialog keyboard focus, saved-profile heart-rate accuracy, unavailable measurements and offline week access. The new launch and week-control assertions failed before implementation. An existing unit test also caught a dialog-order regression; mounting the week dialog only while open fixed it without weakening the existing assertion.
+
+Arena, Journey and medical hierarchy received a further measured reference pass. See `ARENA_JOURNEY_ALIGNMENT.md` for the two-step camera consent/preparation flow, segmented exercise controls, interactive catalog waypoints, replaceable badge mapping, information hierarchy and intentional differences from fictional reference data.
