@@ -10,6 +10,7 @@ const pages = [
   { id: 'onboarding', label: 'Onboarding', headingId: 'onboarding-heading' },
   { id: 'profile', label: 'Profile', headingId: 'profile-heading' },
   { id: 'sources', label: 'NASA Data Sources', headingId: 'science-sources-heading' },
+  { id: 'team', label: 'Meet the Team', headingId: 'team-heading' },
 ] as const;
 
 export function useAppNavigation() {

@@ -27,6 +27,7 @@ const iconPaths: Record<string, string> = {
   chevron: 'm8 10 4 4 4-4',
   profile: 'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM4 21v-3a6 6 0 0 1 6-5h4a6 6 0 0 1 6 5v3',
   sources: 'M3 4h7l2 2 2-2h7v16h-7l-2 2-2-2H3ZM12 6v16',
+  team: 'M9 4a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7ZM2 20v-1.5A5 5 0 0 1 7 14h4a5 5 0 0 1 5 4.5V20m0-15.5a3.5 3.5 0 0 1 0 6.5m3 3.2A5 5 0 0 1 22 18.5V20',
 };
 
 /** Native navigation geometry measured in the team's rendered reference. */
