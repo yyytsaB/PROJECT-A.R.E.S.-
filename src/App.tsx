@@ -62,6 +62,7 @@ function MissionApp() {
     <a className="skip-link" href="#main-content" onClick={event => { event.preventDefault(); mainRef.current?.focus(); }}>Skip to main content</a>
     <MissionChrome navigation={navigation} name={settings.astronautProfile.name} pendingCount={mission.state.syncQueue.length} commsOpen={settings.commsStatus === 'WINDOW_OPEN'} notification={dashboard.routineNotification}>
     <main ref={mainRef} id="main-content" tabIndex={-1}>
+      <p className="global-save-error" role="alert" aria-label="Workout save error">{mission.workoutError}</p>
     <div className="app-title visually-hidden"><h1>Project A.R.E.S. Command Center</h1></div>
     <div className="page-heading" data-screen="dashboard" data-active={navigation.activePage === 'dashboard'}><div><p className="eyebrow">Project A.R.E.S · Command Center</p><h2 className="page-title">Good Morning, <span>{settings.astronautProfile.name.split(' ')[0]}.</span></h2><p>Your physical readiness at a glance</p></div><div className="mission-day-badge glass"><span>Mission Day</span><strong>{dashboard.missionDay}<small>/ {dashboard.missionDurationDays}</small></strong></div></div>
     <section className="mission-section command-section" data-screen="dashboard" data-active={navigation.activePage === 'dashboard'} aria-labelledby="command-heading">
@@ -90,7 +91,6 @@ function MissionApp() {
       <p><output aria-label="Queue and snapshot sizes">{mission.state.syncQueue.length} queued session summaries · Queued payload: {(mission.queuedPayloadBytes / 1000).toFixed(1)} KB · Pose snapshots retained locally ({(mission.retainedSnapshotBytes / 1000).toFixed(1)} KB)</output> · Local cache used: <output aria-label="Local cache used">{(mission.localCacheBytes / 1000).toFixed(1)} KB</output></p>
       <p>Serialized JSON sizes; 1 KB = 1,000 bytes.</p>
       <p>Saved sessions: <output aria-label="Saved session count">{mission.state.sessions.length}</output>. Acknowledged: <output aria-label="Acknowledged session count">{mission.state.acknowledgements.length}</output></p>
-      <p role="alert" aria-label="Workout save error">{mission.workoutError}</p>
       <p className="prototype-note">{prototypeNotice.dataNotice}</p>
 </div></details>
     </section>

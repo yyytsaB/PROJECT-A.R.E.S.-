@@ -35,11 +35,11 @@ The app reflows at narrow widths rather than scaling a fixed desktop canvas. Con
 | Unit and Chromium browser tests | 80 passed across 13 files |
 | Strict TypeScript / architecture lint | Passed |
 | Production build | Passed |
-| Full Playwright E2E suite | 30 passed, including online/offline six-flow rehearsals |
+| Full Playwright E2E suite | 31 passed, including online/offline six-flow rehearsals |
 | Production bundle browser tests | 5 passed, including real model initialization with a fake camera and matching video/canvas bounds |
 | Responsive checks | All nine screens at 320/768/1440px; additional dashboard checks at 375/390/1024/1280px |
 | Local typography/glass | Font availability, no remote asset requests, translucent fill and 16px blur verified in Chromium |
-| New routing/keyboard regressions | Page isolation, browser history/reload, current-page skip target, drawer focus/Escape, offline search, active workout/replay persistence |
+| New routing/keyboard regressions | Page isolation, browser history/reload, current-page skip target, visible rejected-save feedback, drawer focus/Escape, offline search, active workout/replay persistence |
 
 The initial page-isolation, drawer focus, video-overlay alignment and current-page skip assertions failed before their fixes. The five required checks and production suite are rerun against the final visual batch before release.
 

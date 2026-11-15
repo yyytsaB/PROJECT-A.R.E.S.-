@@ -19,6 +19,7 @@ import { navigate } from './navigation';
 test('mobile navigation contains keyboard focus, closes on Escape, and page search opens a real screen offline', async ({ page, context }) => {
   await page.setViewportSize({ width: 375, height: 900 });
   await page.goto('/');
+  await expect(page.getByRole('link', { name: 'Start session', exact: true })).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
   await context.setOffline(true);
   const menu = page.getByRole('button', { name: 'Open navigation menu', exact: true });
@@ -90,4 +91,16 @@ test('skip navigation keeps the current screen instead of resetting the route', 
   await expect(page.getByRole('main')).toBeFocused();
   await expect(page).toHaveURL(/#\/logs$/);
   await expect(page.getByRole('heading', { name: 'Workout Logs & History', exact: true })).toBeVisible();
+});
+test('a rejected aggregate workout save is visible on the current screen and preserves saved history', async ({ page }) => {
+  await page.goto('/#/arena');
+  await page.getByText('Log a cardio session', { exact: true }).click();
+  await page.getByLabel('Cardio distance (km)', { exact: true }).fill('1e308');
+  await page.getByRole('button', { name: 'Log cardio session', exact: true }).click();
+  await expect(page.getByLabel('Saved session count', { exact: true })).toHaveText('61');
+  await page.getByRole('button', { name: 'Log cardio session', exact: true }).click();
+  const error = page.getByLabel('Workout save error', { exact: true });
+  await expect(error).toContainText('Workout not saved');
+  await expect(error).toBeVisible();
+  await expect(page.getByLabel('Saved session count', { exact: true })).toHaveText('61');
 });

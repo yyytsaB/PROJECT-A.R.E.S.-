@@ -161,6 +161,7 @@
   .launch-arrow { width: 48px; height: 48px; display: grid; place-items: center; flex-shrink: 0; border-radius: 50%; background: var(--amber); color: #152d50; font: 40px/1 var(--sans); }
   .session-launch:hover:not(:disabled) { background-color: #ffffff0d; border-color: #ffffff99; color: #fff; }
   .text-action { font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; min-height: 32px; }
+  .global-save-error:not(:empty) { padding: 16px 20px; margin: 0 0 24px; color: #ffe4e6; background: #7f1d1d66; border: 1px solid #fda4af80; border-radius: 16px; }
   .prototype-details { margin-top: 24px; color: #c7d0e0; font-size: 12px; }
   summary { cursor: pointer; }
   .comms-details { margin-top: 16px; padding: 16px; border: 1px solid #ffffff26; border-radius: 14px; background: #08183a22; }

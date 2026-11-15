@@ -48,7 +48,7 @@ export function MissionChrome({ navigation, name, pendingCount, commsOpen, notif
         <div className="topbar-actions"><span className="connection-chip" data-open={commsOpen}><span className="system-dot" />{commsOpen ? 'Comms window open' : 'Comms blackout scenario'}</span>
           <button className="icon-button queue-shortcut" aria-label={`Open sync settings, ${pendingCount} summaries pending`} onClick={() => go('settings')}><MissionIcon name="sync" />{pendingCount > 0 && <span className="toolbar-count">{pendingCount}</span>}</button>
           <button className="icon-button" aria-label="Mission notifications" onClick={() => notices.current?.showModal()}><MissionIcon name="bell" />{notification && <span className="notification-dot" />}</button>
-          <a className="topbar-start" href="#/arena" onClick={event => { event.preventDefault(); go('arena'); }}><MissionIcon name="play" /><span>Start session</span></a>
+          <a className="topbar-start" aria-label="Start session" href="#/arena" onClick={event => { event.preventDefault(); go('arena'); }}><MissionIcon name="play" /><span>Start session</span></a>
         </div>
       </header>
       {children}
