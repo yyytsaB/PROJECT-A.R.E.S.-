@@ -1,5 +1,5 @@
 import { navigate } from './navigation';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './demoFixture';
 
 test('aligns the six sections through an accessible offline mission workflow', async ({ page, context }) => {
   const errors: string[] = [];

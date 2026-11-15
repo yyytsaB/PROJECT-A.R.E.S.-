@@ -1,5 +1,5 @@
 import { navigate as goTo, openCardio } from './navigation';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './demoFixture';
 
 test('reviews and applies an offline prototype routine, then controls automatic and manual recalibration', async ({ page, context }) => {
   const errors: string[] = [];

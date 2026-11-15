@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './demoFixture';
 
 for (const size of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }, { width: 375, height: 900 }]) {
   test(`launch is detached, initially pinned, then scrolls away at its home position at ${size.width}px`, async ({ page }) => {

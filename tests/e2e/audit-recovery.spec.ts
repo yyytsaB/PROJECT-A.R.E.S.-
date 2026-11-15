@@ -1,5 +1,5 @@
 import { navigate } from './navigation';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './demoFixture';
 
 test('an idle page starts a fresh exercise schedule at the UTC mission-day boundary', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-11-14T12:00:00.000Z') });

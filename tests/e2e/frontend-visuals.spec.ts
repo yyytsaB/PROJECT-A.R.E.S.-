@@ -1,5 +1,5 @@
 import { navigate } from './navigation';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './demoFixture';
 
 test('print output keeps routine notifications, schedule labels and chart captions readable', async ({ page }) => {
   await page.goto('/');

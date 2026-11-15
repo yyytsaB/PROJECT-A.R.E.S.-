@@ -51,6 +51,8 @@ function MissionApp() {
   const mainRef = useRef<HTMLElement>(null);
   const catalog = loadMissionCatalog();
   const mission = useMissionTelemetry();
+  // First visit: open onboarding instead of an empty dashboard. Deep links to other pages are respected.
+  useEffect(() => { if (mission.isFirstVisit && navigation.activePage === 'dashboard') navigation.navigateToPage('onboarding'); }, []);
   const [loadKg, setLoadKg] = useState(getExerciseById('SQUAT').defaultLoadKg);
   const [cardioExercise, setCardioExercise] = useState<CardioExerciseId>('TREADMILL');
   const [cardioDistance, setCardioDistance] = useState('5');

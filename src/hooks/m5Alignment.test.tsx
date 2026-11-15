@@ -120,6 +120,7 @@ test('filters analytics views without redefining retention and confirms JSON/CSV
 });
 
 test('persists body weight and shows descriptions for unlocked and locked expedition badges', async () => {
+  seedDemoMissionState(new Date().toISOString(), localStorage);
   await act(() => root.render(<App />));
   const weight = host.querySelector<HTMLInputElement>('#body-weight')!;
   expect(weight).not.toBeNull();
@@ -138,6 +139,7 @@ test('persists body weight and shows descriptions for unlocked and locked expedi
 });
 
 test('measures the local cache, validates each profile field and requires an explicit data-clear confirmation', async () => {
+  seedDemoMissionState(new Date().toISOString(), localStorage);
   await act(() => root.render(<App />));
   const storedBytes = new Blob([localStorage.getItem(MISSION_STORAGE_KEY)!]).size;
   expect(output('Local cache used')).toBe(`${(storedBytes / 1000).toFixed(1)} KB`);
@@ -194,6 +196,7 @@ test('shows sample schedule times, persists completion per mission day and launc
 });
 
 test('selects accessible sections with matching page titles and a focusable skip target', async () => {
+  seedDemoMissionState(new Date().toISOString(), localStorage);
   await act(() => root.render(<App />));
   expect(document.title).toBe('Dashboard — ARES');
   const navigation = host.querySelector('nav[aria-label="Mission sections"]');
@@ -227,4 +230,23 @@ test('aligns titles and active navigation with direct section links and browser 
     window.dispatchEvent(new HashChangeEvent('hashchange'));
   });
   expect(document.title).toBe('Dashboard — ARES');
+});
+
+test('a first visit starts an empty mission on onboarding, and a returning visitor is not sent back', async () => {
+  await act(() => root.render(<App />));
+  expect(window.location.hash).toBe('#/onboarding');
+  expect(document.title).toBe('Onboarding — ARES');
+  expect(JSON.parse(localStorage.getItem(MISSION_STORAGE_KEY)!).sessions).toEqual([]);
+  await act(() => root.unmount());
+  window.location.hash = '/dashboard';
+  root = createRoot(host);
+  await act(() => root.render(<App />));
+  expect(document.title).toBe('Dashboard — ARES');
+});
+
+test('a first visit through a deep link opens that page rather than onboarding', async () => {
+  window.location.hash = '/sources';
+  await act(() => root.render(<App />));
+  expect(document.title).toBe('NASA Data Sources — ARES');
+  expect(window.location.hash).toBe('#/sources');
 });
